@@ -21,7 +21,7 @@ FRONTEND_URL: localhost:3000\
 /session - POST\
 : Login to appropriate user\
 /session - DELETE\
-: Logout\
+: Logout
 
 ## Things to do
 - [x] CRUD on Users
