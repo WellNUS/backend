@@ -3,6 +3,7 @@ package session
 import (
 	"wellnus/backend/references"
 	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/handlers/user"
 
 	"fmt"
 	// "strconv"
@@ -19,18 +20,13 @@ type Resp struct {
 }
 
 func findUser(db *sql.DB, email string) (User, error) {
-	row, err := db.Query(fmt.Sprintf("SELECT * FROM users WHERE email = '%s';", email))
+	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
 	if err != nil { return User{}, err }
-	if row.Next() {
-		var user User
-		if err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Email, &user.PasswordHash); err != nil {
-			return User{}, err
-		}
-		return user, nil
-	}
-	return User{}, httpError.NotFoundError
+	users, err := user.ReadUsers(rows)
+	if err != nil { return User{}, err}
+	if len(users) == 0 { return User{}, httpError.NotFoundError }
+	return users[0], nil
 }
-
 
 func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
@@ -52,8 +48,8 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		if match {
-			id := fmt.Sprintf("%d",storedUser.ID)
-			c.SetCookie("id", id, 1209600, "/", references.DOMAIN, false, true)
+			sid := fmt.Sprintf("%d",storedUser.ID)
+			c.SetCookie("id", sid, 1209600, "/", references.DOMAIN, false, true)
 			c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: true, User: storedUser })
 		} else {
 			c.SetCookie("id", "", -1, "/", references.DOMAIN, false, true)

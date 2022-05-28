@@ -2,7 +2,7 @@ package main
 
 import (
 	"wellnus/backend/references"
-	"wellnus/backend/handlers/users"
+	"wellnus/backend/handlers/user"
 	"wellnus/backend/handlers/session"
 	
 	"fmt"
@@ -13,13 +13,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func connectDB() *sql.DB {
+func ConnectDB() *sql.DB {
 	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
 					references.USER,
 					references.PASSWORD, 
 					references.HOST,
 					references.PORT,
 					references.DB_NAME)
+	// fmt.Println(connStr)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -33,14 +34,14 @@ func connectDB() *sql.DB {
 }
 
 func main() {
-	db := connectDB()
+	db := ConnectDB()
 	router := gin.Default()
 
-	router.GET("/users", users.GetAllUsersHandler(db))
-	router.POST("/users", users.AddUserHandler(db))
-	router.GET("/users/:id", users.GetUserHandler(db))
-	router.PATCH("/users/:id", users.UpdateUserHandler(db))
-	router.DELETE("/users/:id", users.DeleteUserHandler(db))
+	router.GET("/user", user.GetAllUsersHandler(db))
+	router.POST("/user", user.AddUserHandler(db))
+	router.GET("/user/:id", user.GetUserHandler(db))
+	router.PATCH("/user/:id", user.UpdateUserHandler(db))
+	router.DELETE("/user/:id", user.DeleteUserHandler(db))
 
 	router.POST("/session", session.LoginHandler(db))
 	router.DELETE("/session", session.LogoutHandler(db))
