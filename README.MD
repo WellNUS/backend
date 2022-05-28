@@ -27,7 +27,7 @@ FRONTEND_URL: localhost:3000
 - [x] CRUD on Users
 - [x] CRUD on Sessions
 - [x] Unit testing for Users Querying
-- [] Unit testing for Users Handlers
-- [] Unit testing for Sessions
-- [] CRUD on Groups
-- [] Implement Websockets for Groups
+- [ ] Unit testing for Users Handlers
+- [ ] Unit testing for Sessions
+- [ ] CRUD on Groups
+- [ ] Implement Websockets for Groups
