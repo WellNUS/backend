@@ -19,6 +19,7 @@ type Resp struct {
 	User	 	User `json:"user"`
 }
 
+// Helper function
 func findUser(db *sql.DB, email string) (User, error) {
 	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
 	if err != nil { return User{}, err }
@@ -28,40 +29,58 @@ func findUser(db *sql.DB, email string) (User, error) {
 	return users[0], nil
 }
 
+func GetUserFromContext(c *gin.Context) (User, error) {
+	var user User
+	if err := c.BindJSON(&user); err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
+func SetIDCookie(c *gin.Context, id int64) {
+	sid := fmt.Sprintf("%d",id)
+	c.SetCookie("id", sid, 1209600, "/", references.DOMAIN, false, true)
+}
+
+func RemoveIDCookie(c *gin.Context) {
+	c.SetCookie("id", "", -1, "/", references.DOMAIN, false, true)
+}
+
+// Main function
 func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		var loginUser User
-		if err := c.BindJSON(&loginUser); err != nil {
+		loginUser, err := GetUserFromContext(c)
+		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
+
 		storedUser, err := findUser(db, loginUser.Email)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
+
 		match, err := argon2id.ComparePasswordAndHash(loginUser.Password, storedUser.PasswordHash)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
 		if match {
-			sid := fmt.Sprintf("%d",storedUser.ID)
-			c.SetCookie("id", sid, 1209600, "/", references.DOMAIN, false, true)
+			SetIDCookie(c, storedUser.ID)
 			c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: true, User: storedUser })
 		} else {
-			c.SetCookie("id", "", -1, "/", references.DOMAIN, false, true)
-			c.IndentedJSON(httpError.GetStatusCode(err),Resp{ LoggedIn: false, User: User{}})
+			RemoveIDCookie(c)
+			c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: false, User: User{}})
 		}
 	} 
 }
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		var err error
-		c.SetCookie("id", "", -1, "/", references.DOMAIN, false, true)
-		c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: false, User: User{}})
+		RemoveIDCookie(c)
+		c.IndentedJSON(httpError.GetStatusCode(nil), Resp{ LoggedIn: false, User: User{}})
 	}
 }

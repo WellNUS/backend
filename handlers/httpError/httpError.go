@@ -7,7 +7,7 @@ import (
 
 var (
 	NotFoundError 		error = errors.New("404 Not Found")
-	UnauthorizedError	error = errors.New("401 Unauthorised")
+	UnauthorizedError	error = errors.New("401 Unauthorized")
 )
 
 func GetStatusCode(err error) int {

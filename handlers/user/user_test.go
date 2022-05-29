@@ -1,12 +1,27 @@
-package user
+package user;
 
 import (
+	"wellnus/backend/handlers/httpError"
+
+	"fmt"
 	"testing"
+	"net/http"
+	"net/http/httptest"
+	"bytes"
+	"strconv"
 	"errors"
 	"regexp"
+	"io"
+
+	"encoding/json"
 )
 
-var TemplateUser User = User{
+var (
+	NotFoundErrorMessage 		string = httpError.NotFoundError.Error()
+	UnauthorizedErrorMessage	string = httpError.UnauthorizedError.Error()
+)
+
+var validUser User = User{
 	FirstName: "NewFirstName",
 	LastName: "NewLastName",
 	Gender: "M",
@@ -16,171 +31,125 @@ var TemplateUser User = User{
 	PasswordHash: "",
 }
 
-func equal(user1 User, user2 User) bool {
-	return user1.ID == user2.ID &&
-	user1.FirstName == user2.FirstName &&
-	user1.LastName == user2.LastName &&
-	user1.Gender == user2.Gender &&
-	user1.Email == user2.Email &&
-	user1.UserRole == user2.UserRole &&
-	user1.PasswordHash == user2.PasswordHash
-}
-
-func testAddPatchRemoveUser(newUser User) error {
-	// Add new User to DB
-	newUser, err := AddUser(db, newUser)
-	if err != nil { return err }
-	id := newUser.ID
-
-	// Retrieve new User. Check if equal with original
-	retrievedUser, err := GetUser(db, id)
-	if err != nil { return err }
-	if !equal(newUser, retrievedUser) { return errors.New("Storage of new user not done properly") }
-
-	// Update newUser on DB
-	_, err = UpdateUser(db, User{ FirstName: "UpdatedFirstName" }, id)
-	if err != nil { return err }
-
-	// Retrieve updated User. Check if equal with updated original
-	newUser.FirstName = "UpdatedFirstName"
-	retrievedUser, err = GetUser(db, id)
-	if err != nil { return err }
-	if !equal(newUser, retrievedUser) { return errors.New("Update of new user not done properly") }
-
-	//Remove User from DB
-	_, err = DeleteUser(db, id)
-	if err != nil { return err }
-
-	// Attempt to retrieve deleted 
-	retrievedUser, err = GetUser(db, id)
-	if err == nil { return errors.New("User was not deleted from database upon deletion") }
-	if err.Error() != "404 Not Found" { return errors.New("Error was thrown but it was not '404 Not Found'") }
-	return nil
-}
-
-func TestGetUser(t *testing.T) {
-	user, err := GetUser(db, 999999)
-	if err.Error() != "404 Not Found" {
-		t.Errorf("Expected a not found error but got a different error. %v", err)
+// Helper functions
+func getUser(w *httptest.ResponseRecorder) (User, error) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(w.Result().Body)
+	if w.Code != http.StatusOK {
+		return User{}, errors.New(buf.String())
 	}
-	user, err = GetUser(db, 1)
+
+	// fmt.Printf("Response Body: %v \n", buf)
+	var user User
+	err := json.NewDecoder(buf).Decode(&user)
 	if err != nil {
-		t.Errorf("Error when retrieving user of id = 1. %v", err)
+		return User{}, err
+	}
+	return user, nil
+}
+
+func getCookie(w *httptest.ResponseRecorder, name string) string {
+	cookies := w.Result().Cookies()
+	for _, cookie := range cookies {
+		if cookie.Name == name {
+			return cookie.Value
+		}
+	}
+	return ""
+}
+
+func getIDCookie(w *httptest.ResponseRecorder) (string, int64, error) {
+	sid := getCookie(w, "id")
+	id, err := strconv.ParseInt(sid, 0, 64)
+	return sid, id, err
+}
+
+func simulateRequest(req *http.Request) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	return w
+}
+
+func getIOReaderFromUser(user User) (io.Reader, error) {
+	j, err := json.Marshal(user)
+	if err != nil { return nil, err }
+	return bytes.NewReader(j), nil
+}
+
+// Main tests
+func TestGetAllUsersHandler(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user", nil)
+	w := simulateRequest(req)
+	if w.Code != http.StatusOK { 
+		t.Errorf("HTTP Request to GetAllUser failed with status code of %d", w.Code)
+	}
+}
+
+func TestGetUserHandler(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user/1", nil)
+	w := simulateRequest(req)
+	user, err := getUser(w)
+	if err != nil {
+		t.Errorf("An error occured while getting User, %v", err)
 	}
 	if user.ID != 1 {
-		t.Errorf("Expected retrived user to have and id of 1. But has id of %d", user.ID)
+		t.Errorf("HTTP Request to GetUser of id = 1 did not get user of given ID")
 	}
 }
 
-func TestGetAllUser(t *testing.T) {
-	users, err := GetAllUsers(db)
+// Checks for error on requests and cookies. Does not check for if the database is properly updated
+func TestAddUpdateAndRemoveUserHandler(t *testing.T) {
+	// Adding new user
+	ioReaderUser, _ := getIOReaderFromUser(validUser)
+	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
+	w := simulateRequest(req)
+	user, err := getUser(w)
 	if err != nil {
-		t.Errorf("Error when getting all users. %v", err)
+		t.Errorf("Error occured while getting User, %v", err)
 	}
-	if len(users) == 0 {
-		t.Errorf("No users found.")
+	sCookieID, cookieID, err := getIDCookie(w)
+	if err != nil || cookieID != user.ID {
+		t.Errorf("Error when retrieving id of cookie or id of cookie does not matched added User. %v", err)
 	}
-}
-
-func TestAddUserNoFirstName(t *testing.T) {
-	newUser := User{
-		FirstName: "",
-		LastName: TemplateUser.LastName,
-		Gender: TemplateUser.Gender,
-		Email: TemplateUser.Email,
-		UserRole: TemplateUser.UserRole,
-		Password: TemplateUser.Password,
-	}
-	err := testAddPatchRemoveUser(newUser)
-	if err == nil {
-		t.Errorf("User without first name was successfully added, patched and deleted")
-	}
-	matched, _ := regexp.MatchString("first_name", err.Error())
+	
+	// Updating new user
+	ioReaderUser, _ = getIOReaderFromUser(User{ FirstName: "UpdatedFirstName" })
+	// Updating new user unauthorized
+	req, _ = http.NewRequest("PATCH", fmt.Sprintf("/user/%d", user.ID), ioReaderUser)
+	w = simulateRequest(req)
+	_, err = getUser(w)
+	matched, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
 	if !matched {
-		t.Errorf("Error did not contain any instance of first_name. %v", err)
+		t.Errorf("Unauthorized user was able to make updates to user. %v", err)
 	}
-}
 
-func TestAddUserNoLastName(t *testing.T) {
-	newUser := User{
-		FirstName: TemplateUser.FirstName,
-		LastName: "",
-		Gender: TemplateUser.Gender,
-		Email: TemplateUser.Email,
-		UserRole: TemplateUser.UserRole,
-		Password: TemplateUser.Password,
+	// Updating new user authorized
+	req.AddCookie(&http.Cookie{
+		Name: "id",
+		Value: sCookieID,
+	})
+	w = simulateRequest(req)
+	_, err = getUser(w)
+	if err != nil {
+		t.Errorf("Unable to update user despite being authorized. %v", err)
 	}
-	err := testAddPatchRemoveUser(newUser)
-	if err == nil {
-		t.Errorf("User without last name was successfully added, patched and deleted")
-	}
-	matched, _ := regexp.MatchString("last_name", err.Error())
+
+	// Removing new user unauthorized
+	req, _ =  http.NewRequest("DELETE", fmt.Sprintf("/user/%d", user.ID), nil)
+	w = simulateRequest(req)
+	_, err = getUser(w)
+	matched, _ = regexp.MatchString(UnauthorizedErrorMessage, err.Error())
 	if !matched {
-		t.Errorf("Error did not contain any instance of last_name. %v", err)
+		t.Errorf("Unauthorized user was able to make updates to user. %v", err)
+	}
+	// Removing new user authorized
+	req.AddCookie(&http.Cookie{
+		Name: "id",
+		Value: sCookieID,
+	})
+	w = simulateRequest(req)
+	_, err = getUser(w)
+	if err != nil {
+		t.Errorf("Unable to delete user despite being authorized. %v", err)
 	}
 }
-
-func TestAddUserNoGender(t *testing.T) {
-	newUser := User{
-		FirstName: TemplateUser.FirstName,
-		LastName: TemplateUser.LastName,
-		Gender: "",
-		Email: TemplateUser.Email,
-		UserRole: TemplateUser.UserRole,
-		Password: TemplateUser.Password,
-	}
-	err := testAddPatchRemoveUser(newUser)
-	if err == nil {
-		t.Errorf("User without last name was successfully added, patched and deleted")
-	}
-	matched, _ := regexp.MatchString("gender", err.Error())
-	if !matched {
-		t.Errorf("Error did not contain any instance of gender. %v", err)
-	}
-}
-
-func TestAddUserNoEmail(t *testing.T) {
-	newUser := User{
-		FirstName: TemplateUser.FirstName,
-		LastName: TemplateUser.LastName,
-		Gender: TemplateUser.Gender,
-		Email: "",
-		UserRole: TemplateUser.UserRole,
-		Password: TemplateUser.Password,
-	}
-	err := testAddPatchRemoveUser(newUser)
-	if err == nil {
-		t.Errorf("User without email was successfully added, patched and deleted")
-	}
-	matched, _ := regexp.MatchString("email", err.Error())
-	if !matched {
-		t.Errorf("Error did not contain any instance of email. %v", err)
-	}
-}
-
-func TestAddUserNoUserRole(t *testing.T) {
-	newUser := User{
-		FirstName: TemplateUser.FirstName,
-		LastName: TemplateUser.LastName,
-		Gender: TemplateUser.Gender,
-		Email: TemplateUser.Email,
-		UserRole: "",
-		Password: TemplateUser.Password,
-	}
-	err := testAddPatchRemoveUser(newUser)
-	if err == nil {
-		t.Errorf("User without user_role was successfully added, patched and deleted")
-	}
-	matched, _ := regexp.MatchString("user_role", err.Error())
-	if !matched {
-		t.Errorf("Error did not contain any instance of user_role. %v", err)
-	}
-}
-
-func TestAddUserValid(t *testing.T) {
-	if err := testAddPatchRemoveUser(TemplateUser); err != nil {
-		t.Errorf("Something went wrong with a valid user. %v", err)
-	}
-}
-
-// Add testing to handlers

@@ -23,11 +23,19 @@ FRONTEND_URL: localhost:3000\
 /session - DELETE\
 : Logout
 
+### Groups
+/group - GET\
+: Get all groups
+/group/:id - GET\
+: Get group with given id\
+
 ## Things to do
 - [x] CRUD on Users
 - [x] CRUD on Sessions
 - [x] Unit testing for Users Querying
-- [ ] Unit testing for Users Handlers
-- [ ] Unit testing for Sessions
+- [x] Unit testing for Users Handlers
+- [x] Unit testing for Sessions
 - [ ] CRUD on Groups
 - [ ] Implement Websockets for Groups
+- [ ] Unit testing for Groups Querying
+- [ ] Unit testing for Groups Handlers

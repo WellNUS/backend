@@ -4,6 +4,7 @@ import (
 	"wellnus/backend/references"
 	"wellnus/backend/handlers/user"
 	"wellnus/backend/handlers/session"
+	"wellnus/backend/handlers/group"
 	
 	"fmt"
 	"log"
@@ -45,6 +46,11 @@ func main() {
 
 	router.POST("/session", session.LoginHandler(db))
 	router.DELETE("/session", session.LogoutHandler(db))
+
+	router.GET("/group", group.GetAllGroupsHandler(db))
+	router.POST("/group", group.AddGroupHandler(db))
+	router.GET("/group/:id", group.GetGroupHandler(db))
+	router.POST("/group/:id", group.GetGroupHandler(db))
 
 	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
 	router.Run(references.BACKEND_URL)

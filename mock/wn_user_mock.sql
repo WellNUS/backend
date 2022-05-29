@@ -1,5 +1,5 @@
-/* \i /home/stanleyneoh/WellNUS/backend/mock/wn_user_mock.sql */
-
+DROP TABLE wn_user_group;
+DROP TABLE wn_group;
 DROP TABLE wn_user;
 
 CREATE TABLE wn_user (
@@ -13,6 +13,7 @@ CREATE TABLE wn_user (
     unique(email),
     check(first_name != ''),
     check(last_name != ''),
+    check(password_hash != ''),
     check(gender IN ('M', 'F')),
     check(email LIKE '%@u.nus.edu'),
     check(user_role IN ('MEMBER', 'VOLUNTEER', 'COUNSELLOR'))

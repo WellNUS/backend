@@ -3,38 +3,31 @@ package user
 // Test should be performed with some users in the database
 
 import (
+	"wellnus/backend/references"
+
 	"testing"
 	"os"
-
 	"fmt"
 	"log"
+
+	"github.com/gin-gonic/gin"
 
 	"database/sql"
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
-
 var (
-	DOMAIN string = "localhost"
-	FRONTEND_URL string = "localhost:3000"
-	BACKEND_URL string = "localhost:8080"
-	
-	// Database fields
-	HOST string = "localhost"
-	PORT int = 5432
-	USER string = "wellnus_user"
-	PASSWORD string = "password"
-	DB_NAME string = "wellnus"
+	db *sql.DB 
+	router *gin.Engine
 )
 
-func ConnectDB() *sql.DB {
+func connectDB() *sql.DB {
 	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
-					USER,
-					PASSWORD, 
-					HOST,
-					PORT,
-					DB_NAME)
+					references.USER,
+					references.PASSWORD, 
+					references.HOST,
+					references.PORT,
+					references.DB_NAME)
 	// fmt.Println(connStr)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -48,7 +41,20 @@ func ConnectDB() *sql.DB {
 	return db
 }
 
+func setupRouter() *gin.Engine {
+	router := gin.Default()
+	router.GET("/user", GetAllUsersHandler(db))
+	router.POST("/user", AddUserHandler(db))
+	router.GET("/user/:id", GetUserHandler(db))
+	router.PATCH("/user/:id", UpdateUserHandler(db))
+	router.DELETE("/user/:id", DeleteUserHandler(db))
+
+	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
+	return router
+}
+
 func TestMain(m *testing.M) {
-	db = ConnectDB()
+	db = connectDB()
+	router = setupRouter()
 	os.Exit(m.Run())
 }
