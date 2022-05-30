@@ -1,4 +1,5 @@
 DROP TABLE wn_user_group;
+DROP TABLE wn_join_request;
 DROP TABLE wn_group;
 
 CREATE TABLE wn_group (

@@ -13,7 +13,7 @@ func ReadUsers(rows *sql.Rows) ([]User, error) {
 	users := make([]User, 0)
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
+		if err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Faculty, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -31,6 +31,9 @@ func MergeUser(userMain User, userAdd User) (User, error) {
 	}
 	if userMain.Gender == "" {
 		userMain.Gender = userAdd.Gender
+	}
+	if userMain.Faculty == "" {
+		userMain.Faculty = userAdd.Faculty
 	}
 	if userMain.Email == "" {
 		userMain.Email = userAdd.Email
@@ -95,10 +98,11 @@ func AddUser(db *sql.DB, newUser User) (User, error) {
 	if err != nil { return User{}, err }
 
 	_, err = db.Query(fmt.Sprintf(
-		"INSERT INTO wn_user (first_name, last_name, gender, email, user_role, password_hash) VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
+		"INSERT INTO wn_user (first_name, last_name, gender, faculty, email, user_role, password_hash) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
+		newUser.Faculty,
 		newUser.Email,
 		newUser.UserRole,
 		newUser.PasswordHash))
@@ -124,10 +128,11 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 	if err != nil { return User{}, err }
 
 	query := fmt.Sprintf(
-		"UPDATE wn_user SET first_name = '%s', last_name = '%s', gender = '%s', email = '%s', user_role = '%s', password_hash = '%s' WHERE id = %d;",
+		"UPDATE wn_user SET first_name = '%s', last_name = '%s', gender = '%s', faculty='%s', email = '%s', user_role = '%s', password_hash = '%s' WHERE id = %d;",
 		updatedUser.FirstName,
 		updatedUser.LastName,
 		updatedUser.Gender,
+		updatedUser.Faculty,
 		updatedUser.Email,
 		updatedUser.UserRole,
 		updatedUser.PasswordHash,

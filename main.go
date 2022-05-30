@@ -50,7 +50,7 @@ func main() {
 	router.GET("/group", group.GetAllGroupsHandler(db))
 	router.POST("/group", group.AddGroupHandler(db))
 	router.GET("/group/:id", group.GetGroupHandler(db))
-	router.POST("/group/:id", group.GetGroupHandler(db))
+	router.POST("/group/:id", group.AddUserToGroupHandler(db))
 
 	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
 	router.Run(references.BACKEND_URL)

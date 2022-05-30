@@ -28,6 +28,8 @@ func GetGroupFromContext(c *gin.Context) (Group, error) {
 	return group, nil
 }
 
+// func GetUserFromContext(c *gin.Context)
+
 func GetIDCookie(c *gin.Context) (int64, error) {
 	strUserID, err := c.Cookie("id")
 	if err != nil { return 0, err }
@@ -101,8 +103,8 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func AddUserToGroupHandler(db *sql.DB) func(*gin.Context) {
+func AddUserToGroupHandler(db *sql.DB) func(*gin.Context) { // Might be deprecated when request system is put up
 	return func(c *gin.Context) {
-		return
+		c.IndentedJSON(200, "hello")
 	}
 }

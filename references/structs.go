@@ -5,6 +5,7 @@ type User struct {
 	FirstName 		string 	`json:"first_name"`
 	LastName 		string	`json:"last_name"`
 	Gender			string 	`json:"gender"`
+	Faculty			string 	`json:"faculty"`
 	Email			string	`json:"email"`
 	UserRole		string 	`json:"user_role"`
 	Password		string 	`json:"password"`

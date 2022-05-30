@@ -6,21 +6,13 @@ import (
 	"regexp"
 )
 
-var templateUser User = User{
-	FirstName: "NewFirstName",
-	LastName: "NewLastName",
-	Gender: "M",
-	Email: "NewEmail@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
 
 func equal(user1 User, user2 User) bool {
 	return user1.ID == user2.ID &&
 	user1.FirstName == user2.FirstName &&
 	user1.LastName == user2.LastName &&
 	user1.Gender == user2.Gender &&
+	user1.Faculty == user2.Faculty &&
 	user1.Email == user2.Email &&
 	user1.UserRole == user2.UserRole &&
 	user1.PasswordHash == user2.PasswordHash
@@ -85,11 +77,12 @@ func TestGetAllUser(t *testing.T) {
 func TestAddUserNoFirstName(t *testing.T) {
 	newUser := User{
 		FirstName: "",
-		LastName: templateUser.LastName,
-		Gender: templateUser.Gender,
-		Email: templateUser.Email,
-		UserRole: templateUser.UserRole,
-		Password: templateUser.Password,
+		LastName: validUser.LastName,
+		Gender: validUser.Gender,
+		Faculty: validUser.Faculty,
+		Email: validUser.Email,
+		UserRole: validUser.UserRole,
+		Password: validUser.Password,
 	}
 	err := testAddPatchRemoveUser(newUser)
 	if err == nil {
@@ -103,12 +96,13 @@ func TestAddUserNoFirstName(t *testing.T) {
 
 func TestAddUserNoLastName(t *testing.T) {
 	newUser := User{
-		FirstName: templateUser.FirstName,
+		FirstName: validUser.FirstName,
 		LastName: "",
-		Gender: templateUser.Gender,
-		Email: templateUser.Email,
-		UserRole: templateUser.UserRole,
-		Password: templateUser.Password,
+		Gender: validUser.Gender,
+		Faculty: validUser.Faculty,
+		Email: validUser.Email,
+		UserRole: validUser.UserRole,
+		Password: validUser.Password,
 	}
 	err := testAddPatchRemoveUser(newUser)
 	if err == nil {
@@ -122,16 +116,17 @@ func TestAddUserNoLastName(t *testing.T) {
 
 func TestAddUserNoGender(t *testing.T) {
 	newUser := User{
-		FirstName: templateUser.FirstName,
-		LastName: templateUser.LastName,
+		FirstName: validUser.FirstName,
+		LastName: validUser.LastName,
 		Gender: "",
-		Email: templateUser.Email,
-		UserRole: templateUser.UserRole,
-		Password: templateUser.Password,
+		Faculty: validUser.Faculty,
+		Email: validUser.Email,
+		UserRole: validUser.UserRole,
+		Password: validUser.Password,
 	}
 	err := testAddPatchRemoveUser(newUser)
 	if err == nil {
-		t.Errorf("User without last name was successfully added, patched and deleted")
+		t.Errorf("User without gender was successfully added, patched and deleted")
 	}
 	matched, _ := regexp.MatchString("gender", err.Error())
 	if !matched {
@@ -139,14 +134,35 @@ func TestAddUserNoGender(t *testing.T) {
 	}
 }
 
+func TestAddUserNoFaculty(t *testing.T) {
+	newUser := User{
+		FirstName: validUser.FirstName,
+		LastName: validUser.LastName,
+		Gender: validUser.Gender,
+		Faculty: "",
+		Email: validUser.Email,
+		UserRole: validUser.UserRole,
+		Password: validUser.Password,
+	}
+	err := testAddPatchRemoveUser(newUser)
+	if err == nil {
+		t.Errorf("User without faculty was successfully added, patched and deleted")
+	}
+	matched, _ := regexp.MatchString("faculty", err.Error())
+	if !matched {
+		t.Errorf("Error did not contain any instance of faculty. %v", err)
+	}
+}
+
 func TestAddUserNoEmail(t *testing.T) {
 	newUser := User{
-		FirstName: templateUser.FirstName,
-		LastName: templateUser.LastName,
-		Gender: templateUser.Gender,
+		FirstName: validUser.FirstName,
+		LastName: validUser.LastName,
+		Gender: validUser.Gender,
+		Faculty: validUser.Faculty,
 		Email: "",
-		UserRole: templateUser.UserRole,
-		Password: templateUser.Password,
+		UserRole: validUser.UserRole,
+		Password: validUser.Password,
 	}
 	err := testAddPatchRemoveUser(newUser)
 	if err == nil {
@@ -160,12 +176,13 @@ func TestAddUserNoEmail(t *testing.T) {
 
 func TestAddUserNoUserRole(t *testing.T) {
 	newUser := User{
-		FirstName: templateUser.FirstName,
-		LastName: templateUser.LastName,
-		Gender: templateUser.Gender,
-		Email: templateUser.Email,
+		FirstName: validUser.FirstName,
+		LastName: validUser.LastName,
+		Gender: validUser.Gender,
+		Faculty: validUser.Faculty,
+		Email: validUser.Email,
 		UserRole: "",
-		Password: templateUser.Password,
+		Password: validUser.Password,
 	}
 	err := testAddPatchRemoveUser(newUser)
 	if err == nil {
@@ -178,7 +195,7 @@ func TestAddUserNoUserRole(t *testing.T) {
 }
 
 func TestAddUserValid(t *testing.T) {
-	if err := testAddPatchRemoveUser(templateUser); err != nil {
+	if err := testAddPatchRemoveUser(validUser); err != nil {
 		t.Errorf("Something went wrong with a valid user. %v", err)
 	}
 }

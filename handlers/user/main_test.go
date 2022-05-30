@@ -11,7 +11,6 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-
 	"database/sql"
 	_ "github.com/lib/pq"
 )

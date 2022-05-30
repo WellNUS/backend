@@ -21,6 +21,7 @@ var (
 		FirstName: "NewFirstName",
 		LastName: "NewLastName",
 		Gender: "M",
+		Faculty: "COMPUTING",
 		Email: "NewEmail@u.nus.edu",
 		UserRole: "VOLUNTEER",
 		Password: "NewPassword",
@@ -50,10 +51,11 @@ func makeNewUser(newUser User) (User, error) {
 	newUser, err := hashPassword(newUser);
 	if err != nil { return User{}, err }
 	_, err = db.Query(fmt.Sprintf(
-		"INSERT INTO wn_user (first_name, last_name, gender, email, user_role, password_hash) VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
+		"INSERT INTO wn_user (first_name, last_name, gender, faculty, email, user_role, password_hash) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
+		newUser.Faculty,
 		newUser.Email,
 		newUser.UserRole,
 		newUser.PasswordHash))
@@ -96,11 +98,12 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	db = connectDB()
 	router = setupRouter()
-	user, _ := makeNewUser(templateUser)
+	user, err := makeNewUser(templateUser)
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
 
 	r := m.Run()
 
-	_ , err := db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", user.ID))
+	_ , err = db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", user.ID))
 	if err != nil { log.Fatal("Test user was not removed from database") }
 	os.Exit(r)
 }

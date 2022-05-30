@@ -25,6 +25,7 @@ var validUser User = User{
 	FirstName: "NewFirstName",
 	LastName: "NewLastName",
 	Gender: "M",
+	Faculty: "COMPUTING",
 	Email: "NewEmail@u.nus.edu",
 	UserRole: "VOLUNTEER",
 	Password: "NewPassword",
