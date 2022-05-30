@@ -2,165 +2,166 @@
 
 ## Constants
 
-BACKEND_URL: localhost:8080\
-FRONTEND_URL: localhost:3000\
+BACKEND_URL: localhost:8080
+
+FRONTEND_URL: localhost:3000
 
 ## Features
 
 ### User
 
-#### Users Details
-
-Handles CRUD on users
-
-#### User Routes
-
-##### /user - GET
-
-: Get all users
-
-##### /user - POST
-
-: Create a new user and logins as that user
-
-##### /user/:id - GET
-
-: Gets user with given id
-
-##### /user/:id - PATCH
-
-: Update user with given id with updates, provided that user logged in
-
-##### /user/:id - DELETE
-
-: Delete a user with given id, provided that user logged in
+> #### Users Details
+> 
+>> Handles CRUD on users
+> 
+> #### User Routes
+> 
+>> ##### /user - GET
+>> 
+>> : Get all users
+>> 
+>> ##### /user - POST
+>> 
+>> : Create a new user and logins as that user
+>> 
+>> ##### /user/:id - GET
+>> 
+>> : Gets user with given id
+>> 
+>> ##### /user/:id - PATCH
+>> 
+>> : Update user with given id with updates, provided that user logged in
+>> 
+>> ##### /user/:id - DELETE
+>> 
+>> : Delete a user with given id, provided that user logged in
 
 ### Session
 
-#### Session Details
-
-Handles user authentication for registered users
-
-#### Session Routes
-
-##### /session - POST
-
-: Login to appropriate user
-
-##### /session - DELETE
-
-: Logout of any user
+> #### Session Details
+> 
+>> Handles user authentication for registered users
+> 
+> #### Session Routes
+> 
+>> ##### /session - POST
+>> 
+>> : Login to appropriate user
+>> 
+>> ##### /session - DELETE
+>> 
+>> : Logout of any user
 
 ### Group
 
-#### Group Details
-
-Handles creation, and joining of groups.
-
-Each group must have at least an owner present in said group.
-
-#### Group Routes
-
-##### /group - GET
-
-: Get all groups
-
-##### /group - POST
-
-: Creates a new group if user is loggedIn
-
-##### /group/:id - GET
-
-: Get a group with given id
-
-##### /group/:id - POST
-
-: Creates a join request in the wn_join_request table if user is loggedIn
-
-##### /group/:id - DELETE
-
-: Leaves the group if user is not owner. Otherwise, deletes the group
-
-##### /group/:id - UPDATE
-
-: Updates the information of the group if user is in given group
+> #### Group Details
+> 
+>> Handles creation, and joining of groups.
+>> 
+>> Each group must have at least an owner present in said group.
+> 
+> #### Group Routes
+> 
+>> ##### /group - GET
+>> 
+>> : Get all groups
+>> 
+>> ##### /group - POST
+>> 
+>> : Creates a new group if user is loggedIn
+>> 
+>> ##### /group/:id - GET
+>> 
+>> : Get a group with given id
+>> 
+>> ##### /group/:id - POST
+>> 
+>> : Creates a join request in the wn_join_request table if user is loggedIn
+>> 
+>> ##### /group/:id - DELETE
+>> 
+>> : Leaves the group if user is not owner. Otherwise, deletes the group
+>> 
+>> ##### /group/:id - UPDATE
+>> 
+>> : Updates the information of the group if user is in given group
 
 ### Match
 
-#### Match Details
-
-All matches are made when a certain number of match requests are present.
-
-Current matching algorithm:
-
-1. Randomly choose a match request
-2. Set requestee as the owner of the group
-3. Greedily satisfy a compatibility comparative function with other requests
-4. Form group users and remove their requests
-5. Repeat steps 1 to 5 till either all requests are fulfiled or there are not sufficient users
-
-Compatability function:
-
-- Compatibility function will give a score from 0 - 100 between 2 match request.
-- Function will consider gender, faculty, preferred group size, and MBTI type
-
-#### Match Routes
-
-##### /match - GET
-
-: Gets all match request
-
-##### /match - POST
-
-: Creates a new match request if user is loggedIn
-
-##### /match/:id - GET
-
-: Get match request with given id
-
-##### /match/:id - DELETE
-
-: Delete match request with given id if user is the owner of match request
-
-##### /match/:id - UPDATE
-
-: Update match request with given id if user is the owner of match request
+> #### Match Details
+> 
+>> All matches are made when a certain number of match requests are present.
+>> 
+>> Current matching algorithm:
+>> 
+>> 1. Randomly choose a match request
+>> 2. Set requestee as the owner of the group
+>> 3. Greedily satisfy a compatibility comparative function with other requests
+>> 4. Form group users and remove their requests
+>> 5. Repeat steps 1 to 5 till either all requests are fulfiled or there are not sufficient users
+>> 
+>> Compatability function:
+>> 
+>> - Compatibility function will give a score from 0 - 100 between 2 match request.
+>> - Function will consider gender, faculty, preferred group size, and MBTI type
+> 
+> #### Match Routes
+> 
+>> ##### /match - GET
+>> 
+>> : Gets all match request
+>> 
+>> ##### /match - POST
+>> 
+>> : Creates a new match request if user is loggedIn
+>> 
+>> ##### /match/:id - GET
+>> 
+>> : Get match request with given id
+>> 
+>> ##### /match/:id - DELETE
+>> 
+>> : Delete match request with given id if user is the owner of match request
+>> 
+>> ##### /match/:id - UPDATE
+>> 
+>> : Update match request with given id if user is the owner of match request
 
 ### Counsel
 
-#### Counsel Details
-
-Similar to a job listing site. Users whose are user_role = COUNSEL will be able to select to take on various request.
-
-Each request a time limit of 3 days. Request approaching time limit will be highlighted for volunteer counsellors to take on.
-
-After request time limit, a non-volunteer paid counsellor will be assigned to take on request at their discretion.
-
-#### Counsel Routes
-
-##### /counsel - GET
-
-: Gets all counsel request
-
-##### /counsel - POST
-
-: Creates a new counsel request if user is loggedIn
-
-##### /counsel/:id - GET
-
-: Gets counsel request with given id
-
-##### /counsel/:id - POST
-
-: Assigns counsel request to user if user is a counsellor or volunteer
-
-##### /counsel/:id - DELETE
-
-: Deletes a counsel request if user is the owner of the request
-
-##### /counsel/:id - UPDATE
-
-: Updates a counsel request if user is the owner of the request
+> #### Counsel Details
+> 
+>> Similar to a job listing site. Users whose are user_role = COUNSEL will be able to select to take on various request.
+>> 
+>> Each request a time limit of 3 days. Request approaching time limit will be highlighted for volunteer counsellors to take on.
+>> 
+>> After request time limit, a non-volunteer paid counsellor will be assigned to take on request at their discretion.
+> 
+> #### Counsel Routes
+> 
+>> ##### /counsel - GET
+>> 
+>> : Gets all counsel request
+>> 
+>> ##### /counsel - POST
+>> 
+>> : Creates a new counsel request if user is loggedIn
+>> 
+>> ##### /counsel/:id - GET
+>> 
+>> : Gets counsel request with given id
+>> 
+>> ##### /counsel/:id - POST
+>> 
+>> : Assigns counsel request to user if user is a counsellor or volunteer
+>> 
+>> ##### /counsel/:id - DELETE
+>> 
+>> : Deletes a counsel request if user is the owner of the request
+>> 
+>> ##### /counsel/:id - UPDATE
+>> 
+>> : Updates a counsel request if user is the owner of the request
 
 ## Tables
 
