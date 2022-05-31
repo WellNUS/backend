@@ -3,7 +3,6 @@ package session
 import (
 	"wellnus/backend/references"
 	"wellnus/backend/handlers/httpError"
-	"wellnus/backend/handlers/user"
 
 	"fmt"
 	// "strconv"
@@ -23,13 +22,25 @@ type Resp struct {
 func findUser(db *sql.DB, email string) (User, error) {
 	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
 	if err != nil { return User{}, err }
-	users, err := user.ReadUsers(rows)
+	users, err := readUsers(rows)
 	if err != nil { return User{}, err}
 	if len(users) == 0 { return User{}, httpError.NotFoundError }
 	return users[0], nil
 }
 
-func GetUserFromContext(c *gin.Context) (User, error) {
+func readUsers(rows *sql.Rows) ([]User, error) {
+	users := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Faculty, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
+func getUserFromContext(c *gin.Context) (User, error) {
 	var user User
 	if err := c.BindJSON(&user); err != nil {
 		return User{}, err
@@ -37,12 +48,12 @@ func GetUserFromContext(c *gin.Context) (User, error) {
 	return user, nil
 }
 
-func SetIDCookie(c *gin.Context, id int64) {
+func setIDCookie(c *gin.Context, id int64) {
 	sid := fmt.Sprintf("%d",id)
 	c.SetCookie("id", sid, 1209600, "/", references.DOMAIN, false, true)
 }
 
-func RemoveIDCookie(c *gin.Context) {
+func removeIDCookie(c *gin.Context) {
 	c.SetCookie("id", "", -1, "/", references.DOMAIN, false, true)
 }
 
@@ -51,7 +62,7 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		loginUser, err := GetUserFromContext(c)
+		loginUser, err := getUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -69,10 +80,10 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		if match {
-			SetIDCookie(c, storedUser.ID)
+			setIDCookie(c, storedUser.ID)
 			c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: true, User: storedUser })
 		} else {
-			RemoveIDCookie(c)
+			removeIDCookie(c)
 			c.IndentedJSON(httpError.GetStatusCode(err), Resp{ LoggedIn: false, User: User{}})
 		}
 	} 
@@ -80,7 +91,7 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		RemoveIDCookie(c)
+		removeIDCookie(c)
 		c.IndentedJSON(httpError.GetStatusCode(nil), Resp{ LoggedIn: false, User: User{}})
 	}
 }

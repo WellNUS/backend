@@ -29,3 +29,10 @@ type GroupWithUsers struct {
 	Group			Group	`json:"group"`
 	Users			[]User	`json:"users"`
 }
+
+type JoinRequest struct {
+	ID 				int64 	`json:"id"`
+	UserID 			int64 	`json:"user_id"`
+	GroupID 		int64 	`json:"group_id"`
+	RequestStatus 	string 	`json:"request_status"`
+}

@@ -1,5 +1,7 @@
 DROP TABLE wn_user_group;
 DROP TABLE wn_join_request;
+DROP TABLE wn_match_request;
+DROP TABLE wn_counsel_request;
 DROP TABLE wn_group;
 DROP TABLE wn_user;
 

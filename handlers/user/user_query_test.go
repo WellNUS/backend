@@ -2,79 +2,71 @@ package user
 
 import (
 	"testing"
-	"errors"
 	"regexp"
 )
 
+// Main test
 
-func equal(user1 User, user2 User) bool {
-	return user1.ID == user2.ID &&
-	user1.FirstName == user2.FirstName &&
-	user1.LastName == user2.LastName &&
-	user1.Gender == user2.Gender &&
-	user1.Faculty == user2.Faculty &&
-	user1.Email == user2.Email &&
-	user1.UserRole == user2.UserRole &&
-	user1.PasswordHash == user2.PasswordHash
+func TestUserQuery(t *testing.T) {
+	t.Run("GetAllUsers when DB is empty", testGetAllUsersWhenDBIsEmpty)
+	t.Run("GetUser when DB is empty", testGetUserWhenDBIsEmpty)
+	t.Run("AddUser", testAddUser)
+	t.Run("GetUser", testGetUser)
+	t.Run("AddUser no first name", testAddUserNoFirstName)
+	t.Run("AddUser no last name", testAddUserNoLastName)
+	t.Run("AddUser no gender", testAddUserNoGender)
+	t.Run("AddUser no faculty", testAddUserNoFaculty)
+	t.Run("AddUser no email", testAddUserNoEmail)
+	t.Run("AddUser no user role", testAddUserNoUserRole)
+	t.Run("AddUser same user", testAddSameUser)
+	t.Run("UpdateUser", testUpdateUser)
+	t.Run("GetUser after update", testGetUserAfterUpdate)
+	t.Run("DeleteUser unauthorized", testDeleteUser)
+	t.Run("GetUser after delete", testGetUserAfterDelete)
 }
 
-func testAddPatchRemoveUser(newUser User) error {
-	// Add new User to DB
-	newUser, err := AddUser(db, newUser)
-	if err != nil { return err }
-	id := newUser.ID
+// Helpers
 
-	// Retrieve new User. Check if equal with original
-	retrievedUser, err := GetUser(db, id)
-	if err != nil { return err }
-	if !equal(newUser, retrievedUser) { return errors.New("Storage of new user not done properly") }
-
-	// Update newUser on DB
-	_, err = UpdateUser(db, User{ FirstName: "UpdatedFirstName" }, id)
-	if err != nil { return err }
-
-	// Retrieve updated User. Check if equal with updated original
-	newUser.FirstName = "UpdatedFirstName"
-	retrievedUser, err = GetUser(db, id)
-	if err != nil { return err }
-	if !equal(newUser, retrievedUser) { return errors.New("Update of new user not done properly") }
-
-	//Remove User from DB
-	_, err = DeleteUser(db, id)
-	if err != nil { return err }
-
-	// Attempt to retrieve deleted 
-	retrievedUser, err = GetUser(db, id)
-	if err == nil { return errors.New("User was not deleted from database upon deletion") }
-	if err.Error() != "404 Not Found" { return errors.New("Error was thrown but it was not '404 Not Found'") }
-	return nil
-}
-
-func TestGetUser(t *testing.T) {
-	user, err := GetUser(db, 999999)
-	if err.Error() != "404 Not Found" {
-		t.Errorf("Expected a not found error but got a different error. %v", err)
-	}
-	user, err = GetUser(db, 1)
-	if err != nil {
-		t.Errorf("Error when retrieving user of id = 1. %v", err)
-	}
-	if user.ID != 1 {
-		t.Errorf("Expected retrived user to have and id of 1. But has id of %d", user.ID)
-	}
-}
-
-func TestGetAllUser(t *testing.T) {
+func testGetAllUsersWhenDBIsEmpty(t *testing.T) {
 	users, err := GetAllUsers(db)
 	if err != nil {
 		t.Errorf("Error when getting all users. %v", err)
 	}
-	if len(users) == 0 {
-		t.Errorf("No users found.")
+	if len(users) != 0 {
+		t.Errorf("%d users found despite table being cleared", len(users))
 	}
 }
 
-func TestAddUserNoFirstName(t *testing.T) {
+func testGetUserWhenDBIsEmpty(t *testing.T) {
+	_, err := GetUser(db, 1)
+	if err == nil || err.Error() != "404 Not Found" {
+		t.Errorf("Expected a not found error but either got no error or a different error. %v", err)
+	}
+}
+
+func testAddUser(t *testing.T) {
+	var err error
+	addedUser, err = AddUser(db, validUser)
+	if err != nil { 
+		t.Errorf("An error occured while adding a new user. %v", err) 
+	}
+	if addedUser.ID == 0 {
+		t.Errorf("addedUser ID not written by AddUser call")
+	}
+}
+
+func testGetUser(t *testing.T) {
+	// Checking of added User
+	retrievedUser, err := GetUser(db, addedUser.ID)
+	if err != nil { 
+		t.Errorf("An error occured while retrieving user of id = %d. %v", addedUser.ID, err)
+	}
+	if !equal(addedUser, retrievedUser) {
+		t.Errorf("retrieved user is not the same as the added user")
+	}
+}
+
+func testAddUserNoFirstName(t *testing.T) {
 	newUser := User{
 		FirstName: "",
 		LastName: validUser.LastName,
@@ -84,9 +76,9 @@ func TestAddUserNoFirstName(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without first name was successfully added, patched and deleted")
+		t.Errorf("User without first name was successfully added")
 	}
 	matched, _ := regexp.MatchString("first_name", err.Error())
 	if !matched {
@@ -94,7 +86,7 @@ func TestAddUserNoFirstName(t *testing.T) {
 	}
 }
 
-func TestAddUserNoLastName(t *testing.T) {
+func testAddUserNoLastName(t *testing.T) {
 	newUser := User{
 		FirstName: validUser.FirstName,
 		LastName: "",
@@ -104,9 +96,9 @@ func TestAddUserNoLastName(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without last name was successfully added, patched and deleted")
+		t.Errorf("User without last name was successfully added")
 	}
 	matched, _ := regexp.MatchString("last_name", err.Error())
 	if !matched {
@@ -114,7 +106,7 @@ func TestAddUserNoLastName(t *testing.T) {
 	}
 }
 
-func TestAddUserNoGender(t *testing.T) {
+func testAddUserNoGender(t *testing.T) {
 	newUser := User{
 		FirstName: validUser.FirstName,
 		LastName: validUser.LastName,
@@ -124,9 +116,9 @@ func TestAddUserNoGender(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without gender was successfully added, patched and deleted")
+		t.Errorf("User without gender was successfully added")
 	}
 	matched, _ := regexp.MatchString("gender", err.Error())
 	if !matched {
@@ -134,7 +126,7 @@ func TestAddUserNoGender(t *testing.T) {
 	}
 }
 
-func TestAddUserNoFaculty(t *testing.T) {
+func testAddUserNoFaculty(t *testing.T) {
 	newUser := User{
 		FirstName: validUser.FirstName,
 		LastName: validUser.LastName,
@@ -144,9 +136,9 @@ func TestAddUserNoFaculty(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without faculty was successfully added, patched and deleted")
+		t.Errorf("User without faculty was successfully added")
 	}
 	matched, _ := regexp.MatchString("faculty", err.Error())
 	if !matched {
@@ -154,7 +146,7 @@ func TestAddUserNoFaculty(t *testing.T) {
 	}
 }
 
-func TestAddUserNoEmail(t *testing.T) {
+func testAddUserNoEmail(t *testing.T) {
 	newUser := User{
 		FirstName: validUser.FirstName,
 		LastName: validUser.LastName,
@@ -164,9 +156,9 @@ func TestAddUserNoEmail(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without email was successfully added, patched and deleted")
+		t.Errorf("User without email was successfully added")
 	}
 	matched, _ := regexp.MatchString("email", err.Error())
 	if !matched {
@@ -174,7 +166,7 @@ func TestAddUserNoEmail(t *testing.T) {
 	}
 }
 
-func TestAddUserNoUserRole(t *testing.T) {
+func testAddUserNoUserRole(t *testing.T) {
 	newUser := User{
 		FirstName: validUser.FirstName,
 		LastName: validUser.LastName,
@@ -184,9 +176,9 @@ func TestAddUserNoUserRole(t *testing.T) {
 		UserRole: "",
 		Password: validUser.Password,
 	}
-	err := testAddPatchRemoveUser(newUser)
+	_, err := AddUser(db, newUser)
 	if err == nil {
-		t.Errorf("User without user_role was successfully added, patched and deleted")
+		t.Errorf("User without user_role was successfully added")
 	}
 	matched, _ := regexp.MatchString("user_role", err.Error())
 	if !matched {
@@ -194,8 +186,48 @@ func TestAddUserNoUserRole(t *testing.T) {
 	}
 }
 
-func TestAddUserValid(t *testing.T) {
-	if err := testAddPatchRemoveUser(validUser); err != nil {
-		t.Errorf("Something went wrong with a valid user. %v", err)
+func testAddSameUser(t *testing.T) {
+	_, err := AddUser(db, validUser)
+	if err == nil { 
+		t.Errorf("User with same already existing email was added") 
+	}
+}
+
+func testUpdateUser(t *testing.T) {
+	var err error
+	newFirstName := "UpdatedFirstName"
+	addedUser, err = UpdateUser(db, User{ FirstName: newFirstName }, addedUser.ID)
+	if err != nil {
+		t.Errorf("An error occured while updating user. %v", err)
+	}
+	if addedUser.FirstName != newFirstName {
+		t.Errorf("Returned updated object did not reflect updates")
+	}
+}
+
+func testGetUserAfterUpdate(t *testing.T) {
+	retrievedUser, err := GetUser(db, addedUser.ID)
+	if err != nil { 
+		t.Errorf("An error occured while retrieving user of id = %d. %v", addedUser.ID, err)
+	}
+	if !equal(addedUser, retrievedUser) {
+		t.Errorf("Updates made to added user was not reflected in database")
+	}
+}
+
+func testDeleteUser(t *testing.T) {
+	user, err := DeleteUser(db, addedUser.ID)
+	if err != nil {
+		t.Errorf("An error occured while deleting user of id = %d. %v", addedUser.ID, err)
+	}
+	if user.ID != addedUser.ID {
+		t.Errorf("Returned user id did not matched the original id of added user")
+	}
+}
+
+func testGetUserAfterDelete(t *testing.T) {
+	_, err := GetUser(db, addedUser.ID)
+	if err == nil || err.Error() != "404 Not Found" {
+		t.Errorf("Expected a not found error but either got no error or a different error. %v", err)
 	}
 }

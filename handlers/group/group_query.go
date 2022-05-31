@@ -9,7 +9,8 @@ import (
 )
 
 // Helper function
-func ReadGroups(rows *sql.Rows) ([]Group, error) {
+
+func readGroups(rows *sql.Rows) ([]Group, error) {
 	groups := make([]Group, 0)
 	for rows.Next() {
 		var group Group
@@ -21,7 +22,7 @@ func ReadGroups(rows *sql.Rows) ([]Group, error) {
 	return groups, nil
 }
 
-func MergeGroup(groupMain Group, groupAdd Group) Group {
+func mergeGroup(groupMain Group, groupAdd Group) Group {
 	groupMain.ID = groupAdd.ID
 	if groupMain.GroupName == "" {
 		groupMain.GroupName = groupAdd.GroupName
@@ -38,16 +39,19 @@ func MergeGroup(groupMain Group, groupAdd Group) Group {
 	return groupMain
 }
 
-func GetUsersInGroup(db *sql.DB, id int64) ([]User, error) {
-	rows, err := db.Query(fmt.Sprintf(
-		"SELECT * FROM wn_user_group JOIN wn_user ON wn_user_group.user_id = wn_user.id WHERE wn_user_group.group_id = %d", 
-		id))
+func getUsersInGroup(db *sql.DB, groupID int64) ([]User, error) {
+	query := fmt.Sprintf(
+		`SELECT * FROM wn_user_group JOIN wn_user 
+			ON wn_user_group.user_id = wn_user.id 
+			WHERE wn_user_group.group_id = %d`, 
+		id)
+	rows, err := db.Query(query)
 	if err != nil { return nil, err}
 	users := make([]User, 0)
 	for rows.Next() {
-		var userID, groupID int64; // Temp variables
+		var tempUserID, tempGroupID int64; // Temp variables
 		var user User
-		if err := rows.Scan(&userID, &groupID, &user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
+		if err := rows.Scan(&tempUserID, &tempGroupID, &user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -55,48 +59,82 @@ func GetUsersInGroup(db *sql.DB, id int64) ([]User, error) {
 	return users, nil
 }
 
+func lastLastGroupID(db *sql.DB, group Group) (Group, error) {
+	row, err := db.Query("SELECT last_value FROM wn_group_id_seq;")
+	if err != nil { return Group{}, err }
+	defer row.Close()
+
+	row.Next()
+	if err := row.Scan(&group.ID); err != nil { return Group{}, err }
+	return group, nil
+}
+
+func addUserToGroup(db *sql.DB, userID int64, groupID int64) error {
+	_, err := db.Query(fmt.Sprintf(
+		"INSERT INTO wn_user_group (user_id, group_id) VALUES (%d, %d)", 
+		userID, 
+		groupID))
+	return err
+}
+
 // Main Functions
-func GetGroup(db *sql.DB, id int64) (GroupWithUsers, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_group WHERE id = %d;", id))
+
+func GetGroup(db *sql.DB, groupID int64) (GroupWithUsers, error) {
+	query := fmt.Sprintf("SELECT * FROM wn_group WHERE id = %d;", groupID)
+	rows, err := db.Query(query)
 	if err != nil { return GroupWithUsers{}, err }
 	defer rows.Close()
 
-	groups, err := ReadGroups(rows)
+	groups, err := readGroups(rows)
 	if err != nil { return GroupWithUsers{}, err }
 	if len(groups) == 0 { return GroupWithUsers{}, httpError.NotFoundError }
 	group := groups[0]
 
-	users, err := GetUsersInGroup(db, id)
+	users, err := getUsersInGroup(db, id)
 	if err != nil { return GroupWithUsers{}, err }
 	return GroupWithUsers{ Group: group, Users: users }, nil
 }
 
-func GetAllGroups(db *sql.DB) ([]Group, error) {
-	rows, err := db.Query("SELECT * FROM wn_group;")
+func GetAllGroups(db *sql.DB, userID int64) ([]Group, error) {
+	query := fmt.Sprintf(
+		`SELECT (
+			wn_group.id, 
+			wn_group.group_name, 
+			wn_group.group_description,
+			wn_group.category, 
+			wn_group.owner_id) 
+		FROM wn_user_group JOIN wn_group 
+		ON wn_user_group.group_id = wn_group.id 
+		WHERE wn_user_group.user_id = %d`,
+		userID)
+	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	defer rows.Close()
 	
-	groups, err := ReadGroups(rows)
+	groups, err := readGroups(rows)
 	if err != nil { return nil, err}
 	return groups, nil
 }
 
 func AddGroup(db *sql.DB, newGroup Group) (Group, error) {
-	_, err := db.Query(fmt.Sprintf(
-		"INSERT INTO wn_group (group_name, group_description, category, owner_id) VALUES ('%s', '%s', '%s', %d);",
+	query := fmt.Sprintf(
+		`INSERT INTO wn_group (
+			group_name, 
+			group_description, 
+			category, 
+			owner_id) 
+		VALUES ('%s', '%s', '%s', %d);`,
 		newGroup.GroupName,
 		newGroup.GroupDescription,
 		newGroup.Category,
-		newGroup.OwnerID))
+		newGroup.OwnerID)
+	_, err := db.Query()
 	if err != nil { return Group{}, err }
-	row, err := db.Query("SELECT last_value FROM wn_group_id_seq;")
+	newGroup, err = lastLastGroupID(db, newGroup)
 	if err != nil { return Group{}, err }
-	defer row.Close()
-	row.Next()
-	if err := row.Scan(&newGroup.ID); err != nil { return Group{}, err }
 
-	// new Group successfull added into DB. Now adding owner into new group
-	err = AddUserToGroup(db, newGroup.OwnerID, newGroup.ID)
+	// newGroup successfully added into DB. Now adding owner into new group
+	err = addUserToGroup(db, newGroup.OwnerID, newGroup.ID)
 	if err != nil {
 		log.Printf("Failed to add Owner: %v", err)
 		if _, fatal := db.Query(fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", newGroup.ID)); fatal != nil {
@@ -107,24 +145,8 @@ func AddGroup(db *sql.DB, newGroup Group) (Group, error) {
 	return newGroup, nil
 }
 
-func AddUserToGroup(db *sql.DB, userID int64, groupID int64) error {
-	_, err := db.Query(fmt.Sprintf(
-		"INSERT INTO wn_user_group (user_id, group_id) VALUES (%d, %d)", 
-		userID, 
-		groupID))
-	return err
-}
-
-/*
-func DeleteUser(db *sql.DB, id int64) (User, error) {
-	if _, err := db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", id)); err != nil {
-		return User{}, err
-	}
-	return User{ID: id}, nil
-}
-
-func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
-	targetUser, err := GetUser(db, id)
+func UpdateGroup(db *sql.DB, updatedGroup Group, id int64) (Group, error) {
+	targetUser, err := GetGroup(db, id)
 	if err != nil { return User{}, err }
 
 	updatedUser, err = MergeUser(updatedUser, targetUser)
@@ -143,5 +165,15 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 		return User{}, err;
 	}
 	return updatedUser, nil;
+}
+
+/*
+
+
+func DeleteGroup(db *sql.DB, groupID int64) (User, error) {
+	if _, err := db.Query(fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", id)); err != nil {
+		return User{}, err
+	}
+	return User{ID: id}, nil
 }
 */

@@ -27,6 +27,7 @@ var (
 		Password: "NewPassword",
 		PasswordHash: "",
 	}
+	
 ) 
 
 func hashPassword(user User) (User, error) {

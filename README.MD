@@ -30,11 +30,11 @@ FRONTEND_URL: localhost:3000
 >> 
 >> ##### /user/:id - PATCH
 >> 
->> : Update user with given id with updates, provided that user logged in
+>> : Update user with given id with updates, if the user is logged in
 >> 
 >> ##### /user/:id - DELETE
 >> 
->> : Delete a user with given id, provided that user logged in
+>> : Delete a user with given id, if the user is logged in
 
 ### Session
 
@@ -64,27 +64,55 @@ FRONTEND_URL: localhost:3000
 > 
 >> ##### /group - GET
 >> 
->> : Get all groups
+>> : Get all groups that the user is in if the user is logged in.
 >> 
 >> ##### /group - POST
 >> 
->> : Creates a new group if user is loggedIn
+>> : Creates a new group if user is logged in
 >> 
 >> ##### /group/:id - GET
 >> 
 >> : Get a group with given id
 >> 
->> ##### /group/:id - POST
->> 
->> : Creates a join request in the wn_join_request table if user is loggedIn
->> 
 >> ##### /group/:id - DELETE
 >> 
->> : Leaves the group if user is not owner. Otherwise, deletes the group
+>> : Leaves the group, transferring ownership of group to a random user in group. If the last user leaves, the group is deleted.
 >> 
 >> ##### /group/:id - UPDATE
 >> 
 >> : Updates the information of the group if user is in given group
+
+### Join
+
+> #### Join Details
+>
+>> Handles CRUD on group join requests
+>
+> #### Join Routes
+>
+>> ##### /join - GET
+>>
+>> : Get all join requests sent by user or directed at user. Query params used to indicate which.
+>>
+>> ##### /join - POST
+>>
+>> : Creates new join request to a certain group if the user is logged in.
+>>
+>> ##### /join/:id - GET
+>>
+>> : Gets join request with the given id
+>>
+>> ##### /join/:id - POST
+>>
+>> : Approve or reject a particular join request if the user is the owner of the particular group
+>>
+>> #### /join/:id - PATCH
+>>
+>> : Updates the details of the join request if the user is the owner of the request. Not allowed to change the owner of the join request.
+>>
+>> #### /join/:id - DELETE
+>>
+>> : Deletes the join request if the user is the owner of the request.
 
 ### Match
 
@@ -198,8 +226,8 @@ Table creation with POSTGRESQL
 
 ### wn_user_group
 
-- user_id BIGINT REFERENCES wn_user(id)
-- group_id BIGINT REFERENCES wn_group(id)
+- user_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE
+- group_id BIGINT REFERENCES wn_group(id) ON DELETE CASCADE
 - unique(user_id, group_id)
 
 ### wn_join_request

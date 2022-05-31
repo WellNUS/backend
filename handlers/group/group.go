@@ -16,11 +16,11 @@ type GroupWithUsers = references.GroupWithUsers
 type User = references.User
 
 // Helper functions
-func GetIDParams(c *gin.Context) (int64, error) {
+func getIDParams(c *gin.Context) (int64, error) {
 	return strconv.ParseInt(c.Param("id"), 0, 64)
 }
 
-func GetGroupFromContext(c *gin.Context) (Group, error) {
+func getGroupFromContext(c *gin.Context) (Group, error) {
 	var group Group
 	if err := c.BindJSON(&group); err != nil {
 		return Group{}, err
@@ -28,9 +28,7 @@ func GetGroupFromContext(c *gin.Context) (Group, error) {
 	return group, nil
 }
 
-// func GetUserFromContext(c *gin.Context)
-
-func GetIDCookie(c *gin.Context) (int64, error) {
+func getIDCookie(c *gin.Context) (int64, error) {
 	strUserID, err := c.Cookie("id")
 	if err != nil { return 0, err }
 	userID, err := strconv.ParseInt(strUserID, 0, 64)
@@ -43,7 +41,12 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		groups, err := GetAllGroups(db)
+		userID, err := getIDCookie(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		groups, err := GetAllGroups(db, userID)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -56,7 +59,7 @@ func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		id, err := GetIDParams(c)
+		id, err := getIDParams(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -75,13 +78,13 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 
-		newGroup, err := GetGroupFromContext(c)
+		newGroup, err := getGroupFromContext(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
 
-		newGroup.OwnerID, err = GetIDCookie(c)
+		newGroup.OwnerID, err = getIDCookie(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -103,8 +106,8 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func AddUserToGroupHandler(db *sql.DB) func(*gin.Context) { // Might be deprecated when request system is put up
+func UpdateGroupHandler(db *sql.DB) func(gin.Context) {
 	return func(c *gin.Context) {
-		c.IndentedJSON(200, "hello")
+		c.IndentedJSON(httpError.GetStatusCode(nil), "HELLO")
 	}
 }

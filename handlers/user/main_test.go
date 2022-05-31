@@ -1,9 +1,11 @@
 package user
 
 // Test should be performed with some users in the database
+// Run all test in order of it being written in each file strictly
 
 import (
 	"wellnus/backend/references"
+	"wellnus/backend/handlers/httpError"
 
 	"testing"
 	"os"
@@ -18,7 +20,32 @@ import (
 var (
 	db *sql.DB 
 	router *gin.Engine
+	addedUser User
+	NotFoundErrorMessage 		string = httpError.NotFoundError.Error()
+	UnauthorizedErrorMessage	string = httpError.UnauthorizedError.Error()
 )
+
+var validUser User = User{
+	FirstName: "NewFirstName",
+	LastName: "NewLastName",
+	Gender: "M",
+	Faculty: "COMPUTING",
+	Email: "NewEmail@u.nus.edu",
+	UserRole: "VOLUNTEER",
+	Password: "NewPassword",
+	PasswordHash: "",
+}
+
+func equal(user1 User, user2 User) bool {
+	return user1.ID == user2.ID &&
+	user1.FirstName == user2.FirstName &&
+	user1.LastName == user2.LastName &&
+	user1.Gender == user2.Gender &&
+	user1.Faculty == user2.Faculty &&
+	user1.Email == user2.Email &&
+	user1.UserRole == user2.UserRole &&
+	user1.PasswordHash == user2.PasswordHash
+}
 
 func connectDB() *sql.DB {
 	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
@@ -54,6 +81,9 @@ func setupRouter() *gin.Engine {
 
 func TestMain(m *testing.M) {
 	db = connectDB()
+	if _, err := db.Query("DELETE FROM wn_user;"); err != nil {
+		log.Fatal(fmt.Sprintf("Unable to clear table in preparation for test. %v", err))
+	}
 	router = setupRouter()
 	os.Exit(m.Run())
 }
