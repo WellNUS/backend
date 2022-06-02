@@ -51,6 +51,7 @@ func main() {
 	router.POST("/group", group.AddGroupHandler(db))
 	router.GET("/group/:id", group.GetGroupHandler(db))
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
+	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
 
 	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
 	router.Run(references.BACKEND_URL)

@@ -19,14 +19,14 @@ func getIDParams(c *gin.Context) (int64, error) {
 
 func getIDCookie(c *gin.Context) (int64, error) {
 	strUserID, err := c.Cookie("id")
-	if err != nil { return 0, err }
+	if err != nil { return 0, httpError.UnauthorizedError }
 	userID, err := strconv.ParseInt(strUserID, 0, 64)
 	if err != nil { return 0, err }
 	return userID, nil
 }
 
-func setIDCookie(c *gin.Context, id int64) {
-	c.SetCookie("id", fmt.Sprintf("%d", id), 1209600, "/", references.DOMAIN, false, true)
+func setIDCookie(c *gin.Context, userID int64) {
+	c.SetCookie("id", fmt.Sprintf("%d", userID), 1209600, "/", references.DOMAIN, false, true)
 }
 
 func getUserFromContext(c *gin.Context) (User, error) {
@@ -38,7 +38,6 @@ func getUserFromContext(c *gin.Context) (User, error) {
 }
 
 // Main functions
-
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
@@ -56,12 +55,12 @@ func GetUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		id, err := getIDParams(c)
+		userIDParam, err := getIDParams(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		user, err := GetUser(db, id)
+		user, err := GetUser(db, userIDParam)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -93,18 +92,18 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		id, err := getIDParams(c)
+		userIDParam, err := getIDParams(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := getIDCookie(c)
-		if userID != id {
+		userIDCookie, _ := getIDCookie(c)
+		if userIDCookie != userIDParam {
 			err = httpError.UnauthorizedError
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		deletedUser, err := DeleteUser(db, id)
+		deletedUser, err := DeleteUser(db, userIDCookie)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -117,13 +116,13 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		id, err := getIDParams(c)
+		userIDParam, err := getIDParams(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := getIDCookie(c)
-		if userID != id {
+		userIDCookie, _ := getIDCookie(c)
+		if userIDCookie != userIDParam {
 			err = httpError.UnauthorizedError
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -133,7 +132,7 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err = UpdateUser(db, updatedUser, id)
+		updatedUser, err = UpdateUser(db, updatedUser, userIDCookie)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return

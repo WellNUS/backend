@@ -23,7 +23,7 @@ func AddJoinRequest(db *sql.DB, groupID int64, userID int64) (JoinRequest, error
 		userID,
 		groupID))
 	if err != nil { return JoinRequest{}, err }
-	joinRequest, err := JoinRequest(db, JoinRequest{ UserID: userID, GroupID: groupID, RequestStatus: "PENDING" })
+	joinRequest, err := LoadLastJoinRequestID(db, JoinRequest{ UserID: userID, GroupID: groupID, RequestStatus: "PENDING" })
 	if err != nil { return JoinRequest{}, err }
 	return joinRequest, nil
 }

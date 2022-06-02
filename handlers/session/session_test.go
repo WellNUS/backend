@@ -11,6 +11,16 @@ import (
 	"strconv"
 )
 
+// Full Tests
+
+func TestSession(t *testing.T) {
+	t.Run("Successful Login Handler", testSuccessfulLoginHandler)
+	t.Run("Failed Login Handler", testFailedLoginHandler)
+	t.Run("Logout Handler", testLogoutHandler)
+}
+
+// Helpers
+
 func getResp(w *httptest.ResponseRecorder) (Resp, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(w.Result().Body)
@@ -55,10 +65,10 @@ func getIOReaderFromUser(user User) (io.Reader, error) {
 	return bytes.NewReader(j), nil
 }
 
-// Main Tests
-func TestLoginHandler(t *testing.T) {
-	// Successful attempt
-	loginAttempt := User{Email: templateUser.Email, Password: templateUser.Password}
+func testSuccessfulLoginHandler(t *testing.T) {
+	loginAttempt := User{
+		Email: validUser.Email, 
+		Password: validUser.Password}
 	IOReaderAttempt, _ := getIOReaderFromUser(loginAttempt)
 	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)
 	w := simulateRequest(req)
@@ -68,18 +78,21 @@ func TestLoginHandler(t *testing.T) {
 	_, id, err := getIDCookie(w)
 	if err != nil { t.Errorf("An error occured while retrieving ID cookie. %v", err)}
 	if id != resp.User.ID { t.Errorf("Logged in as a user of id = %d instead of correct user of id = %d", id, resp.User.ID) }
+}
 
-	// Failed Attempt
-	loginAttempt.Password = "WrongPassword"
-	IOReaderAttempt, _ = getIOReaderFromUser(loginAttempt)
-	req, _ = http.NewRequest("POST", "/session", IOReaderAttempt)
-	w = simulateRequest(req)
-	resp, err = getResp(w)
+func testFailedLoginHandler(t *testing.T) {
+	loginAttempt := User{
+		Email: validUser.Email, 
+		Password: "WrongPassword"}
+	IOReaderAttempt, _ := getIOReaderFromUser(loginAttempt)
+	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)
+	w := simulateRequest(req)
+	resp, err := getResp(w)
 	if err != nil { t.Errorf("An error occured while retrieving response body. %v", err)}
 	if resp.LoggedIn { t.Errorf("Logged in despite wrong password") }
 }
 
-func TestLogoutHandler(t *testing.T) {
+func testLogoutHandler(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/session", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
@@ -90,5 +103,5 @@ func TestLogoutHandler(t *testing.T) {
 	if err != nil { t.Errorf("An error occured while retrieving response body. %v", err)}
 	if resp.LoggedIn { t.Errorf("response indicate that logout was unsuccessful") }
 	_, _, err = getIDCookie(w)
-	if err == nil { t.Errorf("ID cookie is still present after logout")}
+	if err == nil { t.Errorf("ID cookie is still present after logout") }
 }

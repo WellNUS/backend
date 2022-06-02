@@ -4,8 +4,6 @@ import (
 	"wellnus/backend/references"
 	"wellnus/backend/handlers/httpError"
 	
-	"fmt"
-	"errors"
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"database/sql"
@@ -30,7 +28,7 @@ func getGroupFromContext(c *gin.Context) (Group, error) {
 
 func getIDCookie(c *gin.Context) (int64, error) {
 	strUserID, err := c.Cookie("id")
-	if err != nil { return 0, err }
+	if err != nil { return 0, httpError.UnauthorizedError }
 	userID, err := strconv.ParseInt(strUserID, 0, 64)
 	if err != nil { return 0, err }
 	return userID, nil
@@ -41,11 +39,7 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		userID, err := getIDCookie(c)
-		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
-			return
-		}
+		userID, _ := getIDCookie(c)
 		groups, err := GetAllGroups(db, userID)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
@@ -59,12 +53,12 @@ func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		id, err := getIDParams(c)
+		groupIDParam, err := getIDParams(c)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-		groupWithUsers, err := GetGroup(db, id)
+		groupWithUsers, err := GetGroupWithUsers(db, groupIDParam)
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
@@ -90,24 +84,62 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		newGroup, err = AddGroup(db, newGroup) // Can throw a fatal error
+		groupWithUsers, err := AddGroup(db, newGroup) // Can throw a fatal error
 		if err != nil {
 			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
 			return
 		}
-
-		// newGroup has been added properly. Look for users in group
-		users, err := GetUsersInGroup(db, newGroup.ID)
-		if err != nil {
-			err = errors.New(fmt.Sprintf("New group has been added into database, but failed to get users in new group. %v", err))
-			c.IndentedJSON(httpError.GetStatusCode(err), err)
-		}
-		c.IndentedJSON(httpError.GetStatusCode(err), GroupWithUsers{ Group: newGroup, Users: users })
+		c.IndentedJSON(httpError.GetStatusCode(err), groupWithUsers)
 	}
 }
 
-func UpdateGroupHandler(db *sql.DB) func(gin.Context) {
+func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.IndentedJSON(httpError.GetStatusCode(nil), "HELLO")
+		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+		groupIDParam, err := getIDParams(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		userIDCookie, err := getIDCookie(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		updatedGroup, err := getGroupFromContext(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		updatedGroup, err = UpdateGroup(db, updatedGroup, groupIDParam, userIDCookie)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		c.IndentedJSON(httpError.GetStatusCode(err), updatedGroup)
+	}
+}
+
+func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+		groupIDParam, err := getIDParams(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		userIDCookie, err := getIDCookie(c)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		groupWithUsers, err := LeaveGroup(db, groupIDParam, userIDCookie)
+		if err != nil {
+			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			return
+		}
+		c.IndentedJSON(httpError.GetStatusCode(err), groupWithUsers)
 	}
 }

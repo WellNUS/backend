@@ -1,8 +1,5 @@
 package user
 
-// Test should be performed with some users in the database
-// Run all test in order of it being written in each file strictly
-
 import (
 	"wellnus/backend/references"
 	"wellnus/backend/handlers/httpError"
@@ -81,8 +78,11 @@ func setupRouter() *gin.Engine {
 
 func TestMain(m *testing.M) {
 	db = connectDB()
+	if _, err := db.Query("DELETE FROM wn_group;"); err != nil {
+		log.Fatal(fmt.Sprintf("Unable to clear wn_group in preparation for test. %v", err))
+	}
 	if _, err := db.Query("DELETE FROM wn_user;"); err != nil {
-		log.Fatal(fmt.Sprintf("Unable to clear table in preparation for test. %v", err))
+		log.Fatal(fmt.Sprintf("Unable to clear wn_user in preparation for test. %v", err))
 	}
 	router = setupRouter()
 	os.Exit(m.Run())

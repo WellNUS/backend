@@ -17,7 +17,9 @@ import (
 var (
 	db *sql.DB
 	router *gin.Engine
-	templateUser User = User{
+) 
+
+var validUser User = User{
 		FirstName: "NewFirstName",
 		LastName: "NewLastName",
 		Gender: "M",
@@ -27,8 +29,6 @@ var (
 		Password: "NewPassword",
 		PasswordHash: "",
 	}
-	
-) 
 
 func hashPassword(user User) (User, error) {
 	var err error
@@ -52,7 +52,15 @@ func makeNewUser(newUser User) (User, error) {
 	newUser, err := hashPassword(newUser);
 	if err != nil { return User{}, err }
 	_, err = db.Query(fmt.Sprintf(
-		"INSERT INTO wn_user (first_name, last_name, gender, faculty, email, user_role, password_hash) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
+		`INSERT INTO wn_user (
+			first_name, 
+			last_name, 
+			gender, 
+			faculty, 
+			email, 
+			user_role, 
+			password_hash
+		) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');`,
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
@@ -70,7 +78,7 @@ func makeNewUser(newUser User) (User, error) {
 func connectDB() *sql.DB {
 	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
 					references.USER,
-					references.PASSWORD, 
+					references.PASSWORD,
 					references.HOST,
 					references.PORT,
 					references.DB_NAME)
@@ -99,7 +107,7 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	db = connectDB()
 	router = setupRouter()
-	user, err := makeNewUser(templateUser)
+	user, err := makeNewUser(validUser)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
 
 	r := m.Run()

@@ -80,8 +80,7 @@ FRONTEND_URL: localhost:3000
 >> 
 >> ##### /group/:id - UPDATE
 >> 
->> : Updates the information of the group if user is in given group
-
+>> : Updates the information of the group if user is the owner of the given group
 ### Join
 
 > #### Join Details
@@ -269,8 +268,7 @@ Table creation with POSTGRESQL
 - [x] Unit testing for Users Querying
 - [x] Unit testing for Users Handlers
 - [x] Unit testing for Sessions
-- [ ] CRUD on Groups
-- [ ] Unit testing for Groups Querying
-- [ ] Unit testing for Groups Handlers
+- [x] CRUD on Groups
+- [x] Unit testing for Groups Handlers
 - [ ] CRUD on Join_Request
 - [ ] Implement Websockets for Groups

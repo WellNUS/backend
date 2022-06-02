@@ -309,10 +309,13 @@ func testUpdateUserHandlerUnauthorized(t *testing.T) {
 	ioReaderUser, _ := getIOReaderFromUser(User{ FirstName: "UpdatedFirstName" })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/user/%d", addedUser.ID), ioReaderUser)
 	w := simulateRequest(req)
+	if w.Code != http.StatusUnauthorized{
+		t.Errorf("Unauthorised status code not given. Status Code: %d", w.Code)
+	}
 	_, err := getUserFromRecorder(w)
 	matched, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
 	if !matched {
-		t.Errorf("Unauthorized user was able to make updates to user. %v", err)
+		t.Errorf("Unauthorized user was not unauthorised %v", err)
 	}
 }
 
@@ -324,6 +327,9 @@ func testUpdateUserHandlerAuthorized(t *testing.T) {
 		Value: fmt.Sprintf("%d", addedUser.ID),
 	})
 	w := simulateRequest(req)
+	if w.Code != http.StatusOK {
+		t.Errorf("HTTP Request to updateUserHandler did not statusOk. Status Code: %d", w.Code)
+	}
 	_, err := getUserFromRecorder(w)
 	if err != nil {
 		t.Errorf("Unable to update user despite being authorized. %v", err)
@@ -333,6 +339,9 @@ func testUpdateUserHandlerAuthorized(t *testing.T) {
 func testDeleteUserHandlerUnauthorized(t *testing.T) {
 	req, _ :=  http.NewRequest("DELETE", fmt.Sprintf("/user/%d", addedUser.ID), nil)
 	w := simulateRequest(req)
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("Unauthorised status code not given. Status Code: %d", w.Code)
+	}
 	_, err := getUserFromRecorder(w)
 	matched, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
 	if !matched {
@@ -347,6 +356,9 @@ func testDeleteUserHandlerAuthorised(t *testing.T) {
 		Value: fmt.Sprintf("%d", addedUser.ID),
 	})
 	w := simulateRequest(req)
+	if w.Code != http.StatusOK {
+		t.Errorf("HTTP Request to updateUserHandler did not statusOk. Status Code: %d", w.Code)
+	}
 	_, err := getUserFromRecorder(w)
 	if err != nil {
 		t.Errorf("Unable to delete user despite being authorized. %v", err)
