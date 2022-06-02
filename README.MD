@@ -91,7 +91,11 @@ FRONTEND_URL: localhost:3000
 >
 >> ##### /join - GET
 >>
->> : Get all join requests sent by user or directed at user. Query params used to indicate which.
+>> : Get all join requests sent by user or directed at user. Query params used to indicate which request=SENT)
+>>
+>>> - ?request=SENT     will get all join request sent by user
+>>> - ?request=RECEIVED will get all join request directed at user
+>>> - no query params   will get all join request sent by and directed at user
 >>
 >> ##### /join - POST
 >>
