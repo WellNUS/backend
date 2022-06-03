@@ -5,6 +5,7 @@ import (
 	"wellnus/backend/handlers/user"
 	"wellnus/backend/handlers/session"
 	"wellnus/backend/handlers/group"
+	"wellnus/backend/handlers/join"
 	
 	"fmt"
 	"log"
@@ -52,6 +53,12 @@ func main() {
 	router.GET("/group/:id", group.GetGroupHandler(db))
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
 	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
+
+	router.GET("/join", join.GetAllJoinRequestsHandler(db))
+	router.POST("/join", join.AddJoinRequestHandler(db))
+	router.GET("/join/:id", join.GetJoinRequestHandler(db))
+	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
+	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
 
 	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
 	router.Run(references.BACKEND_URL)

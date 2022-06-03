@@ -9,7 +9,6 @@ import (
 	"errors"
 	"encoding/json"
 	"io"
-	"strconv"
 	"fmt"
 )
 
@@ -80,22 +79,6 @@ func getGroupWithUsersFromRecorder(w *httptest.ResponseRecorder) (GroupWithUsers
 		return GroupWithUsers{}, err
 	}
 	return groupWithUsers, nil
-}
-
-func getCookieFromRecorder(w *httptest.ResponseRecorder, name string) string {
-	cookies := w.Result().Cookies()
-	for _, cookie := range cookies {
-		if cookie.Name == name {
-			return cookie.Value
-		}
-	}
-	return ""
-}
-
-func getIDCookieFromRecorder(w *httptest.ResponseRecorder) (string, int64, error) {
-	sid := getCookieFromRecorder(w, "id")
-	id, err := strconv.ParseInt(sid, 0, 64)
-	return sid, id, err
 }
 
 func simulateRequest(req *http.Request) *httptest.ResponseRecorder {

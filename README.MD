@@ -274,5 +274,8 @@ Table creation with POSTGRESQL
 - [x] Unit testing for Sessions
 - [x] CRUD on Groups
 - [x] Unit testing for Groups Handlers
-- [ ] CRUD on Join_Request
+- [x] CRUD on Join_Request
+- [x] Unit testing for Join_Request
+- [ ] Configure database migration
+- [ ] Rewrite README.MD
 - [ ] Implement Websockets for Groups

@@ -36,3 +36,8 @@ type JoinRequest struct {
 	GroupID 		int64 	`json:"group_id"`
 	RequestStatus 	string 	`json:"request_status"`
 }
+
+type JoinRequestWithGroup struct {
+	JoinRequest		JoinRequest 	`json:"join_request"`
+	Group			Group			`json:"group"`
+}

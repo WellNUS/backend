@@ -14,7 +14,9 @@ type User = references.User
 
 // Helper functions
 func getIDParams(c *gin.Context) (int64, error) {
-	return strconv.ParseInt(c.Param("id"), 0, 64)
+	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
+	if err != nil { return 0, httpError.NotFoundError }
+	return id, nil
 }
 
 func getIDCookie(c *gin.Context) (int64, error) {
