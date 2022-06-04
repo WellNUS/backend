@@ -1,14 +1,18 @@
-package user;
+package query
 
 import (
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/handlers/misc"
+	"wellnus/backend/db/model"
 	
 	"fmt"
 	"github.com/alexedwards/argon2id"
 	"database/sql"
 )
 
+type User = model.User
+
 //Helper functions
+
 func readUsers(rows *sql.Rows) ([]User, error) {
 	users := make([]User, 0)
 	for rows.Next() {
@@ -80,7 +84,7 @@ func GetUser(db *sql.DB, id int64) (User, error) {
 
 	users, err := readUsers(rows)
 	if err != nil { return User{}, err}
-	if len(users) == 0 { return User{}, httpError.NotFoundError }
+	if len(users) == 0 { return User{}, misc.NotFoundError }
 	return users[0], nil
 }
 
@@ -158,4 +162,13 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 		return User{}, err;
 	}
 	return updatedUser, nil;
+}
+
+func FindUser(db *sql.DB, email string) (User, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
+	if err != nil { return User{}, err }
+	users, err := readUsers(rows)
+	if err != nil { return User{}, err}
+	if len(users) == 0 { return User{}, misc.NotFoundError }
+	return users[0], nil
 }

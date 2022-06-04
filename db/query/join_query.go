@@ -1,10 +1,15 @@
-package join
+package query
 
 import (
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/handlers/misc"
+	"wellnus/backend/db/model"
+
 	"database/sql"
 	"fmt"
 )
+
+type JoinRequest = model.JoinRequest
+type JoinRequestWithGroup = model.JoinRequestWithGroup
 
 // Helper function
 
@@ -63,20 +68,8 @@ func getJoinRequestWithGroup(db *sql.DB, joinRequestID int64) (JoinRequestWithGr
 	if err != nil { return JoinRequestWithGroup{}, err }
 	joinRequestWithGroups, err := readJoinRequestWithGroups(rows)
 	if err != nil { return JoinRequestWithGroup{}, err }
-	if len(joinRequestWithGroups) == 0 { return JoinRequestWithGroup{}, httpError.NotFoundError }
+	if len(joinRequestWithGroups) == 0 { return JoinRequestWithGroup{}, misc.NotFoundError }
 	return joinRequestWithGroups[0], nil
-}
-
-func addUserToGroup(db *sql.DB, groupID int64, userID int64) error {
-	query := fmt.Sprintf(
-		`INSERT INTO wn_user_group (
-			user_id, 
-			group_id) 
-		VALUES (%d, %d)`, 
-		userID, 
-		groupID)
-	_, err := db.Query(query)
-	return err
 }
 
 // Main function
@@ -141,7 +134,7 @@ func GetJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 	if err != nil { return JoinRequest{}, err }
 	joinRequests, err := readJoinRequests(rows)
 	if err != nil { return JoinRequest{}, err }
-	if len(joinRequests) == 0 { return JoinRequest{}, httpError.NotFoundError }
+	if len(joinRequests) == 0 { return JoinRequest{}, misc.NotFoundError }
 	return joinRequests[0], nil
 }
 
@@ -164,7 +157,7 @@ func AddJoinRequest(db *sql.DB, groupID int64, userID int64) (JoinRequest, error
 func RespondJoinRequest(db *sql.DB, joinRequestID int64, userID int64, approve bool) (JoinRequest, error) {
 	joinRequestWithGroup, err := getJoinRequestWithGroup(db, joinRequestID)
 	if err != nil { return JoinRequest{}, nil }
-	if joinRequestWithGroup.Group.OwnerID != userID { return JoinRequest{}, httpError.UnauthorizedError }
+	if joinRequestWithGroup.Group.OwnerID != userID { return JoinRequest{}, misc.UnauthorizedError }
 	
 	//Adding user into group if necessary
 	if approve { 
@@ -194,7 +187,7 @@ func RespondJoinRequest(db *sql.DB, joinRequestID int64, userID int64, approve b
 func DeleteJoinRequest(db *sql.DB, joinRequestID int64, userID int64) (JoinRequest, error) {
 	joinRequest, err := GetJoinRequest(db, joinRequestID)
 	if err != nil { return JoinRequest{}, err }
-	if joinRequest.UserID != userID { return JoinRequest{}, httpError.UnauthorizedError }
+	if joinRequest.UserID != userID { return JoinRequest{}, misc.UnauthorizedError }
 
 	query := fmt.Sprintf("DELETE FROM wn_join_request WHERE id = %d", joinRequestID)
 	_, err = db.Query(query)

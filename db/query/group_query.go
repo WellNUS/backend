@@ -1,12 +1,16 @@
-package group;
+package query
 
 import (
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/handlers/misc"
+	"wellnus/backend/db/model"
 	
 	"log"
 	"fmt"
 	"database/sql"
 )
+
+type Group = model.Group
+type GroupWithUsers = model.GroupWithUsers
 
 // Helper function
 func mergeGroup(groupMain Group, groupAdd Group) Group {
@@ -46,7 +50,7 @@ func getGroup(db *sql.DB, groupID int64) (Group, error) {
 
 	groups, err := readGroups(rows)
 	if err != nil { return Group{}, err }
-	if len(groups) == 0 { return Group{}, httpError.NotFoundError }
+	if len(groups) == 0 { return Group{}, misc.NotFoundError }
 	return groups[0], nil
 }
 
@@ -198,7 +202,7 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (Group, error) {
 	targetGroup, err := getGroup(db, groupID)
 	if err != nil { return Group{}, err }
-	if targetGroup.OwnerID != userID { return Group{}, httpError.UnauthorizedError }
+	if targetGroup.OwnerID != userID { return Group{}, misc.UnauthorizedError }
 
 	updatedGroup = mergeGroup(updatedGroup, targetGroup)
 

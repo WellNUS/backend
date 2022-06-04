@@ -1,8 +1,8 @@
 package group
 
 import (
-	"wellnus/backend/references"
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/config"
+	"wellnus/backend/handlers/misc"
 
 	"testing"
 	"os"
@@ -18,8 +18,8 @@ import (
 var (
 	db *sql.DB 
 	router *gin.Engine
-	NotFoundErrorMessage 		string = httpError.NotFoundError.Error()
-	UnauthorizedErrorMessage	string = httpError.UnauthorizedError.Error()
+	NotFoundErrorMessage 		string = misc.NotFoundError.Error()
+	UnauthorizedErrorMessage	string = misc.UnauthorizedError.Error()
 )
 
 var validAddedUser1 User = User{
@@ -107,23 +107,13 @@ func makeNewUser(newUser User) (User, error) {
 	return newUser, nil
 }
 
-func connectDB() *sql.DB {
-	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
-					references.USER,
-					references.PASSWORD, 
-					references.HOST,
-					references.PORT,
-					references.DB_NAME)
-	// fmt.Println(connStr)
-	db, err := sql.Open("postgres", connStr)
+func setupDB() *sql.DB {
+	db, err := sql.Open("postgres", config.CONNECTION_STRING)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pingErr := db.Ping()
-    if pingErr != nil {
-        log.Fatal(pingErr)
-    }
-    fmt.Println("Database Connected!")
+	db.Query("DELETE FROM wn_group;")
+	db.Query("DELETE FROM wn_user;")
 	return db
 }
 
@@ -135,32 +125,21 @@ func setupRouter() *gin.Engine {
 	router.PATCH("/group/:id", UpdateGroupHandler(db))
 	router.DELETE("/group/:id", LeaveGroupHandler(db))
 
-	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
+	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
 	return router
 }
 
 func TestMain(m *testing.M) {
-	db = connectDB()
+	db = setupDB()
 	router = setupRouter()
-	if _, err := db.Query("DELETE FROM wn_group;"); err != nil {
-		log.Fatal(fmt.Sprintf("Unable to clear wn_group in preparation for test. %v", err))
-	}
-	if _, err := db.Query("DELETE FROM wn_user;"); err != nil {
-		log.Fatal(fmt.Sprintf("Unable to clear wn_user in preparation for test. %v", err))
-	}
 	
 	var err error
 	validAddedUser1, err = makeNewUser(validAddedUser1)
-	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
 	validAddedUser2, err = makeNewUser(validAddedUser2)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
 	
-
 	r := m.Run()
 
-	_ , err = db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", validAddedUser1.ID))
-	if err != nil { log.Fatal("Test user1 was not removed from database") }
-	_ , err = db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", validAddedUser2.ID))
-	if err != nil { log.Fatal("Test user2 was not removed from database") }
+	db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d OR id = %d", validAddedUser1.ID, validAddedUser2.ID))
 	os.Exit(r)
 }

@@ -1,144 +1,116 @@
 package user
 
 import (
-	"wellnus/backend/references"
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/config"
+	"wellnus/backend/handlers/misc"
+	"wellnus/backend/db/query"
 	
-	"fmt"
-	"strconv"
 	"github.com/gin-gonic/gin"
 	"database/sql"
 )
 
-type User = references.User
-
-// Helper functions
-func getIDParams(c *gin.Context) (int64, error) {
-	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
-	if err != nil { return 0, httpError.NotFoundError }
-	return id, nil
-}
-
-func getIDCookie(c *gin.Context) (int64, error) {
-	strUserID, err := c.Cookie("id")
-	if err != nil { return 0, httpError.UnauthorizedError }
-	userID, err := strconv.ParseInt(strUserID, 0, 64)
-	if err != nil { return 0, err }
-	return userID, nil
-}
-
-func setIDCookie(c *gin.Context, userID int64) {
-	c.SetCookie("id", fmt.Sprintf("%d", userID), 1209600, "/", references.DOMAIN, false, true)
-}
-
-func getUserFromContext(c *gin.Context) (User, error) {
-	var user User
-	if err := c.BindJSON(&user); err != nil {
-		return User{}, nil
-	}
-	return user, nil
-}
+type User = model.User
 
 // Main functions
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		users, err := GetAllUsers(db)
+		users, err := query.GetAllUsers(db)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(httpError.GetStatusCode(err), users)
+		c.IndentedJSON(misc.GetStatusCode(err), users)
 	}
 }
 
 func GetUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		userIDParam, err := getIDParams(c)
+		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		user, err := GetUser(db, userIDParam)
+		user, err := query.GetUser(db, userIDParam)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(httpError.GetStatusCode(err), user)
+		c.IndentedJSON(misc.GetStatusCode(err), user)
 	}
 }
 
 func AddUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		newUser, err := getUserFromContext(c)
+		newUser, err := misc.GetUserFromContext(c)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		newUser, err = AddUser(db, newUser)
+		newUser, err = query.AddUser(db, newUser)
 		if err != nil { 
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		setIDCookie(c, newUser.ID)
-		c.IndentedJSON(httpError.GetStatusCode(err), newUser)
+		misc.SetIDCookie(c, newUser.ID)
+		c.IndentedJSON(misc.GetStatusCode(err), newUser)
 	}
 }
 
 func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		userIDParam, err := getIDParams(c)
+		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, _ := getIDCookie(c)
+		userIDCookie, _ := misc.GetIDCookie(c)
 		if userIDCookie != userIDParam {
-			err = httpError.UnauthorizedError
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			err = misc.UnauthorizedError
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		deletedUser, err := DeleteUser(db, userIDCookie)
+		deletedUser, err := query.DeleteUser(db, userIDCookie)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(httpError.GetStatusCode(err), deletedUser)
+		c.IndentedJSON(misc.GetStatusCode(err), deletedUser)
 	}
 }
 
 func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", references.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		userIDParam, err := getIDParams(c)
+		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, _ := getIDCookie(c)
+		userIDCookie, _ := misc.GetIDCookie(c)
 		if userIDCookie != userIDParam {
-			err = httpError.UnauthorizedError
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			err = misc.UnauthorizedError
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err := getUserFromContext(c)
+		updatedUser, err := misc.GetUserFromContext(c)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err = UpdateUser(db, updatedUser, userIDCookie)
+		updatedUser, err = query.UpdateUser(db, updatedUser, userIDCookie)
 		if err != nil {
-			c.IndentedJSON(httpError.GetStatusCode(err), err.Error())
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(httpError.GetStatusCode(err), updatedUser)
+		c.IndentedJSON(misc.GetStatusCode(err), updatedUser)
 	}
 }

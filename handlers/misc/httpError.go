@@ -1,4 +1,4 @@
-package httpError
+package misc
 
 import (
 	"net/http"

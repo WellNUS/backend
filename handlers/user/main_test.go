@@ -1,8 +1,9 @@
 package user
 
 import (
-	"wellnus/backend/references"
-	"wellnus/backend/handlers/httpError"
+	"wellnus/backend/db/model"
+	"wellnus/backend/config"
+	"wellnus/backend/handlers/misc"
 
 	"testing"
 	"os"
@@ -18,8 +19,8 @@ var (
 	db *sql.DB 
 	router *gin.Engine
 	addedUser User
-	NotFoundErrorMessage 		string = httpError.NotFoundError.Error()
-	UnauthorizedErrorMessage	string = httpError.UnauthorizedError.Error()
+	NotFoundErrorMessage 		string = misc.NotFoundError.Error()
+	UnauthorizedErrorMessage	string = misc.UnauthorizedError.Error()
 )
 
 var validUser User = User{
@@ -35,32 +36,22 @@ var validUser User = User{
 
 func equal(user1 User, user2 User) bool {
 	return user1.ID == user2.ID &&
-	user1.FirstName == user2.FirstName &&
-	user1.LastName == user2.LastName &&
-	user1.Gender == user2.Gender &&
-	user1.Faculty == user2.Faculty &&
-	user1.Email == user2.Email &&
-	user1.UserRole == user2.UserRole &&
-	user1.PasswordHash == user2.PasswordHash
+		user1.FirstName == user2.FirstName &&
+		user1.LastName == user2.LastName &&
+		user1.Gender == user2.Gender &&
+		user1.Faculty == user2.Faculty &&
+		user1.Email == user2.Email &&
+		user1.UserRole == user2.UserRole &&
+		user1.PasswordHash == user2.PasswordHash
 }
 
-func connectDB() *sql.DB {
-	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
-					references.USER,
-					references.PASSWORD, 
-					references.HOST,
-					references.PORT,
-					references.DB_NAME)
-	// fmt.Println(connStr)
-	db, err := sql.Open("postgres", connStr)
+func setupDB() *sql.DB {
+	db, err := sql.Open("postgres", config.CONNECTION_STRING)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pingErr := db.Ping()
-    if pingErr != nil {
-        log.Fatal(pingErr)
-    }
-    fmt.Println("Database Connected!")
+	db.Query("DELETE FROM wn_group;")
+	db.Query("DELETE FROM wn_user;")
 	return db
 }
 
@@ -72,18 +63,12 @@ func setupRouter() *gin.Engine {
 	router.PATCH("/user/:id", UpdateUserHandler(db))
 	router.DELETE("/user/:id", DeleteUserHandler(db))
 
-	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
+	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
 	return router
 }
 
 func TestMain(m *testing.M) {
-	db = connectDB()
-	if _, err := db.Query("DELETE FROM wn_group;"); err != nil {
-		log.Fatal(fmt.Sprintf("Unable to clear wn_group in preparation for test. %v", err))
-	}
-	if _, err := db.Query("DELETE FROM wn_user;"); err != nil {
-		log.Fatal(fmt.Sprintf("Unable to clear wn_user in preparation for test. %v", err))
-	}
+	db = setupDB()
 	router = setupRouter()
 	os.Exit(m.Run())
 }

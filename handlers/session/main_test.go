@@ -1,7 +1,7 @@
 package session
 
 import (
-	"wellnus/backend/references"
+	"wellnus/backend/config"
 
 	"testing"
 	"os"
@@ -75,22 +75,13 @@ func makeNewUser(newUser User) (User, error) {
 	return newUser, nil
 }
 
-func connectDB() *sql.DB {
-	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
-					references.USER,
-					references.PASSWORD,
-					references.HOST,
-					references.PORT,
-					references.DB_NAME)
-	db, err := sql.Open("postgres", connStr)
+func setupDB() *sql.DB {
+	db, err := sql.Open("postgres", config.CONNECTION_STRING)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pingErr := db.Ping()
-    if pingErr != nil {
-        log.Fatal(pingErr)
-    }
-    fmt.Println("Database Connected!")
+	db.Query("DELETE FROM wn_group;")
+	db.Query("DELETE FROM wn_user;")
 	return db
 }
 
@@ -100,19 +91,18 @@ func setupRouter() *gin.Engine {
 	router.POST("/session", LoginHandler(db))
 	router.DELETE("/session", LogoutHandler(db))
 
-	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
+	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
 	return router
 }
 
 func TestMain(m *testing.M) {
-	db = connectDB()
+	db = setupDB()
 	router = setupRouter()
 	user, err := makeNewUser(validUser)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
 
 	r := m.Run()
 
-	_ , err = db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", user.ID))
-	if err != nil { log.Fatal("Test user was not removed from database") }
+	db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", user.ID))
 	os.Exit(r)
 }

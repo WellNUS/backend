@@ -1,7 +1,7 @@
 package main
 
 import (
-	"wellnus/backend/references"
+	"wellnus/backend/config"
 	"wellnus/backend/handlers/user"
 	"wellnus/backend/handlers/session"
 	"wellnus/backend/handlers/group"
@@ -16,14 +16,8 @@ import (
 )
 
 func ConnectDB() *sql.DB {
-	connStr := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
-					references.USER,
-					references.PASSWORD, 
-					references.HOST,
-					references.PORT,
-					references.DB_NAME)
 	// fmt.Println(connStr)
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", config.CONNECTION_STRING)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +54,7 @@ func main() {
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
 
-	fmt.Printf("Starting backend server at '%s' \n", references.BACKEND_URL)
-	router.Run(references.BACKEND_URL)
+	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
+	router.Run(config.BACKEND_URL)
 }
 
