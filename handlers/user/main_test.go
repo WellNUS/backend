@@ -1,7 +1,6 @@
 package user
 
 import (
-	"wellnus/backend/db/model"
 	"wellnus/backend/config"
 	"wellnus/backend/handlers/misc"
 

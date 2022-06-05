@@ -243,3 +243,15 @@ func LeaveGroup(db *sql.DB, groupID int64, userID int64) (GroupWithUsers, error)
 	if err != nil { return GroupWithUsers{}, err } // reloading of group with users failed
 	return targetGroupWithUsers, nil
 }
+
+func LeaveAllGroups(db *sql.DB, userID int64) ([]GroupWithUsers, error) {
+	groups, err := GetAllGroups(db, userID)
+	if err != nil { return nil, err}
+	groupsWithUsers := make([]GroupWithUsers, 0)
+	for _, group := range groups {
+		groupWithUsers, err := LeaveGroup(db, group.ID, userID)
+		if err != nil { return nil, err}
+		groupsWithUsers = append(groupsWithUsers, groupWithUsers)
+	}
+	return groupsWithUsers, nil
+}

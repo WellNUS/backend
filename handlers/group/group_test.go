@@ -17,16 +17,18 @@ func TestGroupHandler(t *testing.T) {
 	t.Run("AddGroupHandler with no group name", testAddGroupHandlerNoGroupName)
 	t.Run("AddGroupHandler with no category", testAddGroupHandlerNoCategory)
 	t.Run("AddGroupHandler not logged in", testAddGroupHandlerNotLoggedIn)
-	t.Run("AddGroupHandler successful as User1", testAddGroupHandlerSuccess)
+	t.Run("AddGroupHandler successful as User1", testAddGroupHandlerAsUser1)
+	t.Run("AddGroupHandler successful as User2", testAddGroupHandlerAsUser2)
 	t.Run("GetAllGroupsHandler as User1", testGetAllGroupsHandlerAsUser1)
-	t.Run("GetAllGroupsHandler as not User1", testGetAllGroupsHandlerAsNotUser1)
+	t.Run("GetAllGroupsHandler as not logged in", testGetAllGroupsHandlerAsNotLoggedIn)
+	t.Run("GetAllGroupsHandler as User2", testGetAllGroupsHandlerAsUser2)
 	t.Run("GetGrouphandler not logged in", testGetGroupHandlerAsNotLoggedIn)
 	t.Run("GetAllGroupHandler as User2 after joining", testGetAllGroupHandlerAsUser2AfterJoining)
 	t.Run("UpdateGroupHandler as not User1", testUpdateGroupHandlerAsNotUser1)
 	t.Run("UpdateGroupHandler as User1", testUpdateGroupHandlerAsUser1)
 	t.Run("GetAllGroupHandler as User2", testGetAllGroupHandlerAsUser2)
 	t.Run("LeaveGroupHandler as User1", testLeaveGroupHandlerAsUser1)
-	t.Run("LeaveGroupHandler as User2", testLeaveGroupHandlerAsUser2)
+	t.Run("LeaveGroupHandler as User2", testLeaveAllGroupsHandlerAsUser2)
 	t.Run("GetGrouphandler after delete", testGetGroupHandlerAfterDelete)
 }
 
@@ -81,6 +83,20 @@ func getGroupWithUsersFromRecorder(w *httptest.ResponseRecorder) (GroupWithUsers
 	return groupWithUsers, nil
 }
 
+func getGroupsWithUsersFromRecorder(w *httptest.ResponseRecorder) ([]GroupWithUsers, error) {
+	buf := getBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	// fmt.Printf("Response Body: %v \n", buf)
+	var groupsWithUsers []GroupWithUsers
+	err := json.NewDecoder(buf).Decode(&groupsWithUsers)
+	if err != nil {
+		return nil, err
+	}
+	return groupsWithUsers, nil
+}
+
 func simulateRequest(req *http.Request) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -95,8 +111,8 @@ func getIOReaderFromGroup(group Group) (io.Reader, error) {
 
 func testAddGroupHandlerNoGroupName(t *testing.T) {
 	testGroup := Group{
-		GroupDescription: validAddedGroup.GroupDescription,
-		Category: validAddedGroup.Category,
+		GroupDescription: validAddedGroup1.GroupDescription,
+		Category: validAddedGroup1.Category,
 	}
 	ioReaderGroup, _ := getIOReaderFromGroup(testGroup)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
@@ -116,8 +132,8 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 
 func testAddGroupHandlerNoCategory(t *testing.T) {
 	testGroup := Group{
-		GroupName: validAddedGroup.GroupName,
-		GroupDescription: validAddedGroup.GroupDescription,
+		GroupName: validAddedGroup1.GroupName,
+		GroupDescription: validAddedGroup1.GroupDescription,
 	}
 	ioReaderGroup, _ := getIOReaderFromGroup(testGroup)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
@@ -136,7 +152,7 @@ func testAddGroupHandlerNoCategory(t *testing.T) {
 }
 
 func testAddGroupHandlerNotLoggedIn(t *testing.T) {
-	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup)
+	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup1)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	w := simulateRequest(req)
 	if w.Code == http.StatusOK {
@@ -144,8 +160,8 @@ func testAddGroupHandlerNotLoggedIn(t *testing.T) {
 	}
 }
 
-func testAddGroupHandlerSuccess(t *testing.T) {
-	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup)
+func testAddGroupHandlerAsUser1(t *testing.T) {
+	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup1)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
@@ -159,16 +175,45 @@ func testAddGroupHandlerSuccess(t *testing.T) {
 	var err error
 	groupWithUsers, err := getGroupWithUsersFromRecorder(w)
 	if err != nil {
-		t.Errorf("An error occured while getting validAddedGroup from body. %v", err)
+		t.Errorf("An error occured while getting validAddedGroup1 from body. %v", err)
 	}
-	validAddedGroup = groupWithUsers.Group
-	if validAddedGroup.ID == 0 {
-		t.Errorf("validAddedGroup ID was not written by addGroup call")
+	validAddedGroup1 = groupWithUsers.Group
+	if validAddedGroup1.ID == 0 {
+		t.Errorf("validAddedGroup1 ID was not written by addGroup call")
 	}
-	if validAddedGroup.OwnerID != validAddedUser1.ID {
+	if validAddedGroup1.OwnerID != validAddedUser1.ID {
 		t.Errorf("validAddedUser1 is not owner of group despite being the one who created group")
 	}
 	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != validAddedUser1.ID {
+		t.Errorf("Owner was not added into the new group")
+	}
+}
+
+func testAddGroupHandlerAsUser2(t *testing.T) {
+	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup2)
+	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
+	req.AddCookie(&http.Cookie{
+		Name: "id",
+		Value: fmt.Sprintf("%d", validAddedUser2.ID),
+	})
+	// fmt.Println("id:", validAddedUser1.ID)
+	w := simulateRequest(req)
+	if w.Code != http.StatusOK {
+		t.Errorf("HTTP Request to AddGroup failed with status code of %d", w.Code)
+	}
+	var err error
+	groupWithUsers, err := getGroupWithUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while getting validAddedGroup2 from body. %v", err)
+	}
+	validAddedGroup2 = groupWithUsers.Group
+	if validAddedGroup2.ID == 0 {
+		t.Errorf("validAddedGroup2 ID was not written by addGroup call")
+	}
+	if validAddedGroup2.OwnerID != validAddedUser2.ID {
+		t.Errorf("validAddedUser1 is not owner of group despite being the one who created group")
+	}
+	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != validAddedUser2.ID {
 		t.Errorf("Owner was not added into the new group")
 	}
 }
@@ -192,7 +237,7 @@ func testGetAllGroupsHandlerAsUser1(t *testing.T) {
 	}
 }
 
-func testGetAllGroupsHandlerAsNotUser1(t *testing.T) {
+func testGetAllGroupsHandlerAsNotLoggedIn(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
 	w := simulateRequest(req)
 	if w.Code != http.StatusOK {
@@ -205,26 +250,29 @@ func testGetAllGroupsHandlerAsNotUser1(t *testing.T) {
 	if l := len(groups); l != 0 {
 		t.Errorf("GetAllGroupsHandler does not show 0 groups but instead shows %d groups", len(groups))
 	}
-	
+}
+
+func testGetAllGroupsHandlerAsUser2(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
 		Value: fmt.Sprintf("%d", validAddedUser2.ID),
 	})
-	w = simulateRequest(req)
+	w := simulateRequest(req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllGroups failed with status code of %d", w.Code)
 	}
-	groups, err = getGroupsFromRecorder(w)
+	user2Groups, err := getGroupsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while getting all groups of user 2 . %v", err)
 	}
-	if l := len(groups); l != 0 {
-		t.Errorf("GetAllGroupsHandler does not show 0 groups but instead shows %d groups", len(groups))
+	if l := len(user2Groups); l != 1 {
+		t.Errorf("GetAllGroupsHandler does not show 1 groups but instead shows %d groups", len(user2Groups))
 	}
 }
 
 func testGetGroupHandlerAsNotLoggedIn(t *testing.T) {
-	req, _ := http.NewRequest("GET",fmt.Sprintf("/group/%d", validAddedGroup.ID), nil)
+	req, _ := http.NewRequest("GET",fmt.Sprintf("/group/%d", validAddedGroup1.ID), nil)
 	w := simulateRequest(req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetGroup failed with status code of %d", w.Code)
@@ -248,7 +296,7 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 			group_id) 
 		VALUES (%d, %d)`, 
 		validAddedUser2.ID, 
-		validAddedGroup.ID))
+		validAddedGroup1.ID))
 	if err != nil {
 		t.Errorf("An error occured while adding user2 into group. %v", err)
 	}
@@ -266,14 +314,14 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error occured while getting all groups of user 2 . %v", err)
 	}
-	if l := len(user2Groups); l != 1 {
-		t.Errorf("GetAllGroupsHandler does not show 1 group but instead shows %d groups", len(user2Groups))
+	if l := len(user2Groups); l != 2 {
+		t.Errorf("GetAllGroupsHandler does not show 2 groups but instead shows %d groups", len(user2Groups))
 	}
 }
 
 func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 	ioReaderGroup, _ := getIOReaderFromGroup(Group{ GroupName: "UpdatedGroupName" })
-	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup.ID), ioReaderGroup)
+	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
 	w := simulateRequest(req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not give an Unauthorized status code. Status Code: %d", w.Code)
@@ -302,7 +350,7 @@ func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 func testUpdateGroupHandlerAsUser1(t *testing.T) {
 	newGroupName := "UpdatedGroupName"
 	ioReaderGroup, _ := getIOReaderFromGroup(Group{ GroupName: newGroupName })
-	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup.ID), ioReaderGroup)
+	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
 		Value: fmt.Sprintf("%d", validAddedUser1.ID),
@@ -334,16 +382,19 @@ func testGetAllGroupHandlerAsUser2(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error occured while getting user 2 groups from body. %v", err)
 	}
-	if l := len(user2Groups); l != 1 {
-		t.Errorf("The number of user 2 groups is %d and not 1", l)
+	if l := len(user2Groups); l != 2 {
+		t.Errorf("The number of user 2 groups is %d and not 2", l)
 	}
-	if groupName := user2Groups[0].GroupName; groupName != "UpdatedGroupName" {
-		t.Errorf("The group name was not updated from previous test and is instead %s", groupName)
+	for _, group := range user2Groups {
+		if group.ID == validAddedGroup1.ID && group.GroupName != "UpdatedGroupName" {
+			t.Errorf("The group name was not updated from previous test and is instead %s", group.GroupName)
+		}
 	}
+	
 }
 
 func testLeaveGroupHandlerAsUser1(t *testing.T) {
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/group/%d", validAddedGroup.ID), nil)
+	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/group/%d", validAddedGroup1.ID), nil)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
 		Value: fmt.Sprintf("%d", validAddedUser1.ID),
@@ -367,32 +418,41 @@ func testLeaveGroupHandlerAsUser1(t *testing.T) {
 	}
 }
 
-func testLeaveGroupHandlerAsUser2(t *testing.T) {
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/group/%d", validAddedGroup.ID), nil)
+func testLeaveAllGroupsHandlerAsUser2(t *testing.T) {
+	req, _ := http.NewRequest("DELETE", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "id",
 		Value: fmt.Sprintf("%d", validAddedUser2.ID),
 	})
 	w := simulateRequest(req)
 	if w.Code != http.StatusOK {
-		t.Errorf("HTTP Request to LeaveGroup failed with status code of %d", w.Code)
+		t.Errorf("HTTP Request to LeaveAllGroups failed with status code of %d", w.Code)
 	}
-	groupWithUsers, err := getGroupWithUsersFromRecorder(w)
+	groupsWithUsers, err := getGroupsWithUsersFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while getting group with users from body. %v", err)
 	}
-	if groupID := groupWithUsers.Group.ID; groupID != validAddedGroup.ID {
-		t.Errorf("Returned group did not have the original groupID")
+	if l := len(groupsWithUsers); l != 2 {
+		t.Errorf("The number of groups left was not 2 but %d", l)
 	}
-	if users := groupWithUsers.Users; len(users) != 0 {
-		t.Errorf("There was still remaining users in the group. number of users in the group = %d", len(users))
+	if users := groupsWithUsers[0].Users; len(users) != 0 {
+		t.Errorf("There was still remaining users in the group 1. number of users in the group = %d", len(users))
+	}
+	if users := groupsWithUsers[1].Users; len(users) != 0 {
+		t.Errorf("There was still remaining users in the group 2. number of users in the group = %d", len(users))
 	}
 }
 
 func testGetGroupHandlerAfterDelete(t *testing.T) {
-	req, _ := http.NewRequest("GET",fmt.Sprintf("/group/%d", validAddedGroup.ID), nil)
+	req, _ := http.NewRequest("GET",fmt.Sprintf("/group/%d", validAddedGroup1.ID), nil)
 	w := simulateRequest(req)
 	if w.Code != http.StatusNotFound {
-		t.Errorf("Group was not successfully deleted from prev test as indicated by code of %d", w.Code)
+		t.Errorf("Group1 was not successfully deleted from prev test as indicated by code of %d", w.Code)
+	}
+
+	req, _ = http.NewRequest("GET",fmt.Sprintf("/group/%d", validAddedGroup2.ID), nil)
+	w = simulateRequest(req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("Group2 was not successfully deleted from prev test as indicated by code of %d", w.Code)
 	}
 }

@@ -123,3 +123,21 @@ func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 		c.IndentedJSON(misc.GetStatusCode(err), groupWithUsers)
 	}
 }
+
+func LeaveAllGroupsHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+		userIDCookie, err := misc.GetIDCookie(c)
+		if err != nil {
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
+			return
+		}
+		groupsWithUsers, err := query.LeaveAllGroups(db, userIDCookie)
+		if err != nil {
+			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
+			return
+		}
+		c.IndentedJSON(misc.GetStatusCode(err), groupsWithUsers)
+	}
+}

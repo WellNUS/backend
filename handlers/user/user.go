@@ -3,6 +3,7 @@ package user
 import (
 	"wellnus/backend/config"
 	"wellnus/backend/handlers/misc"
+	"wellnus/backend/db/model"
 	"wellnus/backend/db/query"
 	
 	"github.com/gin-gonic/gin"
@@ -77,6 +78,7 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
+		_, err = query.LeaveAllGroups(db, userIDCookie)
 		deletedUser, err := query.DeleteUser(db, userIDCookie)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())

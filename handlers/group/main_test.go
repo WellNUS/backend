@@ -44,9 +44,15 @@ var validAddedUser2 User = User{
 	PasswordHash: "",
 }
 
-var validAddedGroup Group = Group{
+var validAddedGroup1 Group = Group{
 	GroupName: "NewGroupName",
 	GroupDescription: "NewGroupDescription",
+	Category: "SUPPORT",
+}
+
+var validAddedGroup2 Group = Group{
+	GroupName: "NewGroupName1",
+	GroupDescription: "NewGroupDescription1",
 	Category: "SUPPORT",
 }
 
@@ -121,6 +127,7 @@ func setupRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/group", GetAllGroupsHandler(db))
 	router.POST("/group", AddGroupHandler(db))
+	router.DELETE("/group", LeaveAllGroupsHandler(db))
 	router.GET("/group/:id", GetGroupHandler(db))
 	router.PATCH("/group/:id", UpdateGroupHandler(db))
 	router.DELETE("/group/:id", LeaveGroupHandler(db))

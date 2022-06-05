@@ -3,13 +3,14 @@
 ## Installation and Setup
 
 1. Get docker desktop on your machine
+2. Get [migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) dependency
 2. clone repository to you machine and cd into the folder
 3. To setup the database and tables, run the following
 
 ```
-    make postgres
-    make createdb
-    make migrateup
+    $ make postgres
+    $ make createdb
+    $ make migrateup
 ```
 
 4. To start run `go run .`
@@ -84,13 +85,17 @@ FRONTEND_URL: localhost:3000
 >> 
 >> : Creates a new group if user is logged in
 >> 
+>> ##### /group - DELETE
+>>
+>> : Leave all groups, transferring ownership of group to a random user in each group if necessary. If it is the last user of a group, the group is deleted
+>> 
 >> ##### /group/:id - GET
 >> 
 >> : Get a group with given id
 >> 
 >> ##### /group/:id - DELETE
 >> 
->> : Leaves the group, transferring ownership of group to a random user in group. If the last user leaves, the group is deleted.
+>> : Leaves the group, transferring ownership of group to a random user in group if necessary. If the last user leaves, the group is deleted.
 >> 
 >> ##### /group/:id - UPDATE
 >> 
@@ -292,5 +297,6 @@ Table creation with POSTGRESQL
 - [x] Unit testing for Join_Request
 - [x] Configure database migration
 - [x] Restructured file structure
+- [ ] Support forget password feature
 - [ ] Rewrite README.MD
 - [ ] Implement Websockets for Groups

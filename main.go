@@ -44,6 +44,7 @@ func main() {
 
 	router.GET("/group", group.GetAllGroupsHandler(db))
 	router.POST("/group", group.AddGroupHandler(db))
+	router.DELETE("/group", group.LeaveAllGroupsHandler(db))
 	router.GET("/group/:id", group.GetGroupHandler(db))
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
 	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
