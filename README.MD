@@ -13,6 +13,8 @@
     $ make migrateup
 ```
 
+Note: docker postgres will be using port 5432 on localhost. Ensure that given port is available before running `make postgres`. Otherwise, you can change the port in Makefile.
+
 4. To start run `go run .`
 
 ## Constants
