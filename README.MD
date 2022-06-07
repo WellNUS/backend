@@ -13,7 +13,11 @@
     $ make migrateup
 ```
 
-Note: docker postgres will be using port 5432 on localhost. Ensure that given port is available before running `make postgres`. Otherwise, you can change the port in Makefile.
+Note: docker postgres will be using port 5432 on localhost. 
+
+Ensure that given port is available before running `make postgres`. 
+
+Otherwise, you can change the port in 'Makefile'.
 
 4. To start run `go run .`
 
@@ -30,28 +34,50 @@ FRONTEND_URL: localhost:3000
 > #### Users Details
 > 
 >> Handles CRUD on users
+>> 
+>> User = { id, first_name, last_name, gender, faculty, email, user_role, password, password_hash }
 > 
 > #### User Routes
 > 
 >> ##### /user - GET
->> 
->> : Get all users
->> 
+>>
+>>> Description: Get all users
+>>> 
+>>> Request Body: None
+>>> 
+>>> Response Body: User[]
+>>
 >> ##### /user - POST
 >> 
->> : Create a new user and logins as that user
->> 
+>>> Description : Create a new user and logins as that 
+>>>
+>>> Request Body: { first_name, last_name, gender, faculty, email, user_role, password }
+>>>
+>>> Response Body: User
+>>
 >> ##### /user/:id - GET
 >> 
->> : Gets user with given id
->> 
+>>> Description : Gets user with given id
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body: User
+>>
 >> ##### /user/:id - PATCH
 >> 
->> : Update user with given id with updates, if the user is logged in
->> 
+>>> Description : Update user with given id with updates, if the user is logged in
+>>>
+>>> Request Body : { first_name?, last_name?, gender?, faculty?, email?, user_role?, password? }
+>>>
+>>> Response Body : User
+>>
 >> ##### /user/:id - DELETE
 >> 
->> : Delete a user with given id, if the user is logged in
+>>> Description : Delete a user with given id, if the user is logged in
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { id }
 
 ### Session
 
@@ -63,11 +89,19 @@ FRONTEND_URL: localhost:3000
 > 
 >> ##### /session - POST
 >> 
->> : Login to appropriate user
+>>> Description : Login to appropriate user
+>>>
+>>> Request Body : { email, password }
+>>> 
+>>> Response Body : { logged_in, user: User }
 >> 
 >> ##### /session - DELETE
 >> 
->> : Logout of any user
+>>> Description : Logout of any user
+>>> 
+>>> Request Body : None
+>>> 
+>>> Response Body : { logged_in, user: User }
 
 ### Group
 
@@ -76,67 +110,115 @@ FRONTEND_URL: localhost:3000
 >> Handles creation, and joining of groups.
 >> 
 >> Each group must have at least an owner present in said group.
+>>
+>> Group = { id, group_name, group_description, category, owner_id } 
+>>
+>> GroupWithUsers = { group: Group, users: User[] }
 > 
 > #### Group Routes
 > 
 >> ##### /group - GET
 >> 
->> : Get all groups that the user is in if the user is logged in.
+>>> Description : Get all groups that the user is in if the user is logged in.
+>>> 
+>>> Request Body : None
+>>>
+>>> Response Body : Group[]
 >> 
 >> ##### /group - POST
 >> 
->> : Creates a new group if user is logged in
+>>> Description : Creates a new group if user is logged in
+>>>
+>>> Request Body : { group_name, group_description?, category }
+>>>
+>>> Response Body : GroupWithUsers
 >> 
 >> ##### /group - DELETE
 >>
->> : Leave all groups, transferring ownership of group to a random user in each group if necessary. If it is the last user of a group, the group is deleted
->> 
+>>> Description : Leave all groups, transferring ownership of group to a random user in each group if necessary. If it is the last user of a group, the group is deleted
+>>> 
+>>> Request Body : None
+>>>
+>>> Response Body : GroupWithUsers[]
+>>
 >> ##### /group/:id - GET
 >> 
->> : Get a group with given id
+>>> Description : Get a group with given id
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : GroupWithUsers
 >> 
 >> ##### /group/:id - DELETE
 >> 
->> : Leaves the group, transferring ownership of group to a random user in group if necessary. If the last user leaves, the group is deleted.
->> 
+>>> Description : Leaves the group, transferring ownership of group to a random user in group if necessary. If the last user leaves, the group is deleted.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : GroupWithUsers
+>>
 >> ##### /group/:id - UPDATE
 >> 
->> : Updates the information of the group if user is the owner of the given group
+>>> Description : Updates the information of the group if user is the owner of the given group
+>>> 
+>>> Request Body : { group_name?, group_description?, category?, owner_id? } 
+>>>
+>>> Response Body : Group
+
 ### Join
 
 > #### Join Details
 >
 >> Handles CRUD on group join requests
+>>
+>> JoinRequest = { id, user_id, group_id, request_status }
 >
 > #### Join Routes
 >
 >> ##### /join - GET
 >>
->> : Get all join requests sent by user or directed at user. Query params used to indicate which request=SENT)
->>
+>>> Description : Get all join requests sent by user or directed at user. Query params used to indicate which request=SENT)
+>>>
+>>> Query Params:
 >>> - ?request=SENT     will get all join request sent by user
 >>> - ?request=RECEIVED will get all join request directed at user
 >>> - no query params   will get all join request sent by and directed at user
+>>> 
+>>> Request Body : None
+>>> 
+>>> Response Body : JoinRequest[]
 >>
 >> ##### /join - POST
 >>
->> : Creates new join request to a certain group if the user is logged in.
+>>> Description : Creates new join request to a certain group if the user is logged in.
+>>>
+>>> Request Body : { group_id }
+>>> 
+>>> Response Body : JoinRequest
 >>
 >> ##### /join/:id - GET
 >>
->> : Gets join request with the given id
+>>> Description : Gets join request with the given id
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : JoinRequest
 >>
->> ##### /join/:id - POST
+>> ##### /join/:id - PATCH
 >>
->> : Approve or reject a particular join request if the user is the owner of the particular group
->>
->> #### /join/:id - PATCH
->>
->> : Updates the details of the join request if the user is the owner of the request. Not allowed to change the owner of the join request.
+>>> Description : Approve or reject a particular join request if the user is the owner of the particular group
+>>>
+>>> Request Body : { approve }
+>>>
+>>> Response Body : JoinRequest
 >>
 >> #### /join/:id - DELETE
 >>
->> : Deletes the join request if the user is the owner of the request.
+>>> Description : Deletes the join request if the user is the owner of the request.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { id }
 
 ### Match
 
