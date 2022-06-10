@@ -57,6 +57,21 @@ func getUserFromRecorder(w *httptest.ResponseRecorder) (User, error) {
 	return user, nil
 }
 
+func getUserWithGroupsFromRecorder(w *httptest.ResponseRecorder) (UserWithGroups, error) {
+	buf := getBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return UserWithGroups{}, errors.New(buf.String())
+	}
+
+	// fmt.Printf("Response Body: %v \n", buf)
+	var userWithGroups UserWithGroups
+	err := json.NewDecoder(buf).Decode(&userWithGroups)
+	if err != nil {
+		return UserWithGroups{}, err
+	}
+	return userWithGroups, nil
+}
+
 func getUsersFromRecorder(w *httptest.ResponseRecorder) ([]User, error) {
 	buf := getBufferFromRecorder(w)
 	if w.Code != http.StatusOK {
@@ -154,11 +169,11 @@ func testGetUserHandler(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetUser did not have a status code of 404 not found")
 	}
-	retrivedUser, err := getUserFromRecorder(w)
+	retrivedUserWithGroups, err := getUserWithGroupsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while getting user of id = %d from body. %v", addedUser.ID, err)
 	}
-	if !equal(retrivedUser, addedUser) {
+	if !equal(retrivedUserWithGroups.User, addedUser) {
 		t.Errorf("retrieved user is not the same as the added user")
 	}
 }

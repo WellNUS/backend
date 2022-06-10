@@ -20,7 +20,7 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
 		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 		userID, _ := misc.GetIDCookie(c)
-		groups, err := query.GetAllGroups(db, userID)
+		groups, err := query.GetAllGroupsOfUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return

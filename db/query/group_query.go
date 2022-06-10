@@ -54,26 +54,6 @@ func getGroup(db *sql.DB, groupID int64) (Group, error) {
 	return groups[0], nil
 }
 
-func loadGroupWithUsers(db *sql.DB, group Group) (GroupWithUsers, error) {
-	query := fmt.Sprintf(
-		`SELECT * FROM wn_user_group JOIN wn_user 
-			ON wn_user_group.user_id = wn_user.id 
-			WHERE wn_user_group.group_id = %d`, 
-		group.ID)
-	rows, err := db.Query(query)
-	if err != nil { return GroupWithUsers{}, err }
-	users := make([]User, 0)
-	for rows.Next() {
-		var tempUserID, tempGroupID int64; // Temp variables
-		var user User
-		if err := rows.Scan(&tempUserID, &tempGroupID, &user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Faculty, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
-			return GroupWithUsers{}, err
-		}
-		users = append(users, user)
-	}
-	return GroupWithUsers{ Group: group, Users: users }, nil
-}
-
 func loadLastGroupID(db *sql.DB, group Group) (Group, error) {
 	row, err := db.Query("SELECT last_value FROM wn_group_id_seq;")
 	if err != nil { return Group{}, err }
@@ -142,12 +122,12 @@ func deleteGroup(db *sql.DB, groupID int64) error {
 func GetGroupWithUsers(db *sql.DB, groupID int64) (GroupWithUsers, error) {
 	group, err := getGroup(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }
-	groupWithUsers, err := loadGroupWithUsers(db, group)
+	users, err := GetAllUsersOfGroup(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }
-	return groupWithUsers, nil
+	return GroupWithUsers{ Group: group, Users: users}, nil
 }
 
-func GetAllGroups(db *sql.DB, userID int64) ([]Group, error) {
+func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 	query := fmt.Sprintf(
 		`SELECT
 			wn_group.id, 
@@ -194,7 +174,9 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 		}
 		return GroupWithUsers{}, err
 	}
-	groupWithUsers, err := loadGroupWithUsers(db, newGroup)
+	users, err := GetAllUsersOfGroup(db, newGroup.ID)
+	if err != nil { return GroupWithUsers{}, err }
+	groupWithUsers := GroupWithUsers{ Group: newGroup, Users: users }
 	if err != nil { return GroupWithUsers{}, err }
 	return groupWithUsers, nil
 }
@@ -239,13 +221,15 @@ func LeaveGroup(db *sql.DB, groupID int64, userID int64) (GroupWithUsers, error)
 	}
 	err = removeUserFromGroup(db, groupID, userID)
 	if err != nil { return GroupWithUsers{}, err } // User not properly removed
-	targetGroupWithUsers, err = loadGroupWithUsers(db, targetGroupWithUsers.Group)
+	users, err := GetAllUsersOfGroup(db, groupID)
+	if err != nil { return GroupWithUsers{}, err }
+	targetGroupWithUsers.Users = users
 	if err != nil { return GroupWithUsers{}, err } // reloading of group with users failed
 	return targetGroupWithUsers, nil
 }
 
 func LeaveAllGroups(db *sql.DB, userID int64) ([]GroupWithUsers, error) {
-	groups, err := GetAllGroups(db, userID)
+	groups, err := GetAllGroupsOfUser(db, userID)
 	if err != nil { return nil, err}
 	groupsWithUsers := make([]GroupWithUsers, 0)
 	for _, group := range groups {

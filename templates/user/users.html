@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Users</title>
+    </head>
+
+    <body>
+        <h1>Users</h1>
+        <a href="/testing">Go back</a>
+        {{ range .users }}
+        <div>
+           <div>ID: {{.ID}}</div>
+           <div>FirstName: {{.FirstName}}</div>
+           <div>LastName: {{.LastName}}</div>
+           <div>Gender: {{.Gender}}</div>
+           <div>Faculty: {{.Faculty}}</div>
+           <div>Email: {{.Email}}</div>
+           <div>UserRole: {{.UserRole}}</div>
+           <div>PasswordHash: {{.PasswordHash}}</div>
+           <a href="/testing/user/{{.ID}}">View</a>
+        </div>
+        <br>
+        {{ end }}
+    </body>
+</html>

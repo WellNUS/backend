@@ -10,6 +10,7 @@ import (
 )
 
 type User = model.User
+type UserWithGroups = model.UserWithGroups
 
 //Helper functions
 
@@ -64,6 +65,18 @@ func hashPassword(user User) (User, error) {
 	return user, nil
 }
 
+func getUser(db *sql.DB, id int64) (User, error) {
+	query := fmt.Sprintf("SELECT * FROM wn_user WHERE id = %d;", id)
+	rows, err := db.Query(query)
+	if err != nil { return User{}, err }
+	defer rows.Close()
+
+	users, err := readUsers(rows)
+	if err != nil { return User{}, err}
+	if len(users) == 0 { return User{}, misc.NotFoundError }
+	return users[0], nil
+}
+
 func loadLastUserID(db *sql.DB, user User) (User, error) {
 	row, err := db.Query("SELECT last_value FROM wn_user_id_seq;")
 	if err != nil { return User{}, err }
@@ -76,16 +89,34 @@ func loadLastUserID(db *sql.DB, user User) (User, error) {
 
 // Main functions
 
-func GetUser(db *sql.DB, id int64) (User, error) {
-	query := fmt.Sprintf("SELECT * FROM wn_user WHERE id = %d;", id)
-	rows, err := db.Query(query)
-	if err != nil { return User{}, err }
-	defer rows.Close()
+func GetUserWithGroups(db *sql.DB, userID int64) (UserWithGroups, error) {
+	user, err := getUser(db, userID)
+	if err != nil { return UserWithGroups{}, err }
+	groups, err := GetAllGroupsOfUser(db, userID)
+	if err != nil { return UserWithGroups{}, err }
+	return UserWithGroups{ User: user, Groups: groups}, nil
+}
 
+func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
+	query := fmt.Sprintf(
+		`SELECT 
+			wn_user.id,
+			wn_user.first_name,
+			wn_user.last_name,
+			wn_user.gender,
+			wn_user.faculty,
+			wn_user.email,
+			wn_user.user_role,
+			wn_user.password_hash
+		FROM wn_user_group JOIN wn_user 
+		ON wn_user_group.user_id = wn_user.id 
+		WHERE wn_user_group.group_id = %d`, 
+		groupID)
+	rows, err := db.Query(query)
+	if err != nil { return nil, err }
 	users, err := readUsers(rows)
-	if err != nil { return User{}, err}
-	if len(users) == 0 { return User{}, misc.NotFoundError }
-	return users[0], nil
+	if err != nil { return nil, err }
+	return users, nil
 }
 
 func GetAllUsers(db *sql.DB) ([]User, error) {
@@ -134,7 +165,7 @@ func DeleteUser(db *sql.DB, id int64) (User, error) {
 }
 
 func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
-	targetUser, err := GetUser(db, id)
+	targetUser, err := getUser(db, id)
 	if err != nil { return User{}, err }
 
 	updatedUser, err = mergeUser(updatedUser, targetUser)

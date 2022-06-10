@@ -13,9 +13,8 @@ import (
 type User = model.User
 type Group = model.Group
 type JoinRequest = model.JoinRequest
-type JoinRequestWithGroup = model.JoinRequestWithGroup
+type LoadedJoinRequest = model.LoadedJoinRequest
 type JoinRequestRespond = misc.JoinRequestRespond
-
 
 const (
 	REQUEST_RECEIVED = 0
@@ -44,21 +43,21 @@ func GetAllJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 		userIDCookie, _ := misc.GetIDCookie(c)
 		request := getRequestQuery(c)
 		if request == REQUEST_RECEIVED {
-			joinRequests, err := query.GetAllJoinRequestsReceived(db, userIDCookie)
+			joinRequests, err := query.GetAllJoinRequestsReceivedOfUser(db, userIDCookie)
 			if err != nil {
 				c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(misc.GetStatusCode(err), joinRequests)
 		} else if request == REQUEST_SENT {
-			joinRequests, err := query.GetAllJoinRequestsSent(db, userIDCookie)
+			joinRequests, err := query.GetAllJoinRequestsSentOfUser(db, userIDCookie)
 			if err != nil {
 				c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(misc.GetStatusCode(err), joinRequests)
 		} else {
-			joinRequests, err := query.GetAllJoinRequests(db, userIDCookie)
+			joinRequests, err := query.GetAllJoinRequestsOfUser(db, userIDCookie)
 			if err != nil {
 				c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 				return
@@ -68,7 +67,7 @@ func GetAllJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 	}
 }
 
-func GetJoinRequestHandler(db *sql.DB) func(*gin.Context) {
+func GetLoadedJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
     	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
@@ -77,12 +76,12 @@ func GetJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequest, err := query.GetJoinRequest(db, joinRequestIDParam)
+		loadedJoinRequest, err := query.GetLoadedJoinRequest(db, joinRequestIDParam)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(misc.GetStatusCode(err), joinRequest)
+		c.IndentedJSON(misc.GetStatusCode(err), loadedJoinRequest)
 	}
 }
 
@@ -119,17 +118,17 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		resp, err := misc.GetJoinRequestRespondFromContext(c)
+		joinRequestRespond, err := misc.GetJoinRequestRespondFromContext(c)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequest, err := query.RespondJoinRequest(db, joinRequestIDParam, userIDCookie, resp.Approve)
+		joinRequestRespond, err = query.RespondJoinRequest(db, joinRequestIDParam, userIDCookie, joinRequestRespond.Approve)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(misc.GetStatusCode(err), joinRequest)
+		c.IndentedJSON(misc.GetStatusCode(err), joinRequestRespond)
 	}	
 }
 

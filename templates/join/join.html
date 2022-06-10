@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Join Request</title>
+    <script type="text/javascript">
+        window.onload = function() {
+            const approveButton = document.getElementById("approveButton")
+            const rejectButton = document.getElementById("rejectButton")
+
+            approveButton.onclick = function(e){
+                e.preventDefault()
+                const joinRequestID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!joinRequestID) { return }
+                const body = JSON.stringify({ approve: true })
+                const url = "http://localhost:8080/join/" + joinRequestID
+                fetch(url, {
+                    method : 'PATCH',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err.json()))
+            }
+
+            rejectButton.onclick = function(e){
+                e.preventDefault()
+                const joinRequestID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!joinRequestID) { return }
+                const body = JSON.stringify({ approve: false })
+                const url = "http://localhost:8080/join/" + joinRequestID
+                fetch(url, {
+                    method : 'PATCH',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err.json()))
+            }
+        };
+    </script>
+    </head>
+
+    <body>
+        <h1>Join Request</h1>
+        <a href="/testing/join">Go back</a>
+        <h2> JoinRequest {{ .loadedJoinRequest.JoinRequest.ID }}</h2>
+        <h2>User: </h2>
+        <div>
+            <div>ID: {{ .loadedJoinRequest.User.ID }}</div>
+            <div>FirstName: {{ .loadedJoinRequest.User.FirstName }}</div>
+            <div>LastName: {{ .loadedJoinRequest.User.LastName }}</div>
+            <div>Gender: {{ .loadedJoinRequest.User.Gender }}</div>
+            <div>Faculty: {{ .loadedJoinRequest.User.Faculty }}</div>
+            <div>Email: {{ .loadedJoinRequest.User.Email }}</div>
+            <div>UserRole: {{ .loadedJoinRequest.User.UserRole }}</div>
+            <div>PasswordHash: {{ .loadedJoinRequest.User.PasswordHash }}</div>
+        </div>
+        <h2>Group: </h2>
+        <div>
+            <div>GroupID: {{ .loadedJoinRequest.Group.ID }}</div>
+            <div>GroupName: {{ .loadedJoinRequest.Group.GroupName }}</div>
+            <div>GroupDescription: {{ .loadedJoinRequest.Group.GroupDescription }}</div>
+            <div>Category: {{ .loadedJoinRequest.Group.Category }}</div>
+            <div>OwnerID: {{ .loadedJoinRequest.Group.OwnerID }}</div>
+        </div>
+        
+
+        <button id="approveButton">Approve</button>
+        <button id="rejectButton">Reject</button>
+    </body>
+</html>

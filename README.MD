@@ -36,6 +36,8 @@ FRONTEND_URL: localhost:3000
 >> Handles CRUD on users
 >> 
 >> User = { id, first_name, last_name, gender, faculty, email, user_role, password, password_hash }
+>>
+>> UserWithGroups = { user: User, groups: Group[] }
 > 
 > #### User Routes
 > 
@@ -61,7 +63,7 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Request Body : None
 >>>
->>> Response Body: User
+>>> Response Body: UserWithGroups
 >>
 >> ##### /user/:id - PATCH
 >> 
@@ -171,7 +173,11 @@ FRONTEND_URL: localhost:3000
 >
 >> Handles CRUD on group join requests
 >>
->> JoinRequest = { id, user_id, group_id, request_status }
+>> JoinRequest = { id, user_id, group_id }
+>>
+>> LoadedJoinRequest = { join_request: JoinRequest, user: User, group: Group }
+>>
+>> JoinRequestRespond = { approve }
 >
 > #### Join Routes
 >
@@ -202,15 +208,15 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : JoinRequest
+>>> Response Body : LoadedJoinRequest
 >>
 >> ##### /join/:id - PATCH
 >>
 >>> Description : Approve or reject a particular join request if the user is the owner of the particular group
 >>>
->>> Request Body : { approve }
+>>> Request Body : JoinRequestRespond
 >>>
->>> Response Body : JoinRequest
+>>> Response Body : JoinRequestRespond
 >>
 >> #### /join/:id - DELETE
 >>
@@ -382,5 +388,6 @@ Table creation with POSTGRESQL
 - [x] Configure database migration
 - [x] Restructured file structure
 - [ ] Support forget password feature
+- [x] Rework join request for better usability (prevent request to alrdy joined group, allow automatic deletion)
 - [ ] Rewrite README.MD
 - [ ] Implement Websockets for Groups

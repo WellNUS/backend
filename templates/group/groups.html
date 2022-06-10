@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Groups</title>
+    </head>
+
+    <body>
+        <h1>Groups</h1>
+        <a href="/testing">Go back</a>
+        {{ range .groups }}
+            <div>
+                <div>GroupID: {{ .ID }}</div>
+                <div>GroupName: {{ .GroupName }}</div>
+                <div>GroupDescription: {{ .GroupDescription }}</div>
+                <div>Category: {{ .Category }}</div>
+                <div>OwnerID: {{ .OwnerID }}</div>
+                <a href='/testing/group/{{.ID}}'>View</a>
+            </div>
+            <br>
+        {{ end }}
+        <br>
+    </body>
+</html>

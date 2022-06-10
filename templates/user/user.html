@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>User</title>
+    </head>
+
+    <body>
+        <h1>Group</h1>
+        <a href="/testing/user">Go back</a>
+        <h2> User {{ .userWithGroups.User.ID }}</h2>
+        <div>
+            <div>FirstName: {{.userWithGroups.User.FirstName}}</div>
+            <div>LastName: {{.userWithGroups.User.LastName}}</div>
+            <div>Gender: {{.userWithGroups.User.Gender}}</div>
+            <div>Faculty: {.userWithGroups.User{.Faculty}}</div>
+            <div>Email: {{.userWithGroups.User.Email}}</div>
+            <div>UserRole: {{.userWithGroups.User.UserRole}}</div>
+            <div>PasswordHash: {{.userWithGroups.User.PasswordHash}}</div>
+        </div>
+        <h2> Groups : </h2>
+        {{ range .userWithGroups.Groups }}
+            <div>
+                <div>GroupID: {{ .ID }}</div>
+                <div>GroupName: {{ .GroupName }}</div>
+                <div>GroupDescription: {{ .GroupDescription }}</div>
+                <div>Category: {{ .Category }}</div>
+                <div>OwnerID: {{ .OwnerID }}</div>
+            </div>
+            <br>
+        {{ end }}
+    </body>
+</html>

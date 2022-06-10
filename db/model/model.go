@@ -1,5 +1,9 @@
 package model
 
+import (
+	"time"
+)
+
 type User struct {
 	ID 				int64 	`json:"id"`
 	FirstName 		string 	`json:"first_name"`
@@ -12,6 +16,11 @@ type User struct {
 	PasswordHash 	string	`json:"password_hash"`
 }
 
+type UserWithGroups struct {
+	User 	User 	`json:"user"`
+	Groups 	[]Group `json:"groups"`
+}
+
 type Group struct {
 	ID					int64	`json:"id"`
 	GroupName			string	`json:"group_name"`
@@ -21,18 +30,35 @@ type Group struct {
 }
 
 type GroupWithUsers struct {
-	Group			Group	`json:"group"`
-	Users			[]User	`json:"users"`
+	Group	Group	`json:"group"`
+	Users	[]User	`json:"users"`
+}
+
+type JoinRequestRespond struct {
+	Approve bool `json:"approve"`
 }
 
 type JoinRequest struct {
 	ID 				int64 	`json:"id"`
 	UserID 			int64 	`json:"user_id"`
 	GroupID 		int64 	`json:"group_id"`
-	RequestStatus 	string 	`json:"request_status"`
 }
 
-type JoinRequestWithGroup struct {
+type LoadedJoinRequest struct {
 	JoinRequest		JoinRequest 	`json:"join_request"`
+	User			User			`json:"user"`
 	Group			Group			`json:"group"`
+}
+
+type Message struct {
+	UserID 		int64		`json:"user_id"`
+	GroupID		int64		`json:"group_id"`
+	TimeAdded 	time.Time	`json:"time_added"`
+	Msg			string		`json:"msg"`
+}
+
+type LoadedMessage struct {
+	Owner 			User
+	Users			[]User
+	Message			Message
 }

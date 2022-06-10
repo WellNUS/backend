@@ -11,6 +11,7 @@ import (
 )
 
 type User = model.User
+type UserWithGroups = model.UserWithGroups
 
 // Main functions
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
@@ -35,12 +36,12 @@ func GetUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		user, err := query.GetUser(db, userIDParam)
+		userWithGroups, err := query.GetUserWithGroups(db, userIDParam)
 		if err != nil {
 			c.IndentedJSON(misc.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(misc.GetStatusCode(err), user)
+		c.IndentedJSON(misc.GetStatusCode(err), userWithGroups)
 	}
 }
 

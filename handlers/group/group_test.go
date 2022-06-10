@@ -18,7 +18,7 @@ func TestGroupHandler(t *testing.T) {
 	t.Run("AddGroupHandler with no category", testAddGroupHandlerNoCategory)
 	t.Run("AddGroupHandler not logged in", testAddGroupHandlerNotLoggedIn)
 	t.Run("AddGroupHandler successful as User1", testAddGroupHandlerAsUser1)
-	t.Run("AddGroupHandler successful as User2", testAddGroupHandlerAsUser2)
+	t.Run("AddGroupHandler successful as User2 no description", testAddGroupHandlerAsUser2NoDescription)
 	t.Run("GetAllGroupsHandler as User1", testGetAllGroupsHandlerAsUser1)
 	t.Run("GetAllGroupsHandler as not logged in", testGetAllGroupsHandlerAsNotLoggedIn)
 	t.Run("GetAllGroupsHandler as User2", testGetAllGroupsHandlerAsUser2)
@@ -189,7 +189,7 @@ func testAddGroupHandlerAsUser1(t *testing.T) {
 	}
 }
 
-func testAddGroupHandlerAsUser2(t *testing.T) {
+func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
 	ioReaderGroup, _ := getIOReaderFromGroup(validAddedGroup2)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{

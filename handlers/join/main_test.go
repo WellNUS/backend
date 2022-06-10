@@ -50,8 +50,13 @@ var validAddedGroup Group = Group{
 	Category: "SUPPORT",
 }
 
+func equal_joinRequest(joinRequest1 JoinRequest, joinRequest2 JoinRequest) bool {
+	return joinRequest1.ID == joinRequest2.ID &&
+	joinRequest1.GroupID == joinRequest2.GroupID &&
+	joinRequest1.UserID == joinRequest2.UserID
+}
 
-func equal(user1 User, user2 User) bool {
+func equal_user(user1 User, user2 User) bool {
 	return user1.ID == user2.ID &&
 	user1.FirstName == user2.FirstName &&
 	user1.LastName == user2.LastName &&
@@ -60,6 +65,14 @@ func equal(user1 User, user2 User) bool {
 	user1.Email == user2.Email &&
 	user1.UserRole == user2.UserRole &&
 	user1.PasswordHash == user2.PasswordHash
+}
+
+func equal_group(group1 Group, group2 Group) bool {
+	return group1.ID == group2.ID &&
+	group1.GroupName == group2.GroupName &&
+	group1.GroupDescription == group2.GroupDescription &&
+	group1.Category == group2.Category &&
+	group1.OwnerID == group2.OwnerID
 }
 
 func hashPassword(user User) (User, error) {
@@ -172,7 +185,7 @@ func setupRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/join", GetAllJoinRequestsHandler(db))
 	router.POST("/join", AddJoinRequestHandler(db))
-	router.GET("/join/:id", GetJoinRequestHandler(db))
+	router.GET("/join/:id", GetLoadedJoinRequestHandler(db))
 	router.PATCH("/join/:id", RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", DeleteJoinRequestHandler(db))
 

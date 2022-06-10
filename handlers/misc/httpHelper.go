@@ -9,13 +9,9 @@ import (
 )
 
 type User = model.User
-type JoinRequest = model.JoinRequest
 type Group = model.Group
-
-type JoinRequestRespond struct {
-	Approve bool `json:"approve"`
-}
-
+type JoinRequest = model.JoinRequest
+type JoinRequestRespond = model.JoinRequestRespond
 
 func GetIDParams(c *gin.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)

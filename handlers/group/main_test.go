@@ -52,7 +52,6 @@ var validAddedGroup1 Group = Group{
 
 var validAddedGroup2 Group = Group{
 	GroupName: "NewGroupName1",
-	GroupDescription: "NewGroupDescription1",
 	Category: "SUPPORT",
 }
 

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Group</title>
+    <script type="text/javascript">
+        window.onload = function() {
+            const joinButton = document.getElementById("joinButton")
+            joinButton.onclick = function(e){
+                e.preventDefault()
+                const group_id = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!group_id) { return }
+                const body = JSON.stringify({ group_id })
+                fetch("http://localhost:8080/join", {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err.json()))
+            }
+        };
+    </script>
+    </head>
+
+    <body>
+        <h1>Group</h1>
+        <a href="/testing/group">Go back</a>
+        <button id="joinButton">Request to join</button>
+        <h2> Group {{ .groupWithUsers.Group.ID }}</h2>
+        <div>
+            <div>GroupName: {{ .groupWithUsers.Group.GroupName }}</div>
+            <div>GroupDescription: {{ .groupWithUsers.Group.GroupDescription }}</div>
+            <div>Category: {{ .groupWithUsers.Group.Category}}</div>
+            <div>OwnerID: {{ .groupWithUsers.Group.OwnerID }}</div>
+        </div>
+        <h2> Users : </h2>
+        {{ range .groupWithUsers.Users }}
+            <div>
+                <div>ID: {{.ID}}</div>
+                <div>FirstName: {{.FirstName}}</div>
+                <div>LastName: {{.LastName}}</div>
+                <div>Gender: {{.Gender}}</div>
+                <div>Faculty: {{.Faculty}}</div>
+                <div>Email: {{.Email}}</div>
+                <div>UserRole: {{.UserRole}}</div>
+                <div>PasswordHash: {{.PasswordHash}}</div>
+            </div>
+            <br>
+        {{ end }}
+    </body>
+</html>

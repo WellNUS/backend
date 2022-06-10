@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Home</title>
+        <script type="text/javascript">
+            window.onload = function() {
+                const loginForm = document.getElementById("loginForm")
+                const registerForm = document.getElementById("registerForm")
+                const logout = document.getElementById("logout")
+                const makeGroupForm = document.getElementById("makeGroupForm")
+                
+                loginForm.onsubmit = function(e) {
+                    e.preventDefault()
+                    const email = e.target[0].value
+                    const password = e.target[1].value
+                    const body = JSON.stringify({ email, password })
+                    fetch("http://localhost:8080/session", {
+                        method : 'POST',
+                        headers : {
+                            'Content-Type': 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res))
+                    .catch(err => console.log(err))
+                }
+
+                registerForm.onsubmit = function(e) {
+                    e.preventDefault()
+                    const first_name = e.target[0].value
+                    const last_name = e.target[1].value
+                    const gender = e.target[2].value
+                    const faculty = e.target[3].value
+                    const email = e.target[4].value
+                    const user_role = e.target[5].value
+                    const password = e.target[6].value
+                    const body = JSON.stringify({ first_name, last_name, gender, faculty, email, user_role, password })
+                    fetch("http://localhost:8080/user", {
+                        method : 'POST',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err.json()))
+                }
+
+                logout.onclick = function(e) {
+                    e.preventDefault()
+                    fetch("http://localhost:8080/session", {
+                        method : 'DELETE'
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err.json()))
+                }
+
+                makeGroupForm.onsubmit = function(e) {
+                    e.preventDefault()
+                    const group_name = e.target[0].value
+                    const group_description = e.target[1].value
+                    const category = e.target[2].value
+                    body = JSON.stringify({ group_name, group_description, category })
+                    fetch("http://localhost:8080/group", {
+                        method : 'POST',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(res => console.log(res.json()))
+                }
+            };
+        </script>
+    </head>
+
+    <body>
+        <h1>WellNUS backend testing</h1>
+        <h2>You are currently logged in as user of ID = {{ .userID }} </h2>
+        <div>
+            <a href="/testing/user">Go to Users</a>
+        </div>
+        <div>
+            <a href="/testing/group">Go to Groups</a>
+        </div>
+        <div>
+            <a href="/testing/join">Go to join requests</a>
+        </div>
+        <div>
+            <h2>Log in as user</h2>
+            <form id="loginForm">
+                <div>
+                    <label for="email">E-Mail: </label>
+                    <input type="email" name="email"/>
+                </div>
+                <div>
+                    <label for="password">Password: </label>
+                    <input type="password" name="password"/>
+                </div>
+                <input type="submit" value="Login" />
+            </form>
+            <br>
+            <h2>Register a new User</h2>
+            <form id="registerForm">
+                <div>
+                    <label for="firstName">First Name: </label>
+                    <input type="text" name="firstName"/>
+                </div>
+                <div>
+                    <label for="lastName">Last Name: </label>
+                    <input type="text" name="lastName"/>
+                </div>
+                <div>
+                    <label for="gender">Gender </label>
+                    <select name="gender">
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="faculty">First Name: </label>
+                    <select name="faculty">
+                        <option value="CHS">CHS</option> 
+                        <option value="BUSINESS">BUSINESS</option>
+                        <option value="COMPUTING">COMPUTING</option>
+                        <option value="DENTISTRY">DENTISTRY</option>
+                        <option value="CDE">CDE</option>
+                        <option value="LAW">LAW</option>
+                        <option value="MEDICINE">MEDICINE</option>
+                        <option value="NURSING">NURSING</option>
+                        <option value="PHARMACY">PHARMACY</option>
+                        <option value="MUSIC">MUSIC</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="email">E-Mail: </label>
+                    <input type="text" name="email"/>
+                </div>
+                <div>
+                    <label for="userRole">User Role: </label>
+                    <select name="userRole">
+                        <option value="MEMBER">MEMBER</option>
+                        <option value="VOLUNTEER">VOLUNTEER</option>
+                        <option value="COUNSELLOR">COUNSELLOR</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="password">Password: </label>
+                    <input type="password" name="password"/>
+                </div>
+                <input type="submit" value="Register" />
+            </form>
+            <br>
+            <h2>Logout</h2>
+            <button id="logout">Logout</button>
+            <br>
+            <h2>Make Group</h2>
+            <form id="makeGroupForm">
+                <div>
+                    <label for="groupName">Group Name: </label>
+                    <input type="text" name="groupName"/>
+                </div>
+                <div>
+                    <label for="groupDescription">Group Description: </label>
+                    <input type="text" name="groupDescription"/>
+                </div>
+                <div>
+                    <label for="category">Category: </label>
+                    <select name="category">
+                        <option value="SUPPORT">Support</option>
+                        <option value="COUNSEL">Counselling</option>
+                    </select>
+                </div>
+                <input type="submit" value="Create Group"/>
+            </form>
+        </div>
+    </body>
+</html>

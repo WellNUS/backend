@@ -6,6 +6,9 @@ import (
 	"wellnus/backend/handlers/session"
 	"wellnus/backend/handlers/group"
 	"wellnus/backend/handlers/join"
+	"wellnus/backend/handlers/testing" //Can be removed at production
+
+	"wellnus/backend/handlers/ws"
 	
 	"fmt"
 	"log"
@@ -31,7 +34,20 @@ func ConnectDB() *sql.DB {
 
 func main() {
 	db := ConnectDB()
+	wsHub := ws.NewHub(db)
+	go wsHub.Run()
+	
 	router := gin.Default()
+
+	// Remove this on production
+	router.LoadHTMLGlob("templates/**/*")
+	router.GET("/testing", testing.GetTestingHome(db))
+	router.GET("/testing/user", testing.GetTestingAllUsers(db))
+	router.GET("/testing/user/:id", testing.GetTestingUser(db))
+	router.GET("/testing/group", testing.GetTestingAllGroups(db))
+	router.GET("/testing/group/:id", testing.GetTestingGroup(db))
+	router.GET("/testing/join", testing.GetTestingAllJoinRequest(db))
+	router.GET("/testing/join/:id", testing.GetTestingJoinRequest(db))
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))
@@ -51,9 +67,11 @@ func main() {
 
 	router.GET("/join", join.GetAllJoinRequestsHandler(db))
 	router.POST("/join", join.AddJoinRequestHandler(db))
-	router.GET("/join/:id", join.GetJoinRequestHandler(db))
+	router.GET("/join/:id", join.GetLoadedJoinRequestHandler(db))
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
+
+	router.GET("/ws", ws.ConnectToWSHandler(wsHub))
 
 	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
 	router.Run(config.BACKEND_URL)
