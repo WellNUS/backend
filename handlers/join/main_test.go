@@ -104,21 +104,20 @@ func loadLastGroupID(db *sql.DB, group Group) (Group, error) {
 }
 
 func addUserToGroup(db *sql.DB, groupID int64, userID int64) error {
-	query := fmt.Sprintf(
+	_, err := db.Exec(
 		`INSERT INTO wn_user_group (
 			user_id, 
 			group_id) 
-		VALUES (%d, %d)`, 
+		VALUES ($1, $2)`, 
 		userID, 
 		groupID)
-	_, err := db.Query(query)
 	return err
 }
 
 func makeNewUser(newUser User) (User, error) {
 	newUser, err := hashPassword(newUser);
 	if err != nil { return User{}, err }
-	_, err = db.Query(fmt.Sprintf(
+	_, err = db.Exec(
 		`INSERT INTO wn_user (
 			first_name, 
 			last_name, 
@@ -127,14 +126,14 @@ func makeNewUser(newUser User) (User, error) {
 			email, 
 			user_role, 
 			password_hash
-		) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
 		newUser.Faculty,
 		newUser.Email,
 		newUser.UserRole,
-		newUser.PasswordHash))
+		newUser.PasswordHash)
 	if err != nil { return User{}, err }
 	// New user successfully made
 	newUser, err = loadLastUserID(db, newUser)
@@ -143,18 +142,17 @@ func makeNewUser(newUser User) (User, error) {
 }
 
 func AddGroup(newGroup Group) (Group, error) {
-	query := fmt.Sprintf(
+	_, err := db.Query(
 		`INSERT INTO wn_group (
 			group_name, 
 			group_description, 
 			category, 
 			owner_id) 
-		VALUES ('%s', '%s', '%s', %d);`,
+		VALUES ($1, $2, $3, $4);`,
 		newGroup.GroupName,
 		newGroup.GroupDescription,
 		newGroup.Category,
 		newGroup.OwnerID)
-	_, err := db.Query(query)
 	if err != nil { return Group{}, err }
 	newGroup, err = loadLastGroupID(db, newGroup)
 	if err != nil { return Group{}, err }
@@ -163,7 +161,7 @@ func AddGroup(newGroup Group) (Group, error) {
 	err = addUserToGroup(db, newGroup.ID, newGroup.OwnerID)
 	if err != nil {
 		log.Printf("Failed to add Owner: %v", err)
-		if _, fatal := db.Query(fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", newGroup.ID)); fatal != nil {
+		if _, fatal := db.Exec("DELETE FROM wn_group WHERE id = $1`", newGroup.ID); fatal != nil {
 			log.Fatal(fmt.Sprintf("Failed to remove added group after failing to add owner. Fatal: %v", fatal))
 		}
 		return Group{}, err
@@ -207,7 +205,7 @@ func TestMain(m *testing.M) {
 
 	r := m.Run()
 
-	db.Query(fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", validAddedGroup.ID))
-	db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d OR id = %d", validAddedUser1.ID, validAddedUser2.ID))
+	db.Exec("DELETE FROM wn_group WHERE id = $1", validAddedGroup.ID)
+	db.Exec("DELETE FROM wn_user WHERE id = $1 OR id = $2", validAddedUser1.ID, validAddedUser2.ID)
 	os.Exit(r)
 }
