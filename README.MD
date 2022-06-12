@@ -59,7 +59,7 @@ FRONTEND_URL: localhost:3000
 >>
 >> ##### /user/:id - GET
 >> 
->>> Description : Gets user with given id
+>>> Description : Gets user with given id and the user's corresponding groups 
 >>>
 >>> Request Body : None
 >>>
@@ -145,7 +145,7 @@ FRONTEND_URL: localhost:3000
 >>
 >> ##### /group/:id - GET
 >> 
->>> Description : Get a group with given id
+>>> Description : Get a group with given id and the users within the group
 >>>
 >>> Request Body : None
 >>>
@@ -183,7 +183,7 @@ FRONTEND_URL: localhost:3000
 >
 >> ##### /join - GET
 >>
->>> Description : Get all join requests sent by user or directed at user. Query params used to indicate which request=SENT)
+>>> Description : Get all join requests sent by user or directed at user. Query params used to indicate what join request to retrieve.
 >>>
 >>> Query Params:
 >>> - ?request=SENT     will get all join request sent by user
@@ -204,7 +204,7 @@ FRONTEND_URL: localhost:3000
 >>
 >> ##### /join/:id - GET
 >>
->>> Description : Gets join request with the given id
+>>> Description : Gets loaded join request with the given id
 >>>
 >>> Request Body : None
 >>>
@@ -218,13 +218,49 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Response Body : JoinRequestRespond
 >>
->> #### /join/:id - DELETE
+>> ##### /join/:id - DELETE
 >>
 >>> Description : Deletes the join request if the user is the owner of the request.
 >>>
 >>> Request Body : None
 >>>
 >>> Response Body : { id }
+
+### Message
+
+> #### Message Details
+>
+>> Handles the retrieval of past messages in groups
+>>
+>> Message = { user_id, group_id, time_added, msg }
+>>
+>> LoadedMessage = { sender: User, message: Message }
+>
+> #### Message Routes
+>
+>> ##### /message/:id - GET
+>>
+>>> Description : Gets all loaded messages sent in the group of given id in ascending time sent.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : LoadedMessage[]
+
+### Websocket for chats
+
+> #### Websocket details
+>
+>> Allows client to obtain a websocket connection to the server.
+>
+> #### Websocket Routes
+>
+>> ##### /ws/:group_id - GET
+>>
+>>> Description : Create a websocket connection with the url of "ws://{domain_name}/ws/{group_id}" which will return a connection object. Incoming and outgoing messages will come and go through this connection object.
+>>> 
+>>> Request Body : None
+>>>
+>>> Response Body : None
 
 ### Match
 
@@ -303,77 +339,11 @@ FRONTEND_URL: localhost:3000
 >> 
 >> : Updates a counsel request if user is the owner of the request
 
-## Tables
+## How to setup the chat on frontend?
 
-Table creation with POSTGRESQL
+Refer to /templates/chat/chat.html and /handlers/ws for the implementation of the chat feature. Test the chat feature along with other features involving users, groups and join request at "http://{domain_name}/testing". 
 
-### wn_user
-
-- id BIGSERIAL NOT NULL PRIMARY KEY
-- first_name VARCHAR(32) NOT NULL
-- last_name VARCHAR(32) NOT NULL
-- gender VARCHAR(1) NOT NULL
-- faculty VARCHAR(10) NOT NULL
-- email VARCHAR(128) NOT NULL
-- user_role VARCHAR(10) NOT NULL
-- password_hash VARCHAR(100) NOT NULL
-- unique(email),
-- check(first_name != ''),
-- check(last_name != ''),
-- check(password_hash != ''),
-- check(gender IN ('M', 'F')),
-- check(faculty IN ('CHS', 'BUSINESS', 'COMPUTING', 'DENTISTRY', 'CDE', 'LAW', 'MEDICINE', 'NURSING', 'PHARMACY', 'MUSIC')),
-- check(email LIKE '%@u.nus.edu'),
-- check(user_role IN ('MEMBER', 'VOLUNTEER', 'COUNSELLOR'))
-
-### wn_group
-
-- id BIGSERIAL NOT NULL PRIMARY KEY
-- group_name VARCHAR(64) NOT NULL
-- group_description VARCHAR(256) NOT NULL
-- category VARCHAR(7) NOT NULL
-- owner_id BIGINT REFERENCES wn_user(id) NOT NULL
-- check(group_name != ''),
-- check(category IN ('COUNSEL', 'SUPPORT'))
-
-### wn_user_group
-
-- user_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE
-- group_id BIGINT REFERENCES wn_group(id) ON DELETE CASCADE
-- unique(user_id, group_id)
-
-### wn_join_request
-
-- id BIGSERIAL NOT NULL PRIMARY KEY,
-- user_id BIGINT REFERENCES wn_user(id),
-- group_id BIGINT REFERENCES wn_group(id),
-- request_status VARCHAR(8) NOT NULL,
-- unique(user_id, group_id)
-- check(request_status IN ('PENDING', 'REJECTED', 'APPROVED'))
-
-### wn_match_request
-- id BIGSERIAL NOT NULL PRIMARY KEY,
-- user_id BIGINT REFERENCES wn_user(id),
-- cross_gender BOOLEAN NOT NULL,
-- cross_faculty BOOLEAN NOT NULL,
-- size SMALLINT NOT NULL, 
-- mbti VARCHAR(4) NOT NULL,
-- request_status VARCHAR(8),
-- unique(user_id),
-- check(size <= 8),
-- check(mbti IN ('INFJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP'))
-- check(request_status IN ('PENDING', 'REJECTED', 'APPROVED'))
-
-### wn_counsel_request
-- id BIGSERIAL NOT NULL PRIMARY KEY,
-- user_id BIGINT REFERENCES wn_user(id),
-- counsel_title VARCHAR(256) NOT NULL,
-- counsel_description VARCHAR(256) NOT NULL,
-- request_status VARCHAR(8) NOT NULL,
-- unique(user_id),
-- check(counsel_title != ''),
-- check(counsel_description != ''),
-- check(request_status IN ('PENDING', 'REJECTED', 'APPROVED'))
+Note that not every API implemented is implemented in the above testing GUI interface (coming soon if theres time)
 
 ## Things to do
 - [x] CRUD on Users
@@ -389,5 +359,6 @@ Table creation with POSTGRESQL
 - [x] Restructured file structure
 - [ ] Support forget password feature
 - [x] Rework join request for better usability (prevent request to alrdy joined group, allow automatic deletion)
-- [ ] Rewrite README.MD
-- [ ] Implement Websockets for Groups
+- [x] Rewrite README.MD
+- [x] Implement Websockets for Groups
+- [ ] Add API to GET user using email

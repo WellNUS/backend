@@ -35,6 +35,16 @@ func NewHub(db *sql.DB) *Hub {
 	}
 }
 
+func getRecipientIDSet(db *sql.DB, groupID int64) (map[int64]bool, error) {
+	recipients, err := query.GetAllUsersOfGroup(db, groupID)
+	if err != nil { return nil, err }
+	recipientsSet := make(map[int64]bool)
+	for _, user := range recipients {
+		recipientsSet[user.ID] = true
+	}
+	return recipientsSet, nil
+}
+
 func (h *Hub) Run() {
 	for {
 		select {
@@ -46,18 +56,30 @@ func (h *Hub) Run() {
 				close(client.Send)
 			}
 		case message := <-h.Broadcast:
+			err := query.AddMessage(h.DB, message)
+			if err != nil {
+				fmt.Printf("An error occured during adding to database. %v \n", err)
+				continue
+			}
 			loadedMessage, err := query.LoadMessage(h.DB, message)
 			if err != nil {
 				fmt.Printf("An error occured during loading. %v \n", err)
 				continue
 			}
+			recipientsSet, err := getRecipientIDSet(h.DB, message.GroupID)
+			if err != nil {
+				fmt.Printf("An error occured while getting recipient set. %v \n", err)
+				continue
+			} 
 			// Add message to database here
 			for client := range h.Clients {
-				select {
-				case client.Send <- loadedMessage:
-				default:
-					close(client.Send)
-					delete(h.Clients, client)
+				if recipientsSet[client.UserID] {
+					select {
+						case client.Send <- loadedMessage:
+						default:
+							close(client.Send)
+							delete(h.Clients, client)
+					}
 				}
 			}
 		}

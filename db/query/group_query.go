@@ -66,37 +66,34 @@ func loadLastGroupID(db *sql.DB, group Group) (Group, error) {
 
 func changeOwnership(db *sql.DB, group Group, newOwnerID int64) (Group, error) {
 	group.OwnerID = newOwnerID
-	query := fmt.Sprintf(
+	_, err := db.Exec(
 		`UPDATE wn_group SET 
-			owner_id = %d
-		WHERE id = %d;`,
+			owner_id = $1
+		WHERE id = $2;`,
 		group.OwnerID,
 		group.ID)
-	_, err := db.Query(query)
 	if err != nil { return Group{}, err }
 	return group, nil
 }
 
 func addUserToGroup(db *sql.DB, groupID int64, userID int64) error {
-	query := fmt.Sprintf(
+	_, err := db.Exec(
 		`INSERT INTO wn_user_group (
 			user_id, 
 			group_id) 
-		VALUES (%d, %d)`, 
+		VALUES ($1, $2)`, 
 		userID, 
 		groupID)
-	_, err := db.Query(query)
 	return err
 }
 
 func removeUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
-	query := fmt.Sprintf(
+	_, err := db.Exec(
 		`DELETE FROM wn_user_group WHERE
-			user_id = %d AND
-			group_id = %d`,
-			userID,
-			groupID)
-	_, err := db.Query(query)
+			user_id = $1 AND
+			group_id = $2`,
+		userID,
+		groupID)
 	return err
 } 
 
@@ -149,18 +146,17 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 }
 
 func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
-	query := fmt.Sprintf(
+	_, err := db.Query(
 		`INSERT INTO wn_group (
 			group_name, 
 			group_description, 
 			category, 
 			owner_id) 
-		VALUES ('%s', '%s', '%s', %d);`,
+		VALUES ($1, $2, $3, $4);`,
 		newGroup.GroupName,
 		newGroup.GroupDescription,
 		newGroup.Category,
 		newGroup.OwnerID)
-	_, err := db.Query(query)
 	if err != nil { return GroupWithUsers{}, err }
 	newGroup, err = loadLastGroupID(db, newGroup)
 	if err != nil { return GroupWithUsers{}, err }
@@ -169,7 +165,7 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 	err = addUserToGroup(db, newGroup.ID, newGroup.OwnerID)
 	if err != nil {
 		log.Printf("Failed to add Owner: %v", err)
-		if _, fatal := db.Query(fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", newGroup.ID)); fatal != nil {
+		if _, fatal := db.Exec("DELETE FROM wn_group WHERE id = $1", newGroup.ID); fatal != nil {
 			log.Fatal(fmt.Sprintf("Failed to remove added group after failing to add owner. Fatal: %v", fatal))
 		}
 		return GroupWithUsers{}, err
@@ -188,21 +184,19 @@ func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (G
 
 	updatedGroup = mergeGroup(updatedGroup, targetGroup)
 
-	query := fmt.Sprintf(
+	_, err = db.Exec(
 		`UPDATE wn_group SET 
-			group_name = '%s',
-			group_description = '%s',
-			category = '%s',
-			owner_id = %d
-		WHERE id = %d;`,
+			group_name = $1,
+			group_description = $2,
+			category = $3,
+			owner_id = $4
+		WHERE id = $5;`,
 		updatedGroup.GroupName,
 		updatedGroup.GroupDescription,
 		updatedGroup.Category,
 		updatedGroup.OwnerID,
 		groupID)
-	if _, err := db.Query(query); err != nil {
-		return Group{}, err;
-	}
+	if err != nil { return Group{}, err; }
 	return updatedGroup, nil;
 }
 
@@ -238,4 +232,18 @@ func LeaveAllGroups(db *sql.DB, userID int64) ([]GroupWithUsers, error) {
 		groupsWithUsers = append(groupsWithUsers, groupWithUsers)
 	}
 	return groupsWithUsers, nil
+}
+
+func IsUserInGroup(db *sql.DB, userID int64, groupID int64) (bool, error) {
+	query := fmt.Sprintf(
+		`SELECT COUNT(*) != 0 FROM wn_user_group 
+		WHERE user_id = %d and group_id = %d`,
+		userID,
+		groupID)
+	row, err := db.Query(query)
+	if err != nil { return false, err }
+	var membership bool
+	row.Next()
+	if err := row.Scan(&membership); err != nil { return false, nil }
+	return membership, nil
 }

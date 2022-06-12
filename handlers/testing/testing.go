@@ -5,27 +5,26 @@ import (
 	"wellnus/backend/handlers/misc"
 
 	"database/sql"
-	//"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetTestingHome(db *sql.DB) func(*gin.Context) {
+func GetTestingHomeHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		sID, _ := c.Cookie("id")
 		c.HTML(http.StatusOK, "home.html", gin.H{ "userID": sID })
 	}
 }
 
-func GetTestingAllUsers(db *sql.DB) func(*gin.Context) {
+func GetTestingAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		users, _ := query.GetAllUsers(db)
 		c.HTML(http.StatusOK, "users.html", gin.H{ "users": users })
 	}
 }
 
-func GetTestingUser(db *sql.DB) func(*gin.Context) {
+func GetTestingUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, _ := misc.GetIDParams(c)
 		userWithGroups, _ := query.GetUserWithGroups(db, userID)
@@ -33,7 +32,7 @@ func GetTestingUser(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetTestingAllGroups(db *sql.DB) func(*gin.Context) {
+func GetTestingAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, _ := misc.GetIDCookie(c)
 		groups, _ := query.GetAllGroupsOfUser(db, userID)
@@ -41,7 +40,7 @@ func GetTestingAllGroups(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetTestingGroup(db *sql.DB) func(*gin.Context) {
+func GetTestingGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		groupID, _ := misc.GetIDParams(c)
 		groupWithUsers, _ := query.GetGroupWithUsers(db, groupID)
@@ -49,7 +48,7 @@ func GetTestingGroup(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetTestingAllJoinRequest(db *sql.DB) func(*gin.Context) {
+func GetTestingAllJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, _ := misc.GetIDCookie(c)
 		if s := c.Query("request"); s == "RECEIVED" {
@@ -65,10 +64,18 @@ func GetTestingAllJoinRequest(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetTestingJoinRequest(db *sql.DB) func(*gin.Context) {
+func GetTestingJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		joinRequestID, _ := misc.GetIDParams(c)
 		loadedJoinRequest, _ := query.GetLoadedJoinRequest(db, joinRequestID)
 		c.HTML(http.StatusOK, "join.html", gin.H{"loadedJoinRequest": loadedJoinRequest})
+	}
+}
+
+func GetTestingChatHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		groupID, _ := misc.GetIDParams(c)
+		groupWithUsers, _ := query.GetGroupWithUsers(db, groupID)
+		c.HTML(http.StatusOK, "chat.html", gin.H{"groupWithUsers": groupWithUsers})
 	}
 }

@@ -58,7 +58,6 @@ type Message struct {
 }
 
 type LoadedMessage struct {
-	Owner 			User
-	Users			[]User
-	Message			Message
+	Sender 			User	`json:"sender"`
+	Message			Message	`json:"message"`
 }

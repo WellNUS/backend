@@ -68,7 +68,6 @@ func (c *Client) writePump() {
 			c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 			return
 		}
-
 		w, err := c.Conn.NextWriter(websocket.TextMessage)
 		if err != nil { return }
 		jLoadedMessage, err := json.Marshal(loadedMessage)
@@ -79,14 +78,13 @@ func (c *Client) writePump() {
 	}
 }
 
-// serveWs handles websocket requests from the peer.
-func ServeWs(Hub *Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(Hub *Hub, w http.ResponseWriter, r *http.Request, userID int64, groupID int64) {
 	Conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{ UserID: 2, GroupID: 3, Hub: Hub, Conn: Conn, Send: make(chan LoadedMessage, loadedMessageBuffer)}
+	client := &Client{ UserID: userID, GroupID: groupID, Hub: Hub, Conn: Conn, Send: make(chan LoadedMessage, loadedMessageBuffer)}
 	client.Hub.Register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

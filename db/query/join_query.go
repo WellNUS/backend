@@ -116,14 +116,13 @@ func GetLoadedJoinRequest(db *sql.DB, joinRequestID int64) (LoadedJoinRequest, e
 }
 
 func AddJoinRequest(db *sql.DB, groupID int64, userID int64) (JoinRequest, error) {
-	query := fmt.Sprintf(
+	_, err := db.Exec(
 		`INSERT INTO wn_join_request (
 			user_id, 
 			group_id
-		) values (%d, %d);`, 
+		) values ($1, $2);`, 
 		userID,
 		groupID)
-	_, err := db.Query(query)
 	if err != nil { return JoinRequest{}, err }
 	joinRequest, err := loadLastJoinRequestID(db, JoinRequest{ UserID: userID, GroupID: groupID })
 	if err != nil { return JoinRequest{}, err }
@@ -141,8 +140,7 @@ func RespondJoinRequest(db *sql.DB, joinRequestID int64, userID int64, approve b
 			return JoinRequestRespond{}, err
 		}
 	}
-	query := fmt.Sprintf("DELETE FROM wn_join_request WHERE id = %d", joinRequestID)
-	_, err = db.Query(query)
+	_, err = db.Exec("DELETE FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequestRespond{}, err }
 	return JoinRequestRespond{ Approve: approve }, nil
 }
@@ -152,8 +150,7 @@ func DeleteJoinRequest(db *sql.DB, joinRequestID int64, userID int64) (JoinReque
 	if err != nil { return JoinRequest{}, err }
 	if joinRequest.UserID != userID { return JoinRequest{}, misc.UnauthorizedError }
 
-	query := fmt.Sprintf("DELETE FROM wn_join_request WHERE id = %d", joinRequestID)
-	_, err = db.Query(query)
+	_, err = db.Exec("DELETE FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequest{}, err }
 	return JoinRequest{ ID : joinRequestID }, nil
 }

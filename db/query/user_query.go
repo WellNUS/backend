@@ -129,10 +129,19 @@ func GetAllUsers(db *sql.DB) ([]User, error) {
 	return users, nil
 }
 
+func FindUser(db *sql.DB, email string) (User, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
+	if err != nil { return User{}, err }
+	users, err := readUsers(rows)
+	if err != nil { return User{}, err}
+	if len(users) == 0 { return User{}, misc.NotFoundError }
+	return users[0], nil
+}
+
 func AddUser(db *sql.DB, newUser User) (User, error) {
 	newUser, err := hashPassword(newUser)
 	if err != nil { return User{}, err }
-	query := fmt.Sprintf(
+	_, err = db.Exec(
 		`INSERT INTO wn_user (
 			first_name, 
 			last_name, 
@@ -141,7 +150,7 @@ func AddUser(db *sql.DB, newUser User) (User, error) {
 			email, 
 			user_role, 
 			password_hash
-		) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
@@ -149,16 +158,14 @@ func AddUser(db *sql.DB, newUser User) (User, error) {
 		newUser.Email,
 		newUser.UserRole,
 		newUser.PasswordHash)
-	_, err = db.Query(query)
 	if err != nil { return User{}, err }
-
 	newUser, err = loadLastUserID(db, newUser)
 	if err != nil { return User{}, err }
 	return newUser, nil
 }
 
 func DeleteUser(db *sql.DB, id int64) (User, error) {
-	if _, err := db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", id)); err != nil {
+	if _, err := db.Exec("DELETE FROM wn_user WHERE id = $1", id); err != nil {
 		return User{}, err
 	}
 	return User{ID: id}, nil
@@ -171,16 +178,16 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 	updatedUser, err = mergeUser(updatedUser, targetUser)
 	if err != nil { return User{}, err }
 
-	query := fmt.Sprintf(
+	_, err = db.Exec(
 		`UPDATE wn_user SET 
-			first_name = '%s', 
-			last_name = '%s', 
-			gender = '%s', 
-			faculty='%s', 
-			email = '%s', 
-			user_role = '%s', 
-			password_hash = '%s' 
-		WHERE id = %d;`,
+			first_name = $1, 
+			last_name = $2, 
+			gender = $3, 
+			faculty= $4, 
+			email = $5, 
+			user_role = $6, 
+			password_hash = $7 
+		WHERE id = $8;`,
 		updatedUser.FirstName,
 		updatedUser.LastName,
 		updatedUser.Gender,
@@ -189,17 +196,6 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 		updatedUser.UserRole,
 		updatedUser.PasswordHash,
 		id)
-	if _, err := db.Query(query); err != nil {
-		return User{}, err;
-	}
-	return updatedUser, nil;
-}
-
-func FindUser(db *sql.DB, email string) (User, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
 	if err != nil { return User{}, err }
-	users, err := readUsers(rows)
-	if err != nil { return User{}, err}
-	if len(users) == 0 { return User{}, misc.NotFoundError }
-	return users[0], nil
+	return updatedUser, nil;
 }

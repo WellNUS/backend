@@ -6,6 +6,7 @@ import (
 	"wellnus/backend/handlers/session"
 	"wellnus/backend/handlers/group"
 	"wellnus/backend/handlers/join"
+	"wellnus/backend/handlers/message"
 	"wellnus/backend/handlers/testing" //Can be removed at production
 
 	"wellnus/backend/handlers/ws"
@@ -41,13 +42,14 @@ func main() {
 
 	// Remove this on production
 	router.LoadHTMLGlob("templates/**/*")
-	router.GET("/testing", testing.GetTestingHome(db))
-	router.GET("/testing/user", testing.GetTestingAllUsers(db))
-	router.GET("/testing/user/:id", testing.GetTestingUser(db))
-	router.GET("/testing/group", testing.GetTestingAllGroups(db))
-	router.GET("/testing/group/:id", testing.GetTestingGroup(db))
-	router.GET("/testing/join", testing.GetTestingAllJoinRequest(db))
-	router.GET("/testing/join/:id", testing.GetTestingJoinRequest(db))
+	router.GET("/testing", testing.GetTestingHomeHandler(db))
+	router.GET("/testing/user", testing.GetTestingAllUsersHandler(db))
+	router.GET("/testing/user/:id", testing.GetTestingUserHandler(db))
+	router.GET("/testing/group", testing.GetTestingAllGroupsHandler(db))
+	router.GET("/testing/group/:id", testing.GetTestingGroupHandler(db))
+	router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
+	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
+	router.GET("/testing/chat/:id", testing.GetTestingChatHandler(db))
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))
@@ -71,7 +73,9 @@ func main() {
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
 
-	router.GET("/ws", ws.ConnectToWSHandler(wsHub))
+	router.GET("/message/:id", message.GetAllLoadedMessagesHandler(db))
+
+	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))
 
 	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
 	router.Run(config.BACKEND_URL)

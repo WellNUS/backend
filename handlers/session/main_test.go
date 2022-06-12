@@ -51,7 +51,7 @@ func loadLastID(db *sql.DB, user User) (User, error) {
 func makeNewUser(newUser User) (User, error) {
 	newUser, err := hashPassword(newUser);
 	if err != nil { return User{}, err }
-	_, err = db.Query(fmt.Sprintf(
+	_, err = db.Exec(
 		`INSERT INTO wn_user (
 			first_name, 
 			last_name, 
@@ -60,14 +60,14 @@ func makeNewUser(newUser User) (User, error) {
 			email, 
 			user_role, 
 			password_hash
-		) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		newUser.FirstName,
 		newUser.LastName,
 		newUser.Gender,
 		newUser.Faculty,
 		newUser.Email,
 		newUser.UserRole,
-		newUser.PasswordHash))
+		newUser.PasswordHash)
 	if err != nil { return User{}, err }
 	// New user successfully made
 	newUser, err = loadLastID(db, newUser)
@@ -103,6 +103,6 @@ func TestMain(m *testing.M) {
 
 	r := m.Run()
 
-	db.Query(fmt.Sprintf("DELETE FROM wn_user WHERE id = %d", user.ID))
+	db.Exec("DELETE FROM wn_user WHERE id = $1", user.ID)
 	os.Exit(r)
 }
