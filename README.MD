@@ -286,6 +286,7 @@ conn.onmessage = function (evt) {
 >>>
 >>> Response Body : None
 
+### Routes past this point have not been implemented
 ### Match
 
 > #### Match Details
@@ -365,9 +366,9 @@ conn.onmessage = function (evt) {
 
 ## Want to test this backend API on a GUI?
 
-Test some of the features by accessing "http://{domain_name}/testing" after running the server. 
+Test some of the features by accessing "http://(domain_name)/testing" after running the server. 
 
-Note that not every API implemented is implemented in the above testing GUI interface (coming soon if theres time)
+Note that not every API implemented is implemented in the above testing GUI interface (coming soon if there is time)
 
 ## Things to do
 - [x] CRUD on Users
