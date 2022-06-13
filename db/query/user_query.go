@@ -3,8 +3,7 @@ package query
 import (
 	"wellnus/backend/handlers/misc"
 	"wellnus/backend/db/model"
-	
-	"fmt"
+
 	"github.com/alexedwards/argon2id"
 	"database/sql"
 )
@@ -66,8 +65,7 @@ func hashPassword(user User) (User, error) {
 }
 
 func getUser(db *sql.DB, id int64) (User, error) {
-	query := fmt.Sprintf("SELECT * FROM wn_user WHERE id = %d;", id)
-	rows, err := db.Query(query)
+	rows, err := db.Query("SELECT * FROM wn_user WHERE id = $1;", id)
 	if err != nil { return User{}, err }
 	defer rows.Close()
 
@@ -98,7 +96,7 @@ func GetUserWithGroups(db *sql.DB, userID int64) (UserWithGroups, error) {
 }
 
 func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT 
 			wn_user.id,
 			wn_user.first_name,
@@ -110,9 +108,8 @@ func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
 			wn_user.password_hash
 		FROM wn_user_group JOIN wn_user 
 		ON wn_user_group.user_id = wn_user.id 
-		WHERE wn_user_group.group_id = %d`, 
+		WHERE wn_user_group.group_id = $1`, 
 		groupID)
-	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	users, err := readUsers(rows)
 	if err != nil { return nil, err }
@@ -130,7 +127,7 @@ func GetAllUsers(db *sql.DB) ([]User, error) {
 }
 
 func FindUser(db *sql.DB, email string) (User, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM wn_user WHERE email = '%s';", email))
+	rows, err := db.Query("SELECT * FROM wn_user WHERE email = $1;", email)
 	if err != nil { return User{}, err }
 	users, err := readUsers(rows)
 	if err != nil { return User{}, err}

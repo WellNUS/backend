@@ -235,6 +235,8 @@ FRONTEND_URL: localhost:3000
 >> Message = { user_id, group_id, time_added, msg }
 >>
 >> LoadedMessage = { sender: User, message: Message }
+>>
+>> LoadedMessagesPacket = { earliest_time, latest_time, loaded_messages: LoadedMessage[] }
 >
 > #### Message Routes
 >
@@ -242,21 +244,43 @@ FRONTEND_URL: localhost:3000
 >>
 >>> Description : Gets all loaded messages sent in the group of given id in ascending time sent.
 >>>
+>>> Query Params:
+>>> - ?limit=(int) : Specify how many messages to load in. If unspecified or <= 0, will load all past messages
+>>> - ?latest=(time) : Specify the latest time sent of the retrieved messages. If unspecified, will take current time as latest time. Note: Time specified must be in RFC3339Nano format. Example: "2006-01-02T15:04:05.999999999Z07:00"
+>>>
 >>> Request Body : None
 >>>
->>> Response Body : LoadedMessage[]
+>>> Response Body : LoadedMessagesPacket
 
 ### Websocket for chats
 
 > #### Websocket details
 >
 >> Allows client to obtain a websocket connection to the server.
->
+>>
+>> The following is an example from /template/chat/chat.html on how to connect to the websocket with vanilla javascript. Head over to /template/chat/chat.html to see the full code
+```
+conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
+conn.onclose = function (evt) {
+    var item = document.createElement("div");
+    item.innerHTML = "<b>Connection closed.</b>";
+    appendLog(item);
+};
+conn.onmessage = function (evt) {
+    var loadedMessage = JSON.parse(evt.data)
+    if (loadedMessage.message.group_id === groupID) {
+        appendLog(makeMessageItem(loadedMessage))
+    } else {
+        newNotif(loadedMessage)
+    }
+};
+
+```
 > #### Websocket Routes
 >
 >> ##### /ws/:group_id - GET
 >>
->>> Description : Create a websocket connection with the url of "ws://{domain_name}/ws/{group_id}" which will return a connection object. Incoming and outgoing messages will come and go through this connection object.
+>>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/(group_id)" which will return a connection object. Incoming and outgoing messages will come and go through this connection object.
 >>> 
 >>> Request Body : None
 >>>
@@ -339,9 +363,9 @@ FRONTEND_URL: localhost:3000
 >> 
 >> : Updates a counsel request if user is the owner of the request
 
-## How to setup the chat on frontend?
+## Want to test this backend API on a GUI?
 
-Refer to /templates/chat/chat.html and /handlers/ws for the implementation of the chat feature. Test the chat feature along with other features involving users, groups and join request at "http://{domain_name}/testing". 
+Test some of the features by accessing "http://{domain_name}/testing" after running the server. 
 
 Note that not every API implemented is implemented in the above testing GUI interface (coming soon if theres time)
 
@@ -361,4 +385,5 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Rework join request for better usability (prevent request to alrdy joined group, allow automatic deletion)
 - [x] Rewrite README.MD
 - [x] Implement Websockets for Groups
-- [ ] Add API to GET user using email
+- [x] Add dynamic loading for past messages
+- [x] Added notifications to testing chat

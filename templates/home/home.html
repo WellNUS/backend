@@ -21,7 +21,7 @@
                         },
                         body
                     })
-                    .then(res => console.log(res))
+                    .then(res => console.log(res.json()))
                     .catch(err => console.log(err))
                 }
 
@@ -43,7 +43,7 @@
                         body
                     })
                     .then(res => console.log(res.json()))
-                    .catch(err => console.log(err.json()))
+                    .catch(err => console.log(err))
                 }
 
                 logout.onclick = function(e) {
@@ -52,7 +52,7 @@
                         method : 'DELETE'
                     })
                     .then(res => console.log(res.json()))
-                    .catch(err => console.log(err.json()))
+                    .catch(err => console.log(err))
                 }
 
                 makeGroupForm.onsubmit = function(e) {
@@ -69,7 +69,7 @@
                         body
                     })
                     .then(res => console.log(res.json()))
-                    .catch(res => console.log(res.json()))
+                    .catch(err => console.log(err))
                 }
             };
         </script>

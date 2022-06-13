@@ -4,6 +4,7 @@ import (
 	"testing"
 	"net/http"
 	"net/http/httptest"
+	"database/sql"
 	"bytes"
 	"errors"
 	"encoding/json"
@@ -114,12 +115,10 @@ func getIOReaderFromJoinRequest(joinRequest JoinRequest) (io.Reader, error) {
 	return bytes.NewReader(j), nil
 }
 
-func getIntFromDB(query string) (int, error) {
-	rows, err := db.Query(query)
-	if err != nil { return 0, err }
-	rows.Next()
+func readInt(row *sql.Rows) (int, error) {
+	row.Next()
 	var c int
-	if err := rows.Scan(&c); err != nil { return 0, err }
+	if err := row.Scan(&c); err != nil { return 0, err }
 	return c, nil
 }
 
@@ -336,13 +335,16 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 	}
 
 	//Assert joinRequest deleted
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT COUNT(*) FROM wn_join_request 
-		WHERE id = %d`,
+		WHERE id = $1`,
 		addedJoinRequest.ID)
-	c, err := getIntFromDB(query)
 	if err != nil {
-		t.Errorf("An error occured while counting number of join_request. %v", err)
+		t.Errorf("An error occured while getting count from DB. %v", err)
+	}
+	c, err := readInt(rows)
+	if err != nil {
+		t.Errorf("An error occured while reading int. %v", err)
 	}
 	if c != 0 {
 		t.Errorf("The join request still exist and has not been deleted")
@@ -350,13 +352,16 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 
 
 	//Assert user2 was not added to group
-	query = fmt.Sprintf(
+	rows, err = db.Query(
 		`SELECT COUNT(*) FROM wn_user_group
-		WHERE user_id = %d`,
+		WHERE user_id = $1`,
 		validAddedUser2.ID)
-	c, err = getIntFromDB(query)
 	if err != nil {
-		t.Errorf("An error occured while counting number of groups user is in. %v", err)
+		t.Errorf("An errpr pccired while getting count from DB. %v", err)
+	}
+	c, err = readInt(rows)
+	if err != nil {
+		t.Errorf("An error occured while reading int. %v", err)
 	}
 	if c != 0 {
 		t.Errorf("User2 is in some group despite being rejected")
@@ -364,15 +369,15 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 }
 
 func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
-	_, err := db.Query(fmt.Sprintf(
+	_, err := db.Exec(
 		`INSERT INTO wn_join_request (
 			id,
 			user_id,
 			group_id
-		) values (%d, %d, %d)`,
+		) values ($1, $2, $3)`,
 		addedJoinRequest.ID,
 		addedJoinRequest.UserID,
-		addedJoinRequest.GroupID))
+		addedJoinRequest.GroupID)
 	if err != nil {
 		t.Errorf("An error occured while brute adding the join request back. %v", err)
 	}
@@ -394,27 +399,33 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 	}
 
 	//Assert joinRequest deleted
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT COUNT(*) FROM wn_join_request 
-		WHERE id = %d`,
+		WHERE id = $1`,
 		addedJoinRequest.ID)
-	c, err := getIntFromDB(query)
 	if err != nil {
-		t.Errorf("An error occured while counting number of join_request. %v", err)
+		t.Errorf("An error occured while getting count from DB. %v", err)
+	}
+	c, err := readInt(rows)
+	if err != nil {
+		t.Errorf("An error occured while reading int. %v", err)
 	}
 	if c != 0 {
 		t.Errorf("The join request still exist and has not been deleted")
 	}
 
 	//Assert user2 was not added to group
-	query = fmt.Sprintf(
+	rows, err = db.Query(
 		`SELECT COUNT(*) FROM wn_user_group
-		WHERE user_id = %d AND group_id = %d`,
+		WHERE user_id = $1 AND group_id = $2`,
 		validAddedUser2.ID,
 		validAddedGroup.ID)
-	c, err = getIntFromDB(query)
 	if err != nil {
-		t.Errorf("An error occured while counting number of groups user is in. %v", err)
+		t.Errorf("An error occured while getting count from DB. %v", err)
+	}
+	c, err = readInt(rows)
+	if err != nil {
+		t.Errorf("An error occured while reading int. %v", err)
 	}
 	if c != 1 {
 		t.Errorf("User2 is not in the group despite being approved")
@@ -422,15 +433,15 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 }
 
 func testDeleteJoinRequestHandlerAsUser1(t *testing.T) {
-	_, err := db.Query(fmt.Sprintf(
+	_, err := db.Exec(
 		`INSERT INTO wn_join_request (
 			id,
 			user_id,
 			group_id
-		) values (%d, %d, %d)`,
+		) values ($1, $2, $3)`,
 		addedJoinRequest.ID,
 		addedJoinRequest.UserID,
-		addedJoinRequest.GroupID))
+		addedJoinRequest.GroupID)
 	if err != nil {
 		t.Errorf("An error occured while brute adding the join request back. %v", err)
 	}

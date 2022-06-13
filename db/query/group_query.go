@@ -43,8 +43,7 @@ func readGroups(rows *sql.Rows) ([]Group, error) {
 }
 
 func getGroup(db *sql.DB, groupID int64) (Group, error) {
-	query := fmt.Sprintf("SELECT * FROM wn_group WHERE id = %d;", groupID)
-	rows, err := db.Query(query)
+	rows, err := db.Query("SELECT * FROM wn_group WHERE id = $1;", groupID)
 	if err != nil { return Group{}, err }
 	defer rows.Close()
 
@@ -109,8 +108,7 @@ func getNewOwnerID(groupWithUsers GroupWithUsers) int64 {
 }
 
 func deleteGroup(db *sql.DB, groupID int64) error {
-	query := fmt.Sprintf("DELETE FROM wn_group WHERE id = %d", groupID)
-	_, err := db.Query(query)
+	_, err := db.Query("DELETE FROM wn_group WHERE id = $1", groupID)
 	return err
 }
 
@@ -125,7 +123,7 @@ func GetGroupWithUsers(db *sql.DB, groupID int64) (GroupWithUsers, error) {
 }
 
 func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT
 			wn_group.id, 
 			wn_group.group_name, 
@@ -134,9 +132,8 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 			wn_group.owner_id
 		FROM wn_user_group JOIN wn_group 
 		ON wn_user_group.group_id = wn_group.id 
-		WHERE wn_user_group.user_id = %d`,
+		WHERE wn_user_group.user_id = $1`,
 		userID)
-	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	defer rows.Close()
 	
@@ -235,12 +232,11 @@ func LeaveAllGroups(db *sql.DB, userID int64) ([]GroupWithUsers, error) {
 }
 
 func IsUserInGroup(db *sql.DB, userID int64, groupID int64) (bool, error) {
-	query := fmt.Sprintf(
+	row, err := db.Query(
 		`SELECT COUNT(*) != 0 FROM wn_user_group 
-		WHERE user_id = %d and group_id = %d`,
+		WHERE user_id = $1 and group_id = $2`,
 		userID,
 		groupID)
-	row, err := db.Query(query)
 	if err != nil { return false, err }
 	var membership bool
 	row.Next()

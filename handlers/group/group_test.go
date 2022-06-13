@@ -290,13 +290,13 @@ func testGetGroupHandlerAsNotLoggedIn(t *testing.T) {
 }
 
 func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
-	_, err := db.Query(fmt.Sprintf(
+	_, err := db.Query(
 		`INSERT INTO wn_user_group (
 			user_id, 
 			group_id) 
-		VALUES (%d, %d)`, 
+		VALUES ($1, $2)`, 
 		validAddedUser2.ID, 
-		validAddedGroup1.ID))
+		validAddedGroup1.ID)
 	if err != nil {
 		t.Errorf("An error occured while adding user2 into group. %v", err)
 	}

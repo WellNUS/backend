@@ -47,9 +47,10 @@ func main() {
 	router.GET("/testing/user/:id", testing.GetTestingUserHandler(db))
 	router.GET("/testing/group", testing.GetTestingAllGroupsHandler(db))
 	router.GET("/testing/group/:id", testing.GetTestingGroupHandler(db))
+	router.GET("/testing/group/:id/chat", testing.GetTestingChatHandler(db))
 	router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
 	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
-	router.GET("/testing/chat/:id", testing.GetTestingChatHandler(db))
+	
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))
@@ -73,7 +74,7 @@ func main() {
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
 
-	router.GET("/message/:id", message.GetAllLoadedMessagesHandler(db))
+	router.GET("/message/:id", message.GetLoadedMessagesPacketOfGroupHandler(db))
 
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))
 

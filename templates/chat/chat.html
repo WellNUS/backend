@@ -4,11 +4,12 @@
         <title>Chat</title>
         <script type="text/javascript">
             window.onload = function () {
-                var conn;
-                var msg = document.getElementById("msg");
-                var log = document.getElementById("log");
-                var groupID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
-                var loaded = false
+                const loadLimit = 30
+                const groupID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                const msg = document.getElementById("msg");
+                const log = document.getElementById("log");
+                const notif = document.getElementById("notif");
+                var conn
 
                 function appendLog(item) {
                     var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
@@ -18,17 +19,27 @@
                     }
                 }
 
-                function appendMessage(sender, msg) {
+                function prependLog(...items){
+                    var curr = log.scrollHeight - log.scrollTop
+                    log.prepend(...items);
+                    log.scrollTop = log.scrollHeight - curr;
+                }
+
+                function makeMessageItem(loadedMessage) {
                     var item = document.createElement("div");
-                    item.innerHTML = `${sender}: ${msg}`
-                    appendLog(item)
+                    item.innerHTML = `${loadedMessage.sender.first_name}: ${loadedMessage.message.msg}`
+                    return item
+                }
+
+                var notifTimeOut
+                function newNotif(loadedMessage) {
+                    clearTimeout(notifTimeOut)
+                    var { sender, group } = loadedMessage
+                    notif.innerHTML = `New message from ${sender.first_name} in ${group.group_ame}`
+                    notif.style.display = "inherit"
+                    notifTimeOut = setTimeout(() => notif.style.display="none", 5000)
                 }
                 
-                fetch("http://" + document.location.host + "/message/" + groupID)
-                .then(res => res.json())
-                .then(data => data.forEach(message => appendMessage(message.sender.first_name, message.message.msg)))
-                .catch(err => console.log(err.json()))
-
                 document.getElementById("form").onsubmit = function () {
                     if (!conn) {
                         return false;
@@ -41,6 +52,26 @@
                     return false;
                 };
 
+                var earliestTime = ""
+                const loadInterval = setInterval(() => {
+                    if (log.scrollTop == 0) {
+                        const url = `${document.location.host}/message/${groupID}?latest=${earliestTime}&limit=${loadLimit}`;
+                        fetch("http://" + url)
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log(data)
+                            const { loaded_messages, earliest_time } = data
+                            if (loaded_messages && loaded_messages.length == 0) {
+                                clearInterval(loadInterval)
+                                return
+                            }
+                            prependLog(...data.loaded_messages.map(makeMessageItem))
+                            earliestTime = earliest_time
+                        })
+                        .catch(err => {console.log(err)})
+                    }
+                }, 100)
+
                 if (window["WebSocket"]) {
                     conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
                     conn.onclose = function (evt) {
@@ -49,8 +80,13 @@
                         appendLog(item);
                     };
                     conn.onmessage = function (evt) {
-                        const { sender, message } = JSON.parse(evt.data)
-                        appendMessage(sender.first_name, message.msg)
+                        var loadedMessage = JSON.parse(evt.data)
+                        console.log(loadedMessage)
+                        if (loadedMessage.message.group_id === groupID) {
+                            appendLog(makeMessageItem(loadedMessage))
+                        } else {
+                            newNotif(loadedMessage)
+                        }
                     };
                 } else {
                     var item = document.createElement("div");
@@ -73,11 +109,18 @@
                 margin: 0;
                 width: 100%;
             }
+
+            #notif {
+                background-color: red;
+                color: white;
+                display: none;
+            }
         </style>
     </head>
 
     <body>
         <a href="/testing/group">Go back to groups</a>
+        <div id="notif"></div>
         <div id="log"></div>
         <form id="form">
             <input type="submit" value="Send" />

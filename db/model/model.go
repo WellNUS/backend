@@ -59,5 +59,12 @@ type Message struct {
 
 type LoadedMessage struct {
 	Sender 			User	`json:"sender"`
+	Group			Group	`json:"group"`
 	Message			Message	`json:"message"`
+}
+
+type LoadedMessagesPacket struct {
+	EarliestTime		time.Time			`json:"earliest_time"`
+	LatestTime			time.Time 			`json:"latest_time"`
+	LoadedMessages 		[]LoadedMessage 	`json:"loaded_messages"`
 }

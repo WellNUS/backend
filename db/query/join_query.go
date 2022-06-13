@@ -5,7 +5,6 @@ import (
 	"wellnus/backend/db/model"
 
 	"database/sql"
-	"fmt"
 )
 
 type JoinRequest = model.JoinRequest
@@ -45,8 +44,7 @@ func loadJoinRequest(db *sql.DB, joinRequest JoinRequest) (LoadedJoinRequest, er
 }
 
 func getJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
-	query := fmt.Sprintf("SELECT * FROM wn_join_request WHERE id = %d", joinRequestID)
-	rows, err := db.Query(query)
+	rows, err := db.Query("SELECT * FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequest{}, err }
 	joinRequests, err := readJoinRequests(rows)
 	if err != nil { return JoinRequest{}, err }
@@ -57,15 +55,14 @@ func getJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 // Main function
 
 func GetAllJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT 
 			id, 
 			user_id, 
 			group_id
 		FROM wn_join_request
-		WHERE user_id = %d`,
+		WHERE user_id = $1`,
 		userID)
-	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	joinRequests, err := readJoinRequests(rows)
 	if err != nil { return nil, err }
@@ -73,16 +70,15 @@ func GetAllJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]JoinRequest, erro
 }
 
 func GetAllJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT 
 			wn_join_request.id, 
 			wn_join_request.user_id, 
 			wn_join_request.group_id
 		FROM wn_join_request
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
-		WHERE wn_group.owner_id = %d`,
+		WHERE wn_group.owner_id = $1`,
 		userID)
-	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	joinRequests, err := readJoinRequests(rows)
 	if err != nil { return nil, err }
@@ -90,17 +86,16 @@ func GetAllJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]JoinRequest, 
 }
 
 func GetAllJoinRequestsOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
-	query := fmt.Sprintf(
+	rows, err := db.Query(
 		`SELECT 
 			wn_join_request.id, 
 			wn_join_request.user_id, 
 			wn_join_request.group_id
 		FROM wn_join_request
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
-		WHERE wn_group.owner_id = %d OR wn_join_request.user_id = %d`,
+		WHERE wn_group.owner_id = $1 OR wn_join_request.user_id = $2`,
 		userID,
 		userID)
-	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	joinRequests, err := readJoinRequests(rows)
 	if err != nil { return nil, err }
