@@ -1,7 +1,7 @@
 package misc
 
 import (
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"wellnus/backend/config"
 	"strconv"
 	"fmt"

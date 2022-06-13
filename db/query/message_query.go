@@ -1,7 +1,7 @@
 package query
 
 import (
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"database/sql"
 	"time"
 )

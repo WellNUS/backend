@@ -2,7 +2,7 @@ package query
 
 import (
 	"wellnus/backend/handlers/misc"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 
 	"github.com/alexedwards/argon2id"
 	"database/sql"

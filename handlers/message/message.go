@@ -2,7 +2,7 @@ package message
 
 import (
 	"wellnus/backend/db/query"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"wellnus/backend/handlers/misc"
 
 	"time"

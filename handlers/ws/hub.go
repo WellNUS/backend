@@ -35,14 +35,25 @@ func NewHub(db *sql.DB) *Hub {
 	}
 }
 
-func getRecipientIDSet(db *sql.DB, groupID int64) (map[int64]bool, error) {
-	recipients, err := query.GetAllUsersOfGroup(db, groupID)
-	if err != nil { return nil, err }
+func (h *Hub) sendToRecipients(loadedMessage LoadedMessage) error {
+	recipients, err := query.GetAllUsersOfGroup(h.DB, loadedMessage.Message.GroupID)
+	if err != nil { return err }
 	recipientsSet := make(map[int64]bool)
 	for _, user := range recipients {
 		recipientsSet[user.ID] = true
 	}
-	return recipientsSet, nil
+	if err != nil { return err }
+	for client := range h.Clients {
+		if recipientsSet[client.UserID] {
+			select {
+				case client.Send <- loadedMessage:
+				default:
+					close(client.Send)
+					delete(h.Clients, client)
+			}
+		}
+	}
+	return nil
 }
 
 func (h *Hub) Run() {
@@ -66,21 +77,10 @@ func (h *Hub) Run() {
 				fmt.Printf("An error occured during loading. %v \n", err)
 				continue
 			}
-			recipientsSet, err := getRecipientIDSet(h.DB, message.GroupID)
+			err = h.sendToRecipients(loadedMessage)
 			if err != nil {
 				fmt.Printf("An error occured while getting recipient set. %v \n", err)
 				continue
-			} 
-			// Add message to database here
-			for client := range h.Clients {
-				if recipientsSet[client.UserID] {
-					select {
-						case client.Send <- loadedMessage:
-						default:
-							close(client.Send)
-							delete(h.Clients, client)
-					}
-				}
 			}
 		}
 	}

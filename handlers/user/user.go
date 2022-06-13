@@ -3,7 +3,7 @@ package user
 import (
 	"wellnus/backend/config"
 	"wellnus/backend/handlers/misc"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"wellnus/backend/db/query"
 	
 	"github.com/gin-gonic/gin"

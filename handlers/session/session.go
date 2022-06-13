@@ -2,7 +2,7 @@ package session
 
 import (
 	"wellnus/backend/config"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"wellnus/backend/handlers/misc"
 	"wellnus/backend/db/query"
 

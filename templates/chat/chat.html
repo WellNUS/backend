@@ -32,12 +32,16 @@
                 }
 
                 var notifTimeOut
+                var messageCount = 0
                 function newNotif(loadedMessage) {
                     clearTimeout(notifTimeOut)
                     var { sender, group } = loadedMessage
-                    notif.innerHTML = `New message from ${sender.first_name} in ${group.group_ame}`
+                    notif.innerHTML = `New message from ${sender.first_name} in ${group.group_name} (${++messageCount})`
                     notif.style.display = "inherit"
-                    notifTimeOut = setTimeout(() => notif.style.display="none", 5000)
+                    notifTimeOut = setTimeout(() => {
+                        notif.style.display="none"
+                        messageCount = 0
+                    }, 5000)
                 }
                 
                 document.getElementById("form").onsubmit = function () {

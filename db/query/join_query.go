@@ -2,7 +2,7 @@ package query
 
 import (
 	"wellnus/backend/handlers/misc"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 
 	"database/sql"
 )

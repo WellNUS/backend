@@ -2,7 +2,7 @@ package join
 
 import (
 	"wellnus/backend/config"
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 	"wellnus/backend/db/query"
 	"wellnus/backend/handlers/misc"
 

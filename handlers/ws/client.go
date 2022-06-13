@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"wellnus/backend/db/model"
+	"wellnus/backend/model"
 
 	"bytes"
 	"log"
