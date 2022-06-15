@@ -18,7 +18,7 @@ type Resp = model.Resp
 func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
 		loginUser, err := misc.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())

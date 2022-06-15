@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"wellnus/backend/config"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
@@ -12,6 +13,9 @@ import (
 
 func ConnectToWSHandler(wsHub *Hub, db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+
 		groupID, err := misc.GetIDParams(c)
 		if err != nil {
 			fmt.Printf("An error occured when retrieving group ID params. %v \n", err)

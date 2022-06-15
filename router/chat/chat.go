@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"wellnus/backend/config"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
@@ -29,6 +30,9 @@ func getLimitQuery(c *gin.Context) (int64, error) {
 
 func GetMessagesChunkOfGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+
 		groupID, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
