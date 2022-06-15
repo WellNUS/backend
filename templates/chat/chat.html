@@ -6,11 +6,13 @@
             window.onload = function () {
                 const loadLimit = 30
                 const groupID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
-                const msg = document.getElementById("msg");
-                const log = document.getElementById("log");
-                const notif = document.getElementById("notif");
+                const form = document.getElementById("form")
+                const msg = document.getElementById("msg")
+                const log = document.getElementById("log")
+                const notif = document.getElementById("notif")
                 var conn
 
+                //Helper functions
                 function appendLog(item) {
                     var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
                     log.appendChild(item);
@@ -25,37 +27,32 @@
                     log.scrollTop = log.scrollHeight - curr;
                 }
 
-                function makeMessageItem(loadedMessage) {
+                function makeMessageItem(messagePayload) {
                     var item = document.createElement("div");
-                    item.innerHTML = `${loadedMessage.sender.first_name}: ${loadedMessage.message.msg}`
+                    item.innerHTML = `${messagePayload.sender_name}: ${messagePayload.message.msg}`
                     return item
                 }
 
+                // Handle payload delivery (brains of the unit)
                 var notifTimeOut
-                var messageCount = 0
-                function newNotif(loadedMessage) {
-                    clearTimeout(notifTimeOut)
-                    var { sender, group } = loadedMessage
-                    notif.innerHTML = `New message from ${sender.first_name} in ${group.group_name} (${++messageCount})`
-                    notif.style.display = "inherit"
-                    notifTimeOut = setTimeout(() => {
-                        notif.style.display="none"
-                        messageCount = 0
-                    }, 5000)
+                function handlePayload(payload) {
+                    console.log(payload)
+                    if (payload.tag == 0) { // 0 is message
+                        if (payload.message.group_id == groupID) {
+                            appendLog(makeMessageItem(payload))
+                        } else {
+                            if (payload.message.user_id == -1) return
+                            clearTimeout(notifTimeOut)
+                            notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
+                            notif.style.display = "inherit"
+                            notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
+                        }
+                    } else if(payload.tag == 1) { // 1 is chat status
+                        console.log("Chat status", payload)
+                    }
                 }
-                
-                document.getElementById("form").onsubmit = function () {
-                    if (!conn) {
-                        return false;
-                    }
-                    if (!msg.value) {
-                        return false;
-                    }
-                    conn.send(msg.value);
-                    msg.value = "";
-                    return false;
-                };
 
+                //Handles loading of past messages
                 var earliestTime = ""
                 const loadInterval = setInterval(() => {
                     if (log.scrollTop == 0) {
@@ -64,19 +61,32 @@
                         .then(res => res.json())
                         .then(data => {
                             console.log(data)
-                            const { loaded_messages, earliest_time } = data
-                            if (loaded_messages && loaded_messages.length == 0) {
+                            const { message_payloads, earliest_time } = data
+                            if (message_payloads.length == 0) {
                                 clearInterval(loadInterval)
                                 return
                             }
-                            prependLog(...data.loaded_messages.map(makeMessageItem))
+                            prependLog(...message_payloads.map(makeMessageItem))
                             earliestTime = earliest_time
                         })
                         .catch(err => {console.log(err)})
                     }
                 }, 100)
 
+               
+                // Performs websocket connection
                 if (window["WebSocket"]) {
+                    form .onsubmit = function () {
+                        if (!conn) {
+                            return false;
+                        }
+                        if (!msg.value) {
+                            return false;
+                        }
+                        conn.send(msg.value);
+                        msg.value = "";
+                        return false;
+                    };
                     conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
                     conn.onclose = function (evt) {
                         var item = document.createElement("div");
@@ -84,13 +94,8 @@
                         appendLog(item);
                     };
                     conn.onmessage = function (evt) {
-                        var loadedMessage = JSON.parse(evt.data)
-                        console.log(loadedMessage)
-                        if (loadedMessage.message.group_id === groupID) {
-                            appendLog(makeMessageItem(loadedMessage))
-                        } else {
-                            newNotif(loadedMessage)
-                        }
+                        var payload = JSON.parse(evt.data)
+                        handlePayload(payload)
                     };
                 } else {
                     var item = document.createElement("div");

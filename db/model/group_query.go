@@ -1,36 +1,14 @@
-package query
+package model
 
 import (
-	"wellnus/backend/handlers/misc"
-	"wellnus/backend/model"
-	
+	"wellnus/backend/router/misc/http_error"	
 	"log"
 	"fmt"
 	"database/sql"
 )
 
-type Group = model.Group
-type GroupWithUsers = model.GroupWithUsers
-
 // Helper function
-func mergeGroup(groupMain Group, groupAdd Group) Group {
-	groupMain.ID = groupAdd.ID
-	if groupMain.GroupName == "" {
-		groupMain.GroupName = groupAdd.GroupName
-	}
-	if groupMain.GroupDescription == "" {
-		groupMain.GroupDescription = groupAdd.GroupDescription
-	}
-	if groupMain.Category == "" {
-		groupMain.Category = groupAdd.Category
-	}
-	if groupMain.OwnerID == 0 {
-		groupMain.OwnerID = groupAdd.OwnerID
-	}
-	return groupMain
-}
-
-func readGroups(rows *sql.Rows) ([]Group, error) {
+func ReadGroups(rows *sql.Rows) ([]Group, error) {
 	groups := make([]Group, 0)
 	for rows.Next() {
 		var group Group
@@ -42,28 +20,18 @@ func readGroups(rows *sql.Rows) ([]Group, error) {
 	return groups, nil
 }
 
-func getGroup(db *sql.DB, groupID int64) (Group, error) {
+func GetGroup(db *sql.DB, groupID int64) (Group, error) {
 	rows, err := db.Query("SELECT * FROM wn_group WHERE id = $1;", groupID)
 	if err != nil { return Group{}, err }
 	defer rows.Close()
 
-	groups, err := readGroups(rows)
+	groups, err := ReadGroups(rows)
 	if err != nil { return Group{}, err }
-	if len(groups) == 0 { return Group{}, misc.NotFoundError }
+	if len(groups) == 0 { return Group{}, http_error.NotFoundError }
 	return groups[0], nil
 }
 
-func loadLastGroupID(db *sql.DB, group Group) (Group, error) {
-	row, err := db.Query("SELECT last_value FROM wn_group_id_seq;")
-	if err != nil { return Group{}, err }
-	defer row.Close()
-
-	row.Next()
-	if err := row.Scan(&group.ID); err != nil { return Group{}, err }
-	return group, nil
-}
-
-func changeOwnership(db *sql.DB, group Group, newOwnerID int64) (Group, error) {
+func ChangeOwnership(db *sql.DB, group Group, newOwnerID int64) (Group, error) {
 	group.OwnerID = newOwnerID
 	_, err := db.Exec(
 		`UPDATE wn_group SET 
@@ -75,7 +43,7 @@ func changeOwnership(db *sql.DB, group Group, newOwnerID int64) (Group, error) {
 	return group, nil
 }
 
-func addUserToGroup(db *sql.DB, groupID int64, userID int64) error {
+func AddUserToGroup(db *sql.DB, groupID int64, userID int64) error {
 	_, err := db.Exec(
 		`INSERT INTO wn_user_group (
 			user_id, 
@@ -86,7 +54,7 @@ func addUserToGroup(db *sql.DB, groupID int64, userID int64) error {
 	return err
 }
 
-func removeUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
+func RemoveUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
 	_, err := db.Exec(
 		`DELETE FROM wn_user_group WHERE
 			user_id = $1 AND
@@ -94,17 +62,6 @@ func removeUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
 		userID,
 		groupID)
 	return err
-} 
-
-func getNewOwnerID(groupWithUsers GroupWithUsers) int64 {
-	currOwnerID := groupWithUsers.Group.OwnerID
-	users := groupWithUsers.Users
-	for _, user := range users {
-		if user.ID != currOwnerID {
-			return user.ID
-		}
-	}
-	return 0
 }
 
 func deleteGroup(db *sql.DB, groupID int64) error {
@@ -115,7 +72,7 @@ func deleteGroup(db *sql.DB, groupID int64) error {
 // Main Functions
 
 func GetGroupWithUsers(db *sql.DB, groupID int64) (GroupWithUsers, error) {
-	group, err := getGroup(db, groupID)
+	group, err := GetGroup(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }
 	users, err := GetAllUsersOfGroup(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }
@@ -137,7 +94,7 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 	if err != nil { return nil, err }
 	defer rows.Close()
 	
-	groups, err := readGroups(rows)
+	groups, err := ReadGroups(rows)
 	if err != nil { return nil, err}
 	return groups, nil
 }
@@ -155,11 +112,11 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 		newGroup.Category,
 		newGroup.OwnerID)
 	if err != nil { return GroupWithUsers{}, err }
-	newGroup, err = loadLastGroupID(db, newGroup)
+	newGroup, err = newGroup.LoadLastGroupID(db)
 	if err != nil { return GroupWithUsers{}, err }
 	
 	// newGroup successfully added into DB. Now adding owner into new group
-	err = addUserToGroup(db, newGroup.ID, newGroup.OwnerID)
+	err = AddUserToGroup(db, newGroup.ID, newGroup.OwnerID)
 	if err != nil {
 		log.Printf("Failed to add Owner: %v", err)
 		if _, fatal := db.Exec("DELETE FROM wn_group WHERE id = $1", newGroup.ID); fatal != nil {
@@ -175,11 +132,11 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 }
 
 func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (Group, error) {
-	targetGroup, err := getGroup(db, groupID)
+	targetGroup, err := GetGroup(db, groupID)
 	if err != nil { return Group{}, err }
-	if targetGroup.OwnerID != userID { return Group{}, misc.UnauthorizedError }
+	if targetGroup.OwnerID != userID { return Group{}, http_error.UnauthorizedError }
 
-	updatedGroup = mergeGroup(updatedGroup, targetGroup)
+	updatedGroup = updatedGroup.MergeGroup(targetGroup)
 
 	_, err = db.Exec(
 		`UPDATE wn_group SET 
@@ -201,16 +158,16 @@ func LeaveGroup(db *sql.DB, groupID int64, userID int64) (GroupWithUsers, error)
 	targetGroupWithUsers, err := GetGroupWithUsers(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }
 	if targetGroupWithUsers.Group.OwnerID == userID {
-		newOwnerID := getNewOwnerID(targetGroupWithUsers)
+		newOwnerID := targetGroupWithUsers.GetNewOwnerID()
 		if newOwnerID == 0 {	
 			err = deleteGroup(db, groupID)
 			if err != nil { return GroupWithUsers{}, err } // Group not deleted
 			return GroupWithUsers{ Group: Group{ID: groupID} }, nil
 		}
-		targetGroupWithUsers.Group, err = changeOwnership(db, targetGroupWithUsers.Group, newOwnerID)
+		targetGroupWithUsers.Group, err = ChangeOwnership(db, targetGroupWithUsers.Group, newOwnerID)
 		if err != nil { return GroupWithUsers{}, err } // Ownership not transferred
 	}
-	err = removeUserFromGroup(db, groupID, userID)
+	err = RemoveUserFromGroup(db, groupID, userID)
 	if err != nil { return GroupWithUsers{}, err } // User not properly removed
 	users, err := GetAllUsersOfGroup(db, groupID)
 	if err != nil { return GroupWithUsers{}, err }

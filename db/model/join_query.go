@@ -1,19 +1,13 @@
-package query
+package model
 
 import (
-	"wellnus/backend/handlers/misc"
-	"wellnus/backend/model"
-
+	"wellnus/backend/router/misc/http_error"
 	"database/sql"
 )
 
-type JoinRequest = model.JoinRequest
-type LoadedJoinRequest = model.LoadedJoinRequest
-type JoinRequestRespond = model.JoinRequestRespond
-
 // Helper function
 
-func readJoinRequests(rows *sql.Rows) ([]JoinRequest, error) {
+func ReadJoinRequests(rows *sql.Rows) ([]JoinRequest, error) {
 	joinRequests := make([]JoinRequest, 0)
 	for rows.Next() {
 		var joinRequest JoinRequest
@@ -25,30 +19,12 @@ func readJoinRequests(rows *sql.Rows) ([]JoinRequest, error) {
 	return joinRequests, nil
 }
 
-func loadLastJoinRequestID(db *sql.DB, joinRequest JoinRequest) (JoinRequest, error) {
-	row, err := db.Query("SELECT last_value FROM wn_join_request_id_seq;")
-	if err != nil { return JoinRequest{}, err }
-	defer row.Close()
-
-	row.Next()
-	if err := row.Scan(&joinRequest.ID); err != nil { return JoinRequest{}, err }
-	return joinRequest, nil
-}
-
-func loadJoinRequest(db *sql.DB, joinRequest JoinRequest) (LoadedJoinRequest, error) {
-	user, err := getUser(db, joinRequest.UserID)
-	if err != nil { return LoadedJoinRequest{}, err }
-	group, err := getGroup(db, joinRequest.GroupID)
-	if err != nil { return LoadedJoinRequest{}, err }
-	return LoadedJoinRequest{ JoinRequest: joinRequest, User: user, Group: group }, nil
-}
-
-func getJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
+func GetJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 	rows, err := db.Query("SELECT * FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequest{}, err }
-	joinRequests, err := readJoinRequests(rows)
+	joinRequests, err := ReadJoinRequests(rows)
 	if err != nil { return JoinRequest{}, err }
-	if len(joinRequests) == 0 { return JoinRequest{}, misc.NotFoundError }
+	if len(joinRequests) == 0 { return JoinRequest{}, http_error.NotFoundError }
 	return joinRequests[0], nil
 }
 
@@ -64,7 +40,7 @@ func GetAllJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]JoinRequest, erro
 		WHERE user_id = $1`,
 		userID)
 	if err != nil { return nil, err }
-	joinRequests, err := readJoinRequests(rows)
+	joinRequests, err := ReadJoinRequests(rows)
 	if err != nil { return nil, err }
 	return joinRequests, nil
 }
@@ -80,7 +56,7 @@ func GetAllJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]JoinRequest, 
 		WHERE wn_group.owner_id = $1`,
 		userID)
 	if err != nil { return nil, err }
-	joinRequests, err := readJoinRequests(rows)
+	joinRequests, err := ReadJoinRequests(rows)
 	if err != nil { return nil, err }
 	return joinRequests, nil
 }
@@ -97,15 +73,15 @@ func GetAllJoinRequestsOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
 		userID,
 		userID)
 	if err != nil { return nil, err }
-	joinRequests, err := readJoinRequests(rows)
+	joinRequests, err := ReadJoinRequests(rows)
 	if err != nil { return nil, err }
 	return joinRequests, nil
 }
 
 func GetLoadedJoinRequest(db *sql.DB, joinRequestID int64) (LoadedJoinRequest, error) {
-	joinRequest, err := getJoinRequest(db, joinRequestID)
+	joinRequest, err := GetJoinRequest(db, joinRequestID)
 	if err != nil { return LoadedJoinRequest{}, err }
-	loadedJoinRequest, err := loadJoinRequest(db, joinRequest)
+	loadedJoinRequest, err := joinRequest.LoadJoinRequest(db)
 	if err != nil { return LoadedJoinRequest{}, err }
 	return loadedJoinRequest, nil
 }
@@ -119,7 +95,7 @@ func AddJoinRequest(db *sql.DB, groupID int64, userID int64) (JoinRequest, error
 		userID,
 		groupID)
 	if err != nil { return JoinRequest{}, err }
-	joinRequest, err := loadLastJoinRequestID(db, JoinRequest{ UserID: userID, GroupID: groupID })
+	joinRequest, err := JoinRequest{ UserID: userID, GroupID: groupID }.LoadLastJoinRequestID(db)
 	if err != nil { return JoinRequest{}, err }
 	return joinRequest, nil
 }
@@ -127,11 +103,11 @@ func AddJoinRequest(db *sql.DB, groupID int64, userID int64) (JoinRequest, error
 func RespondJoinRequest(db *sql.DB, joinRequestID int64, userID int64, approve bool) (JoinRequestRespond, error) {
 	loadedJoinRequest, err := GetLoadedJoinRequest(db, joinRequestID)
 	if err != nil { return JoinRequestRespond{}, nil }
-	if loadedJoinRequest.Group.OwnerID != userID { return JoinRequestRespond{}, misc.UnauthorizedError }
+	if loadedJoinRequest.Group.OwnerID != userID { return JoinRequestRespond{}, http_error.UnauthorizedError }
 	
 	//Adding user into group if necessary
 	if approve { 
-		if err = addUserToGroup(db, loadedJoinRequest.Group.ID, loadedJoinRequest.JoinRequest.UserID); err != nil {
+		if err = AddUserToGroup(db, loadedJoinRequest.Group.ID, loadedJoinRequest.JoinRequest.UserID); err != nil {
 			return JoinRequestRespond{}, err
 		}
 	}
@@ -141,9 +117,9 @@ func RespondJoinRequest(db *sql.DB, joinRequestID int64, userID int64, approve b
 }
 
 func DeleteJoinRequest(db *sql.DB, joinRequestID int64, userID int64) (JoinRequest, error) {
-	joinRequest, err := getJoinRequest(db, joinRequestID)
+	joinRequest, err := GetJoinRequest(db, joinRequestID)
 	if err != nil { return JoinRequest{}, err }
-	if joinRequest.UserID != userID { return JoinRequest{}, misc.UnauthorizedError }
+	if joinRequest.UserID != userID { return JoinRequest{}, http_error.UnauthorizedError }
 
 	_, err = db.Exec("DELETE FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequest{}, err }

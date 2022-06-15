@@ -230,19 +230,21 @@ FRONTEND_URL: localhost:3000
 
 > #### Message Details
 >
->> Handles the retrieval of past messages in groups
+>> Handles the retrieval of past messages in groups. 
+>>
+>> The API takes in query params to indicate the limit and the latest message to load in. This is to enable dynamic loading of messages so that not all the chat history is loaded in at once. Refer to /template/chat/chat.html for reference on how to do this
 >>
 >> Message = { user_id, group_id, time_added, msg }
 >>
->> LoadedMessage = { sender: User, message: Message }
+>> MessagePayload = { tag=0, sender_name, group_name, message: Message }
 >>
->> LoadedMessagesPacket = { earliest_time, latest_time, loaded_messages: LoadedMessage[] }
+>> MessagesChunk = { earliest_time, latest_time, message_payloads: message_payload[] }
 >
 > #### Message Routes
 >
 >> ##### /message/:id - GET
 >>
->>> Description : Gets all loaded messages sent in the group of given id in ascending time sent.
+>>> Description : Gets messages chunk sent in the group of given id in ascending time sent.
 >>>
 >>> Query Params:
 >>> - ?limit=(int) : Specify how many messages to load in. If unspecified or <= 0, will load all past messages
@@ -250,7 +252,7 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : LoadedMessagesPacket
+>>> Response Body : MessagesChunk
 
 ### Websocket for chats
 
@@ -267,20 +269,42 @@ conn.onclose = function (evt) {
     appendLog(item);
 };
 conn.onmessage = function (evt) {
-    var loadedMessage = JSON.parse(evt.data)
-    if (loadedMessage.message.group_id === groupID) {
-        appendLog(makeMessageItem(loadedMessage))
-    } else {
-        newNotif(loadedMessage)
-    }
+    var payload = JSON.parse(evt.data)
+    handlePayload(payload)
 };
-
 ```
+>> Sending data to server:
+>>
+>>> The data sent to the server through the "conn" instance has a format of "Message" = { user_id, group_id, time_added and msg }.
+>>
+>> Receiving data from server:
+>>
+>>> The data received from the server through the "conn" instance is what we will call a "Payload".
+>>>
+>>> A Payload always comprise of a "tag" field to indicate what kind of data has been passed through.
+>>>
+>>> Tag Reference sheet:
+>>> - tag == 0 (MessagePayload) // The same one mentioned above
+>>>     - MessagePayload = { tag, sender_name, group_name, message: { user_id, group_id, time_added, msg }
+>>>         - Note that if the "user_id" field == -1, the message is from the Server and is not saved in database.
+>>> - tag == 1 (ChatStatusPayload)
+>>>     - ChatStatusPayload = { tag, group_id, group_name, sorted_online_members, sorted_in_chat_members }
+>>> 
+>>> These data sent from the server is sufficient to create the following chat features:
+>>> - Live messages from users
+>>> - Live messages from server
+>>> - Notifications of users joining the chat
+>>> - Notifications of users leaving the chat
+>>> - Live updates of what users are online in a given group
+>>> - Live updates of what users are in chat of the given group
+>> 
+>> Refer to /templates/chat/chat.html for reference on how to implement the chat feature
+>
 > #### Websocket Routes
 >
 >> ##### /ws/:group_id - GET
 >>
->>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/(group_id)" which will return a connection object. Incoming and outgoing messages will come and go through this connection object.
+>>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/(group_id)" which will return a connection object. Incoming payloads and outgoing messages will come and go through this connection object.
 >>> 
 >>> Request Body : None
 >>>
@@ -388,3 +412,5 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Implement Websockets for Groups
 - [x] Add dynamic loading for past messages
 - [x] Added notifications to testing chat
+- [x] Complete restructuring of code for hopefully better scalability
+- [x] Generalised the websocket connection to enable chat status data and messages as payloads
