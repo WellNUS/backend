@@ -2,7 +2,7 @@ package config
 
 var (
 	DOMAIN string = "localhost"
-	FRONTEND_URL string = "localhost:3000"
+	FRONTEND_URL string = "http://localhost:3000"
 	BACKEND_URL string = "localhost:8080"
 	
 	// Database fields (if changed update in Makefile as well)
