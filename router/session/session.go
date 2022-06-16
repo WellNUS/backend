@@ -48,6 +48,9 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+
 		misc.RemoveIDCookie(c)
 		c.IndentedJSON(http_error.GetStatusCode(nil), Resp{ LoggedIn: false, User: User{}})
 	}
