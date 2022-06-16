@@ -10,6 +10,7 @@
                 const msg = document.getElementById("msg")
                 const log = document.getElementById("log")
                 const notif = document.getElementById("notif")
+                const statuses = document.getElementById("statuses")
                 var conn
 
                 //Helper functions
@@ -29,27 +30,27 @@
 
                 function makeMessageItem(messagePayload) {
                     var item = document.createElement("div");
-                    item.innerHTML = `${messagePayload.sender_name}: ${messagePayload.message.msg}`
+                    item.innerText = `${messagePayload.sender_name}: ${messagePayload.message.msg}`
                     return item
                 }
 
-                // Handle payload delivery (brains of the unit)
-                var notifTimeOut
-                function handlePayload(payload) {
-                    console.log(payload)
-                    if (payload.tag == 0) { // 0 is message
-                        if (payload.message.group_id == groupID) {
-                            appendLog(makeMessageItem(payload))
-                        } else {
-                            if (payload.message.user_id == -1) return
-                            clearTimeout(notifTimeOut)
-                            notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
-                            notif.style.display = "inherit"
-                            notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
-                        }
-                    } else if(payload.tag == 1) { // 1 is chat status
-                        console.log("Chat status", payload)
-                    }
+                function updateStatuses(chatStatusPayload) {
+                    statuses.innerHTML = ''
+                    chatStatusPayload.sorted_in_chat_members.forEach(user => {
+                        var item = document.createElement("li")
+                        item.innerText = `${user.first_name} - in chat`
+                        statuses.appendChild(item)
+                    })
+                    chatStatusPayload.sorted_online_members.forEach(user => {
+                        var item = document.createElement("li")
+                        item.innerText = `${user.first_name} - online`
+                        statuses.appendChild(item)
+                    })
+                    chatStatusPayload.sorted_offline_members.forEach(user => {
+                        var item = document.createElement("li")
+                        item.innerText = `${user.first_name} - offline`
+                        statuses.appendChild(item)
+                    })
                 }
 
                 //Handles loading of past messages
@@ -62,18 +63,38 @@
                         .then(data => {
                             console.log(data)
                             const { message_payloads, earliest_time } = data
-                            if (message_payloads.length == 0) {
+                            if (!message_payloads || message_payloads.length == 0) {
                                 clearInterval(loadInterval)
                                 return
                             }
                             prependLog(...message_payloads.map(makeMessageItem))
                             earliestTime = earliest_time
                         })
-                        .catch(err => {console.log(err)})
+                        .catch(err => {
+                            console.log(err)
+                            clearInterval(loadInterval)
+                        })
                     }
                 }, 100)
 
-               
+                // Handle payload delivery (brains of the unit)
+                var notifTimeOut
+                function handlePayload(payload) {
+                    console.log(payload)
+                    if (payload.tag == 0) { // 0 is message
+                        if (payload.message.group_id == groupID) {
+                            appendLog(makeMessageItem(payload))
+                        } else {
+                            clearTimeout(notifTimeOut)
+                            notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
+                            notif.style.display = "inherit"
+                            notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
+                        }
+                    } else if(payload.tag == 1) { // 1 is chat status
+                        updateStatuses(payload)
+                    }
+                }
+
                 // Performs websocket connection
                 if (window["WebSocket"]) {
                     form .onsubmit = function () {
@@ -87,6 +108,7 @@
                         msg.value = "";
                         return false;
                     };
+
                     conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
                     conn.onclose = function (evt) {
                         var item = document.createElement("div");
@@ -135,6 +157,11 @@
             <input type="submit" value="Send" />
             <input type="text" id="msg" size="64" autofocus />
         </form>
+
+        <h4>Chat Status</h4>
+        <ul id="statuses">
+        </ul>
+
         <h2> Group {{ .groupWithUsers.Group.ID }}</h2>
         <div>
             <div>GroupName: {{ .groupWithUsers.Group.GroupName }}</div>

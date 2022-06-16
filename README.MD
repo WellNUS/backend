@@ -275,21 +275,25 @@ conn.onmessage = function (evt) {
 ```
 >> Sending data to server:
 >>
->>> The data sent to the server through the "conn" instance has a format of "Message" = { user_id, group_id, time_added and msg }.
+>>> The data sent to the server through the **conn** instance has a format of **Message** = { user_id, group_id, time_added and msg }.
 >>
 >> Receiving data from server:
 >>
->>> The data received from the server through the "conn" instance is what we will call a "Payload".
+>>> The data received from the server through the **conn** instance is what we will call a **Payload**.
 >>>
->>> A Payload always comprise of a "tag" field to indicate what kind of data has been passed through.
+>>> A Payload always comprise of a **tag** field to indicate what kind of data has been passed through.
 >>>
 >>> Tag Reference sheet:
->>> - tag == 0 (MessagePayload) // The same one mentioned above
->>>     - MessagePayload = { tag, sender_name, group_name, message: { user_id, group_id, time_added, msg }
->>>         - Note that if the "user_id" field == -1, the message is from the Server and is not saved in database.
->>> - tag == 1 (ChatStatusPayload)
->>>     - ChatStatusPayload = { tag, group_id, group_name, sorted_online_members, sorted_in_chat_members }
->>> 
+>>> - tag == 0 **MessagePayload**
+>>>     - **MessagePayload** = { tag, sender_name, group_name, message: Message }
+>>>         - If the **message.user_id == -1**, the message a Server Message and is not saved on database.
+>>> - tag == 1 **ChatStatusPayload**
+>>>     - **ChatStatusPayload** = { tag, group_id, group_name, sorted_in_chat_members, sorted_online_members, sorted_offline_members }
+>>>         - Members of a group are in only 1 of 3 states
+>>>             - in chat : Member is connected through websocket and is on chat page of the given group
+>>>             - online : Member is connected through websocket and is on chat page of some other group
+>>>             - offline : Member is not connected through websocket
+>>>         - Union of **sorted_in_chat_members**, **sorted_online_members**, and **sorted_offline_members** form all group members of given group
 >>> These data sent from the server is sufficient to create the following chat features:
 >>> - Live messages from users
 >>> - Live messages from server
@@ -414,3 +418,4 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Added notifications to testing chat
 - [x] Complete restructuring of code for hopefully better scalability
 - [x] Generalised the websocket connection to enable chat status data and messages as payloads
+- [x] Secured message loading with cookie

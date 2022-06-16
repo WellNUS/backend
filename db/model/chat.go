@@ -56,6 +56,7 @@ type ChatStatusPayload struct {
 	Tag						int 			`json:"tag"`
 	GroupID					int64			`json:"group_id"`
 	GroupName				string			`json:"group_name"`
-	SortedOnlineMembers 	[]User			`json:"sorted_online_users"`
-	SortedInChatMembers		[]User			`json:"sorted_in_chat_users"`
+	SortedInChatMembers		[]User			`json:"sorted_in_chat_members"`
+	SortedOnlineMembers 	[]User			`json:"sorted_online_members"`
+	SortedOfflineMembers	[]User			`json:"sorted_offline_members"`
 }

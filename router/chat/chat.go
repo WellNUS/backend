@@ -39,6 +39,18 @@ func GetMessagesChunkOfGroupHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 
+		userID, _ := misc.GetIDCookie(c)
+		inGroup, err := model.IsUserInGroup(db, userID, groupID)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+		if !inGroup {
+			err = http_error.UnauthorizedError
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+
 		limit, _ := getLimitQuery(c)
 		latestTime, err := getLatestQuery(c)
 		if err != nil { 
