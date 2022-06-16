@@ -1,7 +1,6 @@
 package group
 
 import (
-	"wellnus/backend/config"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
@@ -13,8 +12,8 @@ import (
 // Main functions
 func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		userID, _ := misc.GetIDCookie(c)
 		groups, err := model.GetAllGroupsOfUser(db, userID)
 		if err != nil {
@@ -27,8 +26,8 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 
 func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		groupIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -45,8 +44,7 @@ func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
 
 		newGroup, err := misc.GetGroupFromContext(c)
 		if err != nil {
@@ -71,8 +69,8 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		groupIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -99,8 +97,7 @@ func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
 
 		groupIDParam, err := misc.GetIDParams(c)
 		if err != nil {
@@ -123,8 +120,8 @@ func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func LeaveAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-		c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		userIDCookie, err := misc.GetIDCookie(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())

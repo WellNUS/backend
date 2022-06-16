@@ -1,7 +1,6 @@
 package user
 
 import (
-	"wellnus/backend/config"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
 	"wellnus/backend/db/model"
@@ -13,8 +12,8 @@ import (
 // Main functions
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		users, err := model.GetAllUsers(db)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -26,8 +25,8 @@ func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 
 func GetUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -44,8 +43,8 @@ func GetUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		newUser, err := misc.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -63,8 +62,8 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -88,8 +87,8 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 
 func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		userIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())

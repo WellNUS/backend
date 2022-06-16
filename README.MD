@@ -29,6 +29,10 @@ FRONTEND_URL: localhost:3000
 
 ## Features
 
+### Notes to connect frontend to backend
+
+All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
+
 ### User
 
 > #### Users Details
@@ -51,7 +55,7 @@ FRONTEND_URL: localhost:3000
 >>
 >> ##### /user - POST
 >> 
->>> Description : Create a new user and logins as that 
+>>> Description : Create a new user and logins as that
 >>>
 >>> Request Body: { first_name, last_name, gender, faculty, email, user_role, password }
 >>>

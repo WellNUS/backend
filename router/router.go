@@ -1,6 +1,7 @@
 package router
 
 import (
+	"wellnus/backend/router/misc"
 	"wellnus/backend/router/user"
 	"wellnus/backend/router/session"
 	"wellnus/backend/router/group"
@@ -27,7 +28,6 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/testing/group/:id/chat", testing.GetTestingChatHandler(db))
 	router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
 	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
-	
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))
@@ -41,10 +41,11 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/group", group.GetAllGroupsHandler(db))
 	router.POST("/group", group.AddGroupHandler(db))
 	router.DELETE("/group", group.LeaveAllGroupsHandler(db))
+	
 	router.GET("/group/:id", group.GetGroupHandler(db))
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
 	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
-
+	
 	router.GET("/join", join.GetAllJoinRequestsHandler(db))
 	router.POST("/join", join.AddJoinRequestHandler(db))
 	router.GET("/join/:id", join.GetLoadedJoinRequestHandler(db))
@@ -52,8 +53,9 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
-
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))
 	
+	router.NoRoute(misc.NoRouteHandler)
+
 	return router
 }

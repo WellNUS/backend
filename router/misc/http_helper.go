@@ -14,6 +14,13 @@ type Group = model.Group
 type JoinRequest = model.JoinRequest
 type JoinRequestRespond = model.JoinRequestRespond
 
+func SetHeaders(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
+	c.Header("Access-Control-Allow-Credentials", "true")
+}
+
 func GetIDParams(c *gin.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
 	if err != nil { return 0, http_error.NotFoundError }
@@ -66,4 +73,14 @@ func GetJoinRequestRespondFromContext(c *gin.Context) (JoinRequestRespond, error
 		return JoinRequestRespond{}, err
 	}
 	return resp, nil
-}	
+}
+
+func NoRouteHandler(c *gin.Context) {
+	if c.Request.Method == "OPTIONS" {
+		SetHeaders(c)
+		c.IndentedJSON(http_error.GetStatusCode(nil), nil)
+	} else {
+		err := http_error.NotFoundError
+		c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+	}
+}

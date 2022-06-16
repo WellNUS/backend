@@ -1,7 +1,6 @@
 package session
 
 import (
-	"wellnus/backend/config"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
 	"wellnus/backend/db/model"
@@ -17,8 +16,8 @@ type Resp = model.Resp
 // Main function
 func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
+
 		loginUser, err := misc.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -48,8 +47,7 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
-    	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
+		misc.SetHeaders(c)
 
 		misc.RemoveIDCookie(c)
 		c.IndentedJSON(http_error.GetStatusCode(nil), Resp{ LoggedIn: false, User: User{}})
