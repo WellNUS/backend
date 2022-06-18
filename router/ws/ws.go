@@ -19,7 +19,7 @@ func ConnectToWSHandler(wsHub *Hub, db *sql.DB) func(*gin.Context) {
 			fmt.Printf("An error occured when retrieving group ID params. %v \n", err)
 			return
 		}
-		userID, err := misc.GetIDCookie(c)
+		userID, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			fmt.Printf("An error occured when retrieving user ID cookies. %v \n", err)
 			return

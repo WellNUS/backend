@@ -22,11 +22,6 @@ type UserWithGroups struct {
 	Groups 	[]Group `json:"groups"`
 }
 
-type Resp struct {
-	LoggedIn 	bool `json:"logged_in"`
-	User	 	User `json:"user"`
-}
-
 func (user User) HashPassword() (User, error) {
 	var err error
 	user.PasswordHash, err = argon2id.CreateHash(user.Password, argon2id.DefaultParams)

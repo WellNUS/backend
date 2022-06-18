@@ -5,7 +5,8 @@ import (
 	"wellnus/backend/config"
 	"wellnus/backend/router/misc/http_error"
 	"strconv"
-	"fmt"
+
+	"database/sql"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,21 +28,14 @@ func GetIDParams(c *gin.Context) (int64, error) {
 	return id, nil
 }
 
-func GetIDCookie(c *gin.Context) (int64, error) {
-	strUserID, err := c.Cookie("id")
+func GetUserIDFromSessionCookie(db *sql.DB, c *gin.Context) (int64, error) {
+	sessionKey, err := c.Cookie("session_key")
 	if err != nil { return 0, http_error.UnauthorizedError }
-	userID, err := strconv.ParseInt(strUserID, 0, 64)
+	userID, err := model.GetUserIDFromSessionKey(db, sessionKey)
 	if err != nil { return 0, err }
 	return userID, nil
 }
 
-func SetIDCookie(c *gin.Context, userID int64) {
-	c.SetCookie("id", fmt.Sprintf("%d", userID), 1209600, "/", config.DOMAIN, false, true)
-}
-
-func RemoveIDCookie(c *gin.Context) {
-	c.SetCookie("id", "", -1, "/", config.DOMAIN, false, true)
-}
 
 func GetUserFromContext(c *gin.Context) (User, error) {
 	var user User

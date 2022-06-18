@@ -1,6 +1,7 @@
 package session
 
 import (
+	"wellnus/backend/config"
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
 	"wellnus/backend/db/model"
@@ -11,7 +12,22 @@ import (
 )
 
 type User = model.User
-type Resp = model.Resp
+type SessionResponse = model.SessionResponse
+
+// Helper function
+func CreateNewSessionCookie(db *sql.DB, c *gin.Context, userID int64) error {
+	newSessionKey, err := model.CreateNewSession(db, userID)
+	if err != nil { return err }
+	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.DOMAIN, false, true)
+	return nil
+}
+
+func RemoveSessionCookie(db *sql.DB, c *gin.Context) error {
+	sessionKey, _ := c.Cookie("session_key")
+	if err := model.DeleteSessionWithSessionKey(db, sessionKey); err != nil { return err }
+	c.SetCookie("session_key", "", -1, "/", config.DOMAIN, false, true)
+	return nil
+}
 
 // Main function
 func LoginHandler(db *sql.DB) func(*gin.Context) {
@@ -36,11 +52,15 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		if match {
-			misc.SetIDCookie(c, storedUser.ID)
-			c.IndentedJSON(http_error.GetStatusCode(err), Resp{ LoggedIn: true, User: storedUser })
+			err = CreateNewSessionCookie(db, c, storedUser.ID)
+			if err != nil {
+				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				return
+			}
+			c.IndentedJSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser })
 		} else {
-			misc.RemoveIDCookie(c)
-			c.IndentedJSON(http_error.GetStatusCode(err), Resp{ LoggedIn: false, User: User{}})
+			RemoveSessionCookie(db, c)
+			c.IndentedJSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false, User: User{}})
 		}
 	} 
 }
@@ -49,7 +69,11 @@ func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		misc.RemoveIDCookie(c)
-		c.IndentedJSON(http_error.GetStatusCode(nil), Resp{ LoggedIn: false, User: User{}})
+		err := RemoveSessionCookie(db, c)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+		c.IndentedJSON(http_error.GetStatusCode(nil), SessionResponse{ LoggedIn: false, User: User{}})
 	}
 }

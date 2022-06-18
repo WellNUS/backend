@@ -25,6 +25,8 @@ var (
 	Router *gin.Engine
 	NotFoundErrorMessage 		string = http_error.NotFoundError.Error()
 	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
+	SessionKey1	string
+	SessionKey2 string
 )
 
 var validAddedUser1 User = User{
@@ -84,7 +86,10 @@ func TestMain(m *testing.M) {
 	validAddedUser1, err = model.AddUser(DB, validAddedUser1)
 	validAddedUser2, err = model.AddUser(DB, validAddedUser2)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
-	
+	SessionKey1, err = model.CreateNewSession(DB, validAddedUser1.ID)
+	SessionKey2, err = model.CreateNewSession(DB, validAddedUser2.ID)
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test sessions. %v", err)) }
+
 	r := m.Run()
 
 	DB.Exec("DELETE FROM wn_user WHERE id = $1 OR id = $2", validAddedUser1.ID, validAddedUser2.ID)

@@ -14,7 +14,7 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userID, _ := misc.GetIDCookie(c)
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		groups, err := model.GetAllGroupsOfUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -52,7 +52,7 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		newGroup.OwnerID, err = misc.GetIDCookie(c)
+		newGroup.OwnerID, err = misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -76,7 +76,7 @@ func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := misc.GetIDCookie(c)
+		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -104,7 +104,7 @@ func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := misc.GetIDCookie(c)
+		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -122,7 +122,7 @@ func LeaveAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userIDCookie, err := misc.GetIDCookie(c)
+		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

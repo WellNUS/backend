@@ -3,6 +3,7 @@ package user
 import (
 	"wellnus/backend/router/misc"
 	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/session"
 	"wellnus/backend/db/model"
 	
 	"github.com/gin-gonic/gin"
@@ -55,7 +56,7 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		misc.SetIDCookie(c, newUser.ID)
+		session.CreateNewSessionCookie(db, c, newUser.ID)
 		c.IndentedJSON(http_error.GetStatusCode(err), newUser)
 	}
 }
@@ -69,14 +70,14 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, _ := misc.GetIDCookie(c)
-		if userIDCookie != userIDParam {
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		_, err = model.LeaveAllGroups(db, userIDCookie)
-		deletedUser, err := model.DeleteUser(db, userIDCookie)
+		_, err = model.LeaveAllGroups(db, userID)
+		deletedUser, err := model.DeleteUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -94,8 +95,8 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, _ := misc.GetIDCookie(c)
-		if userIDCookie != userIDParam {
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -105,7 +106,7 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err = model.UpdateUser(db,updatedUser, userIDCookie)
+		updatedUser, err = model.UpdateUser(db,updatedUser, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

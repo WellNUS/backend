@@ -423,3 +423,5 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Complete restructuring of code for hopefully better scalability
 - [x] Generalised the websocket connection to enable chat status data and messages as payloads
 - [x] Secured message loading with cookie
+- [x] Added session authorisation with session database
+- [x] Rewrite testcases for change

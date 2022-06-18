@@ -27,6 +27,8 @@ var (
 	Router *gin.Engine
 	NotFoundErrorMessage 		string = http_error.NotFoundError.Error()
 	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
+	SessionKey1		string
+	SessionKey2		string
 )
 
 var validAddedUser1 User = User{
@@ -84,6 +86,11 @@ func TestMain(m *testing.M) {
 	validAddedGroupWithUser, err := model.AddGroup(DB, validAddedGroup)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test group. %v", err)) }
 	validAddedGroup	= validAddedGroupWithUser.Group
+
+	SessionKey1, err = model.CreateNewSession(DB, validAddedUser1.ID)
+	SessionKey2, err = model.CreateNewSession(DB, validAddedUser2.ID)
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test sessions. %v", err)) }
+
 
 	r := m.Run()
 

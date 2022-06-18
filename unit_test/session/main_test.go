@@ -16,11 +16,13 @@ import (
 )
 
 type User = model.User
-type Resp = model.Resp
+type SessionResponse = model.SessionResponse
 
 var (
 	DB *sql.DB
 	Router *gin.Engine
+	sessionKey1 string
+	sessionKey2 string
 ) 
 
 var validUser User = User{

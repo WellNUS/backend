@@ -12,7 +12,7 @@ import (
 
 func GetTestingHomeHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		sID, _ := c.Cookie("id")
+		sID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		c.HTML(http.StatusOK, "home.html", gin.H{ "userID": sID })
 	}
 }
@@ -34,7 +34,7 @@ func GetTestingUserHandler(db *sql.DB) func(*gin.Context) {
 
 func GetTestingAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, _ := misc.GetIDCookie(c)
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		groups, _ := model.GetAllGroupsOfUser(db, userID)
 		c.HTML(http.StatusOK, "groups.html", gin.H{ "groups": groups })
 	}
@@ -50,7 +50,7 @@ func GetTestingGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func GetTestingAllJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, _ := misc.GetIDCookie(c)
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		if s := c.Query("request"); s == "RECEIVED" {
 			joinRequests, _ := model.GetAllJoinRequestsReceivedOfUser(db, userID)
 			c.HTML(http.StatusOK, "joins.html", gin.H{"joinRequests": joinRequests})

@@ -11,8 +11,10 @@ import (
 )
 
 func main() {
+	// Runtime global instances
 	DB := db.ConnectDB()
 	WSHub := ws.NewHub(DB)
+
 	go WSHub.Run()
 	Router := router.SetupRouter(DB, WSHub)
 

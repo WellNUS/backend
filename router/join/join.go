@@ -33,24 +33,24 @@ func GetAllJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userIDCookie, _ := misc.GetIDCookie(c)
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		request := getRequestQuery(c)
 		if request == REQUEST_RECEIVED {
-			joinRequests, err := model.GetAllJoinRequestsReceivedOfUser(db, userIDCookie)
+			joinRequests, err := model.GetAllJoinRequestsReceivedOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
 		} else if request == REQUEST_SENT {
-			joinRequests, err := model.GetAllJoinRequestsSentOfUser(db, userIDCookie)
+			joinRequests, err := model.GetAllJoinRequestsSentOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
 		} else {
-			joinRequests, err := model.GetAllJoinRequestsOfUser(db, userIDCookie)
+			joinRequests, err := model.GetAllJoinRequestsOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return
@@ -82,7 +82,7 @@ func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userIDCookie, err := misc.GetIDCookie(c)
+		userID, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -92,7 +92,7 @@ func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequest, err = model.AddJoinRequest(db, joinRequest.GroupID, userIDCookie)
+		joinRequest, err = model.AddJoinRequest(db, joinRequest.GroupID, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -105,7 +105,7 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userIDCookie, _ := misc.GetIDCookie(c)
+		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		joinRequestIDParam, err := misc.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -116,7 +116,7 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequestRespond, err = model.RespondJoinRequest(db, joinRequestIDParam, userIDCookie, joinRequestRespond.Approve)
+		joinRequestRespond, err = model.RespondJoinRequest(db, joinRequestIDParam, userID, joinRequestRespond.Approve)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -129,7 +129,7 @@ func DeleteJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
-		userIDCookie, err := misc.GetIDCookie(c)
+		userID, err := misc.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -139,7 +139,7 @@ func DeleteJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequest, err := model.DeleteJoinRequest(db, joinRequestIDParam, userIDCookie)
+		joinRequest, err := model.DeleteJoinRequest(db, joinRequestIDParam, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
