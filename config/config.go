@@ -7,4 +7,8 @@ var (
 	
 	// Database fields (if changed update in Makefile as well)
 	CONNECTION_STRING string = "postgresql://root:password@localhost:5432/wellnus?sslmode=disable"
+
+	// Matching properties
+	MatchRequestThreshold = 40
+	GroupSizes = 4
 )

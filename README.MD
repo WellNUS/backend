@@ -318,14 +318,54 @@ conn.onmessage = function (evt) {
 >>>
 >>> Response Body : None
 
-### Routes past this point have not been implemented
-### Match
+### Match Setting
 
-> #### Match Details
+> #### Match Setting Details
+>
+>> Defines the match preferences for matching.
+>>
+>> Users can indicate
+>> - Faculty Preferences
+>> - Hobbies
+>> - MBTI type
+>>
+>> These factors are considered during matching
+>> 
+>> MatchSetting = { user_id, faculty_preference, hobbies[], mbti }
+>
+> #### Match Setting Routes
+>
+>> ##### /setting - GET
+>>
+>>> Description : Get Match setting of the user if the user is logged in.
+>>>
+>>> Request Body : None
+>>> 
+>>> Response Body : MatchSetting
+>> 
+>> ##### /setting - POST
+>>
+>>> Description : Creates / Updates match setting of the user if the user is logged in.
+>>>
+>>> Request Body : { faculty_preference, hobbies[], mbti }
+>>>
+>>> Response Body : MatchSetting
+>>
+>> #### /setting - DELETE
+>>
+>>> Description : Deletes the match setting of user if user is logged in
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { user_id }
+
+### Match Request
+
+> #### Match Request Details
 > 
 >> All matches are made when a certain number of match requests are present.
 >> 
->> Current matching algorithm:
+>> Current matching algorithm: (Subject to change)
 >> 
 >> 1. Randomly choose a match request
 >> 2. Set requestee as the owner of the group
@@ -334,32 +374,42 @@ conn.onmessage = function (evt) {
 >> 5. Repeat steps 1 to 5 till either all requests are fulfiled or there are not sufficient users
 >> 
 >> Compatability function:
->> 
->> - Compatibility function will give a score from 0 - 100 between 2 match request.
->> - Function will consider gender, faculty, preferred group size, and MBTI type
+>> - Compatibility function will give a score from 0 - 12 between 2 match request.
+>> - Function will score according to
+>>      - Faculty Preference (0 - 4 points)
+>>      - MBTI compatibility (0 - 4 points)
+>>      - Hobbies similarity (0 - 4 points)
+>>
+>> MatchRequest = { user_id, time_added }
+>> LoadedMatchRequest = { match_request: MatchRequest, user: User, match_setting: MatchSetting }
 > 
-> #### Match Routes
+> #### Match Request Routes
 > 
 >> ##### /match - GET
 >> 
->> : Gets all match request
+>>> Description : Gets the loaded match request of the user if the user 
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : LoadedMatchRequest
 >> 
 >> ##### /match - POST
 >> 
->> : Creates a new match request if user is loggedIn
+>>> Description : Creates a new match request of the user if user is loggedIn and has set up their match setting
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : MatchRequest
 >> 
->> ##### /match/:id - GET
->> 
->> : Get match request with given id
->> 
->> ##### /match/:id - DELETE
->> 
->> : Delete match request with given id if user is the owner of match request
->> 
->> ##### /match/:id - UPDATE
->> 
->> : Update match request with given id if user is the owner of match request
+>> ##### /match - DELETE
+>>
+>>> Description : Deletes the match request of the user if the user is loggedIn
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { user_id }
 
+### Routes past this point have not been implemented
 ### Counsel
 
 > #### Counsel Details
@@ -425,3 +475,7 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Secured message loading with cookie
 - [x] Added session authorisation with session database
 - [x] Rewrite testcases for change
+- [x] CRUD on match setting and match request
+- [x] Unit testing for match setting and match request
+- [ ] Implement Matching
+- [ ] Unit testing for matching

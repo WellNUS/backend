@@ -45,9 +45,10 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("Group with no group_name sucessfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("group_name", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("group_name", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of group_name")
+		t.Errorf("response body was not an error did not contain any instance of group_name. %s", errString)
 	}
 }
 
@@ -66,9 +67,10 @@ func testAddGroupHandlerNoCategory(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("Group with no category sucessfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("category", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("category", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of category")
+		t.Errorf("response body was not an error did not contain any instance of category. %s", errString)
 	}
 }
 

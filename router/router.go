@@ -6,6 +6,7 @@ import (
 	"wellnus/backend/router/session"
 	"wellnus/backend/router/group"
 	"wellnus/backend/router/join"
+	"wellnus/backend/router/match"
 	"wellnus/backend/router/chat"
 	"wellnus/backend/router/testing" //Can be removed at production
 	
@@ -51,6 +52,15 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/join/:id", join.GetLoadedJoinRequestHandler(db))
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))
 	router.DELETE("/join/:id", join.DeleteJoinRequestHandler(db))
+
+	router.GET("/setting", match.GetMatchSettingOfUserHandler(db))
+	router.POST("/setting", match.AddUpdateMatchSettingOfUserHandler(db))
+	router.DELETE("/setting", match.DeleteMatchSettingOfUserHandler(db))
+
+	router.GET("/match", match.GetLoadedMatchRequestOfUserHandler(db))
+	router.POST("/match", match.AddMatchRequestHandler(db))
+	router.DELETE("/match", match.DeleteMatchRequestOfUserHandler(db))
+	router.PATCH("/match", match.ForcePerformMatchingHandler(db)) // For testing, to be removed
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))

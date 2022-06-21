@@ -113,9 +113,10 @@ func testAddUserHandlerNoFirstName(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no first_name successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("first_name", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("first_name", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of first_name")
+		t.Errorf("response body was not an error did not contain any instance of first_name. %s", errString)
 	}
 }
 
@@ -135,9 +136,10 @@ func testAddUserHandlerNoLastName(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no last_name successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("last_name", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("last_name", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of last_name")
+		t.Errorf("response body was not an error did not contain any instance of last_name. %s", errString)
 	}
 }
 
@@ -157,9 +159,10 @@ func testAddUserHandlerNoGender(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no gender successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("gender", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("gender", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of gender")
+		t.Errorf("response body was not an error did not contain any instance of gender. %s", errString)
 	}
 }
 
@@ -179,9 +182,10 @@ func testAddUserHandlerNoFaculty(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no faculty successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("faculty", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("faculty", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of faculty")
+		t.Errorf("response body was not an error did not contain any instance of faculty. %s", errString)
 	}
 }
 
@@ -202,9 +206,10 @@ func testAddUserHandlerNoEmail(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no email successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("email", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("email", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of email")
+		t.Errorf("response body was not an error did not contain any instance of email. %s", errString)
 	}
 }
 
@@ -224,9 +229,10 @@ func testAddUserHandlerNoUserRole(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no user_role successfully added. Status Code: %d", w.Code)
 	}
-	matched, _ := regexp.MatchString("user_role", test_helper.GetBufferFromRecorder(w).String())
+	errString := test_helper.GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString("user_role", errString)
 	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of user_role")
+		t.Errorf("response body was not an error did not contain any instance of user_role. %s", errString)
 	}
 }
 

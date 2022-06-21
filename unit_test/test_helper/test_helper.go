@@ -22,6 +22,9 @@ type GroupWithUsers = model.GroupWithUsers
 type JoinRequest = model.JoinRequest
 type LoadedJoinRequest = model.LoadedJoinRequest
 type JoinRequestRespond = model.JoinRequestRespond
+type MatchSetting = model.MatchSetting
+type MatchRequest = model.MatchRequest
+type LoadedMatchRequest = model.LoadedMatchRequest
 
 
 func GetBufferFromRecorder(w *httptest.ResponseRecorder) *bytes.Buffer {
@@ -227,6 +230,48 @@ func GetJoinRequestRespondFromRecorder(w *httptest.ResponseRecorder) (JoinReques
 	return joinRequestRespond, nil
 }
 
+func GetMatchSettingFromRecorder(w *httptest.ResponseRecorder) (MatchSetting, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return MatchSetting{}, errors.New(buf.String())
+	}
+
+	var matchSetting MatchSetting
+	err := json.NewDecoder(buf).Decode(&matchSetting)
+	if err != nil {
+		return MatchSetting{}, err
+	}
+	return matchSetting, nil
+}
+
+func GetMatchRequestFromRecorder(w *httptest.ResponseRecorder) (MatchRequest, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return MatchRequest{}, errors.New(buf.String())
+	}
+
+	var matchRequest MatchRequest
+	err := json.NewDecoder(buf).Decode(&matchRequest)
+	if err != nil {
+		return MatchRequest{}, err
+	}
+	return matchRequest, nil
+}
+
+func GetLoadedMatchRequestFromRecorder(w *httptest.ResponseRecorder) (LoadedMatchRequest, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return LoadedMatchRequest{}, errors.New(buf.String())
+	}
+
+	var loadedMatchRequest LoadedMatchRequest
+	err := json.NewDecoder(buf).Decode(&loadedMatchRequest)
+	if err != nil {
+		return LoadedMatchRequest{}, err
+	}
+	return loadedMatchRequest, nil
+}
+
 func GetIOReaderFromUser(user User) (io.Reader, error) {
 	j, err := json.Marshal(user)
 	if err != nil { return nil, err }
@@ -248,6 +293,12 @@ func GetIOReaderFromJoinRequestRespond(respond JoinRequestRespond) (io.Reader, e
 
 func GetIOReaderFromJoinRequest(joinRequest JoinRequest) (io.Reader, error) {
 	j, err := json.Marshal(joinRequest)
+	if err != nil { return nil, err }
+	return bytes.NewReader(j), nil
+}
+
+func GetIOReaderFromMatchSetting(matchSetting MatchSetting) (io.Reader, error) {
+	j, err := json.Marshal(matchSetting)
 	if err != nil { return nil, err }
 	return bytes.NewReader(j), nil
 }

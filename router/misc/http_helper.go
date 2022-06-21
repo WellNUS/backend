@@ -14,6 +14,7 @@ type User = model.User
 type Group = model.Group
 type JoinRequest = model.JoinRequest
 type JoinRequestRespond = model.JoinRequestRespond
+type MatchSetting = model.MatchSetting
 
 func SetHeaders(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
@@ -67,6 +68,14 @@ func GetJoinRequestRespondFromContext(c *gin.Context) (JoinRequestRespond, error
 		return JoinRequestRespond{}, err
 	}
 	return resp, nil
+}
+
+func GetMatchSettingFromContext(c *gin.Context) (MatchSetting, error) {
+	var matchSetting MatchSetting
+	if err := c.BindJSON(&matchSetting); err != nil {
+		return MatchSetting{}, err
+	}
+	return matchSetting, nil
 }
 
 func NoRouteHandler(c *gin.Context) {
