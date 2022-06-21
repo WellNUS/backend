@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"wellnus/backend/config"
 	"wellnus/backend/db/model"
 
 	"bytes"
@@ -25,6 +26,11 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		// log.Printf("Origin: %v", origin)
+		return origin == config.FRONTEND_URL
+	},
 }
 
 // Client is a middleman between the websocket connection and the Hub.
