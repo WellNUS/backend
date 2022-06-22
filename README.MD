@@ -298,6 +298,7 @@ conn.onmessage = function (evt) {
 >>>             - online : Member is connected through websocket and is on chat page of some other group
 >>>             - offline : Member is not connected through websocket
 >>>         - Union of **sorted_in_chat_members**, **sorted_online_members**, and **sorted_offline_members** form all group members of given group
+>>> 
 >>> These data sent from the server is sufficient to create the following chat features:
 >>> - Live messages from users
 >>> - Live messages from server
