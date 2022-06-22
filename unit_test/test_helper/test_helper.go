@@ -188,6 +188,20 @@ func GetLoadedJoinRequestFromRecorder(w *httptest.ResponseRecorder) (LoadedJoinR
 	return loadedJoinRequest, nil
 }
 
+func GetLoadedJoinRequestsFromRecorder(w *httptest.ResponseRecorder) ([]LoadedJoinRequest, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+
+	var loadedJoinRequests []LoadedJoinRequest
+	err := json.NewDecoder(buf).Decode(&loadedJoinRequests)
+	if err != nil {
+		return nil, err
+	}
+	return loadedJoinRequests, nil
+}
+
 func GetJoinRequestFromRecorder(w *httptest.ResponseRecorder) (JoinRequest, error) {
 	buf := GetBufferFromRecorder(w)
 	if w.Code != http.StatusOK {

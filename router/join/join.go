@@ -29,28 +29,28 @@ func getRequestQuery(c *gin.Context) int {
 
 // Main functions
 
-func GetAllJoinRequestsHandler(db *sql.DB) func(*gin.Context){
+func GetAllLoadedJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 	return func(c *gin.Context) {
 		misc.SetHeaders(c)
 
 		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		request := getRequestQuery(c)
 		if request == REQUEST_RECEIVED {
-			joinRequests, err := model.GetAllJoinRequestsReceivedOfUser(db, userID)
+			joinRequests, err := model.GetAllLoadedJoinRequestsReceivedOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
 		} else if request == REQUEST_SENT {
-			joinRequests, err := model.GetAllJoinRequestsSentOfUser(db, userID)
+			joinRequests, err := model.GetAllLoadedJoinRequestsSentOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
 			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
 		} else {
-			joinRequests, err := model.GetAllJoinRequestsOfUser(db, userID)
+			joinRequests, err := model.GetAllLoadedJoinRequestsOfUser(db, userID)
 			if err != nil {
 				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 				return

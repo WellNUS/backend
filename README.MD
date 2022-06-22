@@ -187,7 +187,7 @@ All Request made should have **credentials: "include"** so that cookies can be a
 >
 >> ##### /join - GET
 >>
->>> Description : Get all join requests sent by user or directed at user. Query params used to indicate what join request to retrieve.
+>>> Description : Get all loaded join requests sent by user or directed at user. Query params used to indicate what join request to retrieve.
 >>>
 >>> Query Params:
 >>> - ?request=SENT     will get all join request sent by user
@@ -196,7 +196,7 @@ All Request made should have **credentials: "include"** so that cookies can be a
 >>> 
 >>> Request Body : None
 >>> 
->>> Response Body : JoinRequest[]
+>>> Response Body : LoadedJoinRequest[]
 >>
 >> ##### /join - POST
 >>
@@ -208,7 +208,7 @@ All Request made should have **credentials: "include"** so that cookies can be a
 >>
 >> ##### /join/:id - GET
 >>
->>> Description : Gets loaded join request with the given id
+>>> Description : Gets loaded join request with the given id (id refer to join request id)
 >>>
 >>> Request Body : None
 >>>
@@ -216,7 +216,7 @@ All Request made should have **credentials: "include"** so that cookies can be a
 >>
 >> ##### /join/:id - PATCH
 >>
->>> Description : Approve or reject a particular join request if the user is the owner of the particular group
+>>> Description : Approve or reject a particular join request with the given id if the user is the owner of the particular group (id refer to join request id)
 >>>
 >>> Request Body : JoinRequestRespond
 >>>

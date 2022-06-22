@@ -52,14 +52,14 @@ func GetTestingAllJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
 		if s := c.Query("request"); s == "RECEIVED" {
-			joinRequests, _ := model.GetAllJoinRequestsReceivedOfUser(db, userID)
-			c.HTML(http.StatusOK, "joins.html", gin.H{"joinRequests": joinRequests})
+			loadedJoinRequests, _ := model.GetAllLoadedJoinRequestsReceivedOfUser(db, userID)
+			c.HTML(http.StatusOK, "joins.html", gin.H{"loadedJoinRequests": loadedJoinRequests})
 		} else if s == "SENT" {
-			joinRequests, _ := model.GetAllJoinRequestsSentOfUser(db, userID)
-			c.HTML(http.StatusOK, "joins.html", gin.H{"joinRequests": joinRequests})
+			loadedJoinRequests, _ := model.GetAllLoadedJoinRequestsSentOfUser(db, userID)
+			c.HTML(http.StatusOK, "joins.html", gin.H{"loadedJoinRequests": loadedJoinRequests})
 		} else {
-			joinRequests, _ := model.GetAllJoinRequestsOfUser(db, userID)
-			c.HTML(http.StatusOK, "joins.html", gin.H{"joinRequests": joinRequests})
+			loadedJoinRequests, _ := model.GetAllLoadedJoinRequestsOfUser(db, userID)
+			c.HTML(http.StatusOK, "joins.html", gin.H{"loadedJoinRequests": loadedJoinRequests})
 		}
 	}
 }

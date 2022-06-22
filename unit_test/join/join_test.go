@@ -13,13 +13,13 @@ var addedJoinRequest JoinRequest
 func TestJoinHandler(t *testing.T) {
 	t.Run("AddJoinRequestHandler", testAddJoinRequestHandler)
 	t.Run("GetJoinRequestHandler as not logged in", testGetLoadedJoinRequestHandlerAsNotLoggedIn)
-	t.Run("GetAllJoinRequestHandler as not logged in", testGetAllJoinRequestHandlerAsNotLoggedIn)
-	t.Run("GetAllJoinRequestHandler as user1", testGetAllJoinRequestHandlerAsUser1)
-	t.Run("GetAllJoinRequestSentHandler as user1", testGetAllJoinRequestHandlerSentAsUser1)
-	t.Run("GetAllJoinRequestReceivedHandler as user1", testGetAllJoinRequestHandlerReceivedAsUser1)
-	t.Run("GetAllJoinRequestHandler as user 2", testGetAllJoinRequestHandlerAsUser2)
-	t.Run("GetAllJoinRequestSentHandler as user 2", testGetAllJoinRequestHandlerSentAsUser2)
-	t.Run("GetAllJoinRequestReceivedHandler as user2", testGetAllJoinRequestHandlerSentAsUser2)
+	t.Run("GetAllLoadedJoinRequestHandler as not logged in", testGetAllLoadedJoinRequestHandlerAsNotLoggedIn)
+	t.Run("GetAllLoadedJoinRequestHandler as user1", testGetAllLoadedJoinRequestHandlerAsUser1)
+	t.Run("GetAllLoadedJoinRequestSentHandler as user1", testGetAllLoadedJoinRequestHandlerSentAsUser1)
+	t.Run("GetAllLoadedJoinRequestReceivedHandler as user1", testGetAllLoadedJoinRequestHandlerReceivedAsUser1)
+	t.Run("GetAllLoadedJoinRequestHandler as user 2", testGetAllLoadedJoinRequestHandlerAsUser2)
+	t.Run("GetAllLoadedJoinRequestSentHandler as user 2", testGetAllLoadedJoinRequestHandlerSentAsUser2)
+	t.Run("GetAllLoadedJoinRequestReceivedHandler as user2", testGetAllLoadedJoinRequestHandlerReceivedAsUser2)
 	t.Run("RespondJoinRequestHandler reject not logged in", testRespondJoinRequestHandlerRejectNotLoggedIn)
 	t.Run("RespondJoinRequestHandler reject as user1", testRespondJoinRequestHandlerRejectAsUser1)
 	t.Run("RespondJoinRequestHandler approve as user1", testRespondJoinRequestHandlerApproveAsUser1)
@@ -74,22 +74,22 @@ func testGetLoadedJoinRequestHandlerAsNotLoggedIn(t *testing.T) {
 	}
 }
 
-func testGetAllJoinRequestHandlerAsNotLoggedIn(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerAsNotLoggedIn(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedjoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 0 {
+	if len(loadedjoinRequests) != 0 {
 		t.Errorf("A user who is not logged in saw some join requests directed to him")
 	}
 }
 
-func testGetAllJoinRequestHandlerAsUser1(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -99,19 +99,25 @@ func testGetAllJoinRequestHandlerAsUser1(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 1 {
+	if len(loadedJoinRequests) != 1 {
 		t.Errorf("User1 does not see 1 join requests relevant to him")
 	}
-	if joinRequests[0].ID != addedJoinRequest.ID {
+	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
+	}
+	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request.")
+	}
+	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
 
-func testGetAllJoinRequestHandlerSentAsUser1(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerSentAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -121,16 +127,16 @@ func testGetAllJoinRequestHandlerSentAsUser1(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 0 {
+	if len(loadedJoinRequests) != 0 {
 		t.Errorf("User1 saw non-zero join request sent by it")
 	}
 }
 
-func testGetAllJoinRequestHandlerReceivedAsUser1(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -140,19 +146,25 @@ func testGetAllJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 1 {
+	if len(loadedJoinRequests) != 1 {
 		t.Errorf("User1 does not see 1 join requests received by him")
 	}
-	if joinRequests[0].ID != addedJoinRequest.ID {
+	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
+	}
+	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
+	}
+	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
 
-func testGetAllJoinRequestHandlerAsUser2(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -162,19 +174,25 @@ func testGetAllJoinRequestHandlerAsUser2(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 1 {
+	if len(loadedJoinRequests) != 1 {
 		t.Errorf("User2 does not see 1 join requests relevant to it")
 	}
-	if joinRequests[0].ID != addedJoinRequest.ID {
+	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
+	}
+	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
+	}
+	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
 
-func testGetAllJoinRequestHandlerSentAsUser2(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerSentAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -184,19 +202,25 @@ func testGetAllJoinRequestHandlerSentAsUser2(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 1 {
+	if len(loadedJoinRequests) != 1 {
 		t.Errorf("User2 does not see 1 join requests sent by it")
 	}
-	if joinRequests[0].ID != addedJoinRequest.ID {
+	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
+	}
+	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
+	}
+	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
 
-func testGetAllJoinRequestHandlerReceivedAsUser2(t *testing.T) {
+func testGetAllLoadedJoinRequestHandlerReceivedAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -206,11 +230,11 @@ func testGetAllJoinRequestHandlerReceivedAsUser2(t *testing.T) {
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
 	}
-	joinRequests, err := test_helper.GetJoinRequestsFromRecorder(w)
+	loadedJoinRequests, err := test_helper.GetLoadedJoinRequestsFromRecorder(w)
 	if err != nil {
 		t.Errorf("An error occured while retrieving all join request from response. %v", err)
 	}
-	if len(joinRequests) != 0 {
+	if len(loadedJoinRequests) != 0 {
 		t.Errorf("User2 saw non-zero join request sent by it")
 	}
 }

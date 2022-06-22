@@ -19,6 +19,6 @@ func main() {
 	Router := router.SetupRouter(DB, WSHub)
 
 	fmt.Printf("Starting backend server at '%s' \n", config.BACKEND_URL)
-	Router.Run(config.BACKEND_URL)
+	Router.Run(config.BACKEND_DOMAIN)
 }
 

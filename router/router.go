@@ -47,7 +47,7 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
 	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
 	
-	router.GET("/join", join.GetAllJoinRequestsHandler(db))
+	router.GET("/join", join.GetAllLoadedJoinRequestsHandler(db))
 	router.POST("/join", join.AddJoinRequestHandler(db))
 	router.GET("/join/:id", join.GetLoadedJoinRequestHandler(db))
 	router.PATCH("/join/:id", join.RespondJoinRequestHandler(db))

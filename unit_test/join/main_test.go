@@ -62,7 +62,7 @@ var validAddedGroup Group = Group{
 func setupRouter() *gin.Engine {
 	Router := gin.Default()
 
-	Router.GET("/join", join.GetAllJoinRequestsHandler(DB))
+	Router.GET("/join", join.GetAllLoadedJoinRequestsHandler(DB))
 	Router.POST("/join", join.AddJoinRequestHandler(DB))
 	Router.GET("/join/:id", join.GetLoadedJoinRequestHandler(DB))
 	Router.PATCH("/join/:id", join.RespondJoinRequestHandler(DB))

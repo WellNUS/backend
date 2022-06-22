@@ -12,12 +12,14 @@
             <a href="/testing/join?request=RECEIVED">RECEIVED</a>
             <a href="/testing/join">BOTH</a>
         </div>
-        {{ range .joinRequests }}
+        {{ range .loadedJoinRequests }}
             <div>
-                <div>JoinRequestID: {{ .ID }}</div>
-                <div>UserID: {{ .UserID }}</div>
-                <div>GroupID: {{ .GroupID }}</div>
-                <a href='/testing/join/{{.ID}}'>View</a>
+                <div>JoinRequestID: {{ .JoinRequest.ID }}</div>
+                <div>UserID: {{ .JoinRequest.UserID }}</div>
+                <div>GroupID: {{ .JoinRequest.GroupID }}</div>
+                <div>Sent By: {{ .User.FirstName }}</div>
+                <div>To Group: {{ .Group.GroupName }}</div>
+                <a href='/testing/join/{{ .JoinRequest.ID }}'>View</a>
             </div>
             <br>
         {{ end }}

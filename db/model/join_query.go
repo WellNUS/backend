@@ -19,6 +19,35 @@ func ReadJoinRequests(rows *sql.Rows) ([]JoinRequest, error) {
 	return joinRequests, nil
 }
 
+func ReadLoadedJoinRequests(rows *sql.Rows) ([]LoadedJoinRequest, error) {
+	loadedJoinRequests := make([]LoadedJoinRequest, 0)
+	for rows.Next() {
+		var loadedJoinRequest LoadedJoinRequest
+		if err := rows.Scan(
+			&loadedJoinRequest.JoinRequest.ID,
+			&loadedJoinRequest.JoinRequest.UserID,
+			&loadedJoinRequest.JoinRequest.GroupID,
+			&loadedJoinRequest.User.ID,
+			&loadedJoinRequest.User.FirstName,
+			&loadedJoinRequest.User.LastName,
+			&loadedJoinRequest.User.Gender,
+			&loadedJoinRequest.User.Faculty,
+			&loadedJoinRequest.User.Email,
+			&loadedJoinRequest.User.UserRole,
+			&loadedJoinRequest.User.PasswordHash,
+			&loadedJoinRequest.Group.ID,
+			&loadedJoinRequest.Group.GroupName,
+			&loadedJoinRequest.Group.GroupDescription,
+			&loadedJoinRequest.Group.Category,
+			&loadedJoinRequest.Group.OwnerID);
+			err != nil {
+				return nil, err
+			}
+		loadedJoinRequests = append(loadedJoinRequests, loadedJoinRequest)
+	}
+	return loadedJoinRequests, nil
+}
+
 func GetJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 	rows, err := db.Query("SELECT * FROM wn_join_request WHERE id = $1", joinRequestID)
 	if err != nil { return JoinRequest{}, err }
@@ -30,52 +59,95 @@ func GetJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 
 // Main function
 
-func GetAllJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
-	rows, err := db.Query(
-		`SELECT 
-			id, 
-			user_id, 
-			group_id
-		FROM wn_join_request
-		WHERE user_id = $1`,
-		userID)
-	if err != nil { return nil, err }
-	joinRequests, err := ReadJoinRequests(rows)
-	if err != nil { return nil, err }
-	return joinRequests, nil
-}
-
-func GetAllJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
+func GetAllLoadedJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]LoadedJoinRequest, error) {
 	rows, err := db.Query(
 		`SELECT 
 			wn_join_request.id, 
 			wn_join_request.user_id, 
-			wn_join_request.group_id
-		FROM wn_join_request
+			wn_join_request.group_id,
+			wn_user.id,
+			wn_user.first_name, 
+			wn_user.last_name, 
+			wn_user.gender, 
+			wn_user.faculty, 
+			wn_user.email, 
+			wn_user.user_role, 
+			wn_user.password_hash,
+			wn_group.id,
+			wn_group.group_name, 
+			wn_group.group_description, 
+			wn_group.category, 
+			wn_group.owner_id
+		FROM wn_join_request 
+		JOIN wn_user ON wn_user.id = wn_join_request.user_id
+		JOIN wn_group ON wn_group.id = wn_join_request.group_id
+		WHERE wn_join_request.user_id = $1`,
+		userID)
+	if err != nil { return nil, err }
+	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
+	if err != nil { return nil, err }
+	return loadedJoinRequests, nil
+}
+
+func GetAllLoadedJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]LoadedJoinRequest, error) {
+	rows, err := db.Query(
+		`SELECT 
+			wn_join_request.id, 
+			wn_join_request.user_id, 
+			wn_join_request.group_id,
+			wn_user.id,
+			wn_user.first_name, 
+			wn_user.last_name, 
+			wn_user.gender, 
+			wn_user.faculty, 
+			wn_user.email, 
+			wn_user.user_role, 
+			wn_user.password_hash,
+			wn_group.id,
+			wn_group.group_name, 
+			wn_group.group_description, 
+			wn_group.category, 
+			wn_group.owner_id
+		FROM wn_join_request 
+		JOIN wn_user ON wn_user.id = wn_join_request.user_id
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
 		WHERE wn_group.owner_id = $1`,
 		userID)
 	if err != nil { return nil, err }
-	joinRequests, err := ReadJoinRequests(rows)
+	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
 	if err != nil { return nil, err }
-	return joinRequests, nil
+	return loadedJoinRequests, nil
 }
 
-func GetAllJoinRequestsOfUser(db *sql.DB, userID int64) ([]JoinRequest, error) {
+func GetAllLoadedJoinRequestsOfUser(db *sql.DB, userID int64) ([]LoadedJoinRequest, error) {
 	rows, err := db.Query(
 		`SELECT 
 			wn_join_request.id, 
 			wn_join_request.user_id, 
-			wn_join_request.group_id
-		FROM wn_join_request
+			wn_join_request.group_id,
+			wn_user.id,
+			wn_user.first_name, 
+			wn_user.last_name, 
+			wn_user.gender, 
+			wn_user.faculty, 
+			wn_user.email, 
+			wn_user.user_role, 
+			wn_user.password_hash,
+			wn_group.id,
+			wn_group.group_name, 
+			wn_group.group_description, 
+			wn_group.category, 
+			wn_group.owner_id
+		FROM wn_join_request 
+		JOIN wn_user ON wn_user.id = wn_join_request.user_id
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
 		WHERE wn_group.owner_id = $1 OR wn_join_request.user_id = $2`,
 		userID,
 		userID)
 	if err != nil { return nil, err }
-	joinRequests, err := ReadJoinRequests(rows)
+	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
 	if err != nil { return nil, err }
-	return joinRequests, nil
+	return loadedJoinRequests, nil
 }
 
 func GetLoadedJoinRequest(db *sql.DB, joinRequestID int64) (LoadedJoinRequest, error) {
