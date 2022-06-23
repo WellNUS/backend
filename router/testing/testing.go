@@ -8,8 +8,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	"fmt"
-
+	
 	"github.com/gin-gonic/gin"
 )
 
