@@ -2,8 +2,8 @@ package match
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 
 	"database/sql"
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ import (
 
 func GetMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -28,12 +28,12 @@ func GetMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddUpdateMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		matchSetting, err := misc.GetMatchSettingFromContext(c)
+		matchSetting, err := http_helper.GetMatchSettingFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -49,7 +49,7 @@ func AddUpdateMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

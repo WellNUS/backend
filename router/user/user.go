@@ -1,8 +1,8 @@
 package user
 
 import (
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 	"wellnus/backend/router/session"
 	"wellnus/backend/db/model"
 	
@@ -13,7 +13,7 @@ import (
 // Main functions
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
 		users, err := model.GetAllUsers(db)
 		if err != nil {
@@ -26,9 +26,9 @@ func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 
 func GetUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userIDParam, err := misc.GetIDParams(c)
+		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -44,9 +44,9 @@ func GetUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		newUser, err := misc.GetUserFromContext(c)
+		newUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -63,14 +63,14 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userIDParam, err := misc.GetIDParams(c)
+		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -88,20 +88,20 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 
 func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userIDParam, err := misc.GetIDParams(c)
+		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err := misc.GetUserFromContext(c)
+		updatedUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

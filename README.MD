@@ -388,11 +388,11 @@ conn.onmessage = function (evt) {
 > 
 >> ##### /match - GET
 >> 
->>> Description : Gets the loaded match request of the user if the user 
+>>> Description : Gets the number of match request
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : LoadedMatchRequest
+>>> Response Body : int64
 >> 
 >> ##### /match - POST
 >> 
@@ -409,6 +409,14 @@ conn.onmessage = function (evt) {
 >>> Request Body : None
 >>>
 >>> Response Body : { user_id }
+>>
+>> ##### /match/:id - GET
+>>
+>>> Description : Gets the loaded match request of the user if the user 
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : LoadedMatchRequest
 
 ### Routes past this point have not been implemented
 ### Counsel
@@ -478,5 +486,5 @@ Note that not every API implemented is implemented in the above testing GUI inte
 - [x] Rewrite testcases for change
 - [x] CRUD on match setting and match request
 - [x] Unit testing for match setting and match request
-- [ ] Implement Matching
-- [ ] Unit testing for matching
+- [x] Implement Matching
+- [x] Unit testing for matching

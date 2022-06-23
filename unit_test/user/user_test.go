@@ -10,8 +10,6 @@ import (
 	"regexp"
 )
 
-var sessionKey string
-
 // Full test
 
 func TestUserHandlers(t *testing.T) {

@@ -2,8 +2,8 @@ package session
 
 import (
 	"wellnus/backend/config"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 	"wellnus/backend/db/model"
 
 	"github.com/alexedwards/argon2id"
@@ -32,9 +32,9 @@ func RemoveSessionCookie(db *sql.DB, c *gin.Context) error {
 // Main function
 func LoginHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		loginUser, err := misc.GetUserFromContext(c)
+		loginUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -67,7 +67,7 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
 		err := RemoveSessionCookie(db, c)
 		if err != nil {

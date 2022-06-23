@@ -1,7 +1,7 @@
 package router
 
 import (
-	"wellnus/backend/router/misc"
+	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/user"
 	"wellnus/backend/router/session"
 	"wellnus/backend/router/group"
@@ -29,6 +29,9 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/testing/group/:id/chat", testing.GetTestingChatHandler(db))
 	router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
 	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
+	router.GET("/testing/match", testing.GetTestingMatchHandler(db))
+	router.POST("/testing/match", testing.SetupUsersWithMatchRequests(db))
+
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))
@@ -57,15 +60,15 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.POST("/setting", match.AddUpdateMatchSettingOfUserHandler(db))
 	router.DELETE("/setting", match.DeleteMatchSettingOfUserHandler(db))
 
-	router.GET("/match", match.GetLoadedMatchRequestOfUserHandler(db))
+	router.GET("/match", match.GetMatchRequestCount(db))
 	router.POST("/match", match.AddMatchRequestHandler(db))
 	router.DELETE("/match", match.DeleteMatchRequestOfUserHandler(db))
-	router.PATCH("/match", match.ForcePerformMatchingHandler(db)) // For testing, to be removed
+	router.GET("/match/:id", match.GetLoadedMatchRequestOfUserHandler(db))
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))
 	
-	router.NoRoute(misc.NoRouteHandler)
+	router.NoRoute(http_helper.NoRouteHandler)
 
 	return router
 }

@@ -2,21 +2,41 @@ package match
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 
 	"database/sql"
 	"github.com/gin-gonic/gin"
 
 )
 
-func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
+func GetMatchRequestCount(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		count, err := model.GetMatchRequestCount(db)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
+		c.IndentedJSON(http_error.GetStatusCode(err), count)
+	}
+}
+
+func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+		paramID, err := http_helper.GetIDParams(c)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+		}
+		if userID != paramID {
+			err = http_error.UnauthorizedError
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+		}
+
 		loadedMatchRequest, err := model.GetLoadedMatchRequestOfUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -28,7 +48,7 @@ func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddMatchRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -44,7 +64,7 @@ func AddMatchRequestHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -55,12 +75,5 @@ func DeleteMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		c.IndentedJSON(http_error.GetStatusCode(err), matchRequest)
-	}
-}
-
-func ForcePerformMatchingHandler(db *sql.DB) func(*gin.Context) {
-	return func(c *gin.Context) {
-		model.PerformMatching(db)
-		c.String(200, "Look at console")
 	}
 }

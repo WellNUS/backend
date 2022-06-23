@@ -2,8 +2,8 @@ package join
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 
 	"database/sql"
 	"github.com/gin-gonic/gin"
@@ -31,9 +31,9 @@ func getRequestQuery(c *gin.Context) int {
 
 func GetAllLoadedJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		request := getRequestQuery(c)
 		if request == REQUEST_RECEIVED {
 			joinRequests, err := model.GetAllLoadedJoinRequestsReceivedOfUser(db, userID)
@@ -62,9 +62,9 @@ func GetAllLoadedJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 
 func GetLoadedJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		joinRequestIDParam, err := misc.GetIDParams(c)
+		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -80,14 +80,14 @@ func GetLoadedJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequest, err := misc.GetJoinRequestFromContext(c)
+		joinRequest, err := http_helper.GetJoinRequestFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -103,15 +103,15 @@ func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {	
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
-		joinRequestIDParam, err := misc.GetIDParams(c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequestRespond, err := misc.GetJoinRequestRespondFromContext(c)
+		joinRequestRespond, err := http_helper.GetJoinRequestRespondFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -127,14 +127,14 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		joinRequestIDParam, err := misc.GetIDParams(c)
+		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

@@ -2,8 +2,8 @@ package chat
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 
 	"time"
 	"database/sql"
@@ -29,15 +29,15 @@ func getLimitQuery(c *gin.Context) (int64, error) {
 
 func GetMessagesChunkOfGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		groupID, err := misc.GetIDParams(c)
+		groupID, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		inGroup, err := model.IsUserInGroup(db, userID, groupID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())

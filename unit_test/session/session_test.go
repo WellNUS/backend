@@ -2,14 +2,12 @@ package session
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
 	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
 	"net/http"
 )
-
-var sessionKey string
 
 // Full Tests
 
@@ -22,9 +20,10 @@ func TestSession(t *testing.T) {
 // Helpers
 
 func testSuccessfulLoginHandler(t *testing.T) {
+	password := test_helper.GetTestUser(0).Password
 	loginAttempt := User{
-		Email: validUser.Email, 
-		Password: validUser.Password}
+		Email: testUsers[0].Email, 
+		Password: password}
 	IOReaderAttempt, _ := test_helper.GetIOReaderFromUser(loginAttempt)
 	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)
 	w := test_helper.SimulateRequest(Router, req)
@@ -41,7 +40,7 @@ func testSuccessfulLoginHandler(t *testing.T) {
 
 func testFailedLoginHandler(t *testing.T) {
 	loginAttempt := User{
-		Email: validUser.Email, 
+		Email: testUsers[0].Email, 
 		Password: "WrongPassword"}
 	IOReaderAttempt, _ := test_helper.GetIOReaderFromUser(loginAttempt)
 	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)

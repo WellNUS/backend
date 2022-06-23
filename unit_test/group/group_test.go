@@ -26,7 +26,7 @@ func TestGroupHandler(t *testing.T) {
 	t.Run("UpdateGroupHandler as User1", testUpdateGroupHandlerAsUser1)
 	t.Run("GetAllGroupHandler as User2", testGetAllGroupHandlerAsUser2)
 	t.Run("LeaveGroupHandler as User1", testLeaveGroupHandlerAsUser1)
-	t.Run("LeaveGroupHandler as User2", testLeaveAllGroupsHandlerAsUser2)
+	t.Run("LeaveAllGroupHandler as User2", testLeaveAllGroupsHandlerAsUser2)
 	t.Run("GetGrouphandler after delete", testGetGroupHandlerAfterDelete)
 }
 
@@ -39,7 +39,7 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
@@ -61,7 +61,7 @@ func testAddGroupHandlerNoCategory(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
@@ -88,7 +88,7 @@ func testAddGroupHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	// fmt.Println("id:", validAddedUser1.ID)
 	w := test_helper.SimulateRequest(Router, req)
@@ -104,10 +104,10 @@ func testAddGroupHandlerAsUser1(t *testing.T) {
 	if validAddedGroup1.ID == 0 {
 		t.Errorf("validAddedGroup1 ID was not written by addGroup call")
 	}
-	if validAddedGroup1.OwnerID != validAddedUser1.ID {
-		t.Errorf("validAddedUser1 is not owner of group despite being the one who created group")
+	if validAddedGroup1.OwnerID != testUsers[0].ID {
+		t.Errorf("testUser1 is not owner of group despite being the one who created group")
 	}
-	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != validAddedUser1.ID {
+	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != testUsers[0].ID {
 		t.Errorf("Owner was not added into the new group")
 	}
 }
@@ -117,7 +117,7 @@ func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	// fmt.Println("id:", validAddedUser1.ID)
 	w := test_helper.SimulateRequest(Router, req)
@@ -133,10 +133,10 @@ func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
 	if validAddedGroup2.ID == 0 {
 		t.Errorf("validAddedGroup2 ID was not written by addGroup call")
 	}
-	if validAddedGroup2.OwnerID != validAddedUser2.ID {
-		t.Errorf("validAddedUser1 is not owner of group despite being the one who created group")
+	if validAddedGroup2.OwnerID != testUsers[1].ID {
+		t.Errorf("testUser2 is not owner of group despite being the one who created group")
 	}
-	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != validAddedUser2.ID {
+	if len(groupWithUsers.Users) < 1 || groupWithUsers.Users[0].ID != testUsers[1].ID {
 		t.Errorf("Owner was not added into the new group")
 	}
 }
@@ -145,7 +145,7 @@ func testGetAllGroupsHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -179,7 +179,7 @@ func testGetAllGroupsHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -207,7 +207,7 @@ func testGetGroupHandlerAsNotLoggedIn(t *testing.T) {
 	if l := len(groupWithUsers.Users); l != 1 {
 		t.Errorf("The number of users in group is %d and not 1", l)
 	}
-	if id := groupWithUsers.Users[0].ID; id != validAddedUser1.ID {
+	if id := groupWithUsers.Users[0].ID; id != testUsers[0].ID {
 		t.Errorf("The user in the group is not user 1 but user with ID = %d", id)
 	}
 }
@@ -218,7 +218,7 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 			user_id, 
 			group_id) 
 		VALUES ($1, $2)`, 
-		validAddedUser2.ID, 
+		testUsers[1].ID, 
 		validAddedGroup1.ID)
 	if err != nil {
 		t.Errorf("An error occured while adding user2 into group. %v", err)
@@ -227,7 +227,7 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -257,7 +257,7 @@ func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w = test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
@@ -276,7 +276,7 @@ func testUpdateGroupHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -295,7 +295,7 @@ func testGetAllGroupHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -320,7 +320,7 @@ func testLeaveGroupHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/group/%d", validAddedGroup1.ID), nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -330,13 +330,13 @@ func testLeaveGroupHandlerAsUser1(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error occured while getting group with users from body. %v", err)
 	}
-	if ownerID := groupWithUsers.Group.OwnerID; ownerID != validAddedUser2.ID {
+	if ownerID := groupWithUsers.Group.OwnerID; ownerID != testUsers[1].ID {
 		t.Errorf("Ownership of group was not transferred to user 2")
 	}
 	if users := groupWithUsers.Users; len(users) != 1 {
 		t.Errorf("There was not 1 user remaining in the group. number of users in the group = %d", len(users))
 	}
-	if lastUser := groupWithUsers.Users[0]; lastUser.ID != validAddedUser2.ID {
+	if lastUser := groupWithUsers.Users[0]; lastUser.ID != testUsers[1].ID {
 		t.Errorf("The last user in the group is not user 2")
 	}
 }
@@ -345,7 +345,7 @@ func testLeaveAllGroupsHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/group", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {

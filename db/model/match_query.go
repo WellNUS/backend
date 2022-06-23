@@ -1,12 +1,9 @@
 package model
 
 import (
-	"wellnus/backend/config"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
 	"database/sql"
 	"time"
-	"fmt"
-
 	"github.com/lib/pq"
 )
 
@@ -56,7 +53,7 @@ func ReadLoadedMatchRequests(rows *sql.Rows) ([]LoadedMatchRequest, error) {
 			&loadedMatchRequest.User.PasswordHash,
 			&loadedMatchRequest.MatchSetting.UserID,
 			&loadedMatchRequest.MatchSetting.FacultyPreference,
-			&loadedMatchRequest.MatchSetting.Hobbies,
+			pq.Array(&loadedMatchRequest.MatchSetting.Hobbies),
 			&loadedMatchRequest.MatchSetting.MBTI);
 			err != nil {
 				return nil, err
@@ -109,6 +106,15 @@ func DeleteMatchSettingOfUser(db *sql.DB, userID int64) (MatchSetting, error) {
 
 // Match Request
 
+func GetMatchRequestCount(db *sql.DB) (int64, error) {
+	rows, err := db.Query(`SELECT COUNT(*) FROM wn_match_request`)
+	if err != nil { return 0, err }
+	rows.Next()
+	var count int64
+	if err := rows.Scan(&count); err != nil { return 0, err }
+	return count, nil
+}
+
 func GetMatchRequestOfUser(db *sql.DB, userID int64) (MatchRequest, error) {
 	rows, err := db.Query(`SELECT * FROM wn_match_request WHERE user_id = $1`, userID)
 	if err != nil { return MatchRequest{}, err }
@@ -126,7 +132,7 @@ func GetLoadedMatchRequestOfUser(db *sql.DB, userID int64) (LoadedMatchRequest, 
 	return loadedMatchRequest, nil
 }
 
-func GetAllLoadedMatchRequest(db *sql.DB) (LoadedMatchRequests, error) {
+func GetAllLoadedMatchRequest(db *sql.DB) ([]LoadedMatchRequest, error) {
 	rows, err := db.Query(
 		`SELECT
 			wn_match_request.user_id,
@@ -153,7 +159,6 @@ func GetAllLoadedMatchRequest(db *sql.DB) (LoadedMatchRequests, error) {
 }
 
 // Continue with add match request and match algorithm after a threshold is met
-
 func AddMatchRequest(db *sql.DB, userID int64) (MatchRequest, error) {
 	matchRequest := MatchRequest{ UserID: userID, TimeAdded: time.Now() }
 	_, err := db.Exec(
@@ -164,22 +169,8 @@ func AddMatchRequest(db *sql.DB, userID int64) (MatchRequest, error) {
 		matchRequest.UserID,
 		matchRequest.TimeAdded)
 	if err != nil { return MatchRequest{}, err }
+	PerformMatching(db)
 	return matchRequest, nil
-}
-
-func PerformMatching(db *sql.DB) ([]GroupWithUsers, error) {
-	loadedMatchRequests, err := GetAllLoadedMatchRequest(db)
-	if err != nil { return nil, err }
-	l := len(loadedMatchRequests)
-	if l < config.MatchRequestThreshold { return make([]GroupWithUsers, 0), nil }
-
-	for len(loadedMatchRequests) > 0 {
-		var grouped LoadedMatchRequests
-		grouped, loadedMatchRequests, err = loadedMatchRequests.GetMostCompatible()
-		fmt.Printf("%v \n", grouped)
-		if err != nil { return nil, err }
-	}
-	return nil, nil
 }
 
 func DeleteMatchRequestOfUser(db *sql.DB, userID int64) (MatchRequest, error) {

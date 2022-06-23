@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Match</title>
+        <script type="text/javascript">
+            window.onload = function() {
+                const matchSettingForm = document.getElementById("matchSettingForm")
+                const matchRequestSend = document.getElementById("matchRequestSend")
+                const matchRequestStop = document.getElementById("matchRequestStop")
+                const createMatchRequest = document.getElementById("createMatchRequest")
+                
+                matchSettingForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    const faculty_preference = e.target.facultyPreference.elements.preference.value
+                    const hobbies = [...e.target.hobbies.elements]
+                        .filter(elem => elem.checked)
+                        .map(elem => elem.value)
+                    const mbti = e.target.mbti.elements.mbtiType.value
+                    if (hobbies.length > 4) {
+                        console.log("Number of hobbies must not exceed 4")
+                        return
+                    }
+                    const body = JSON.stringify({ faculty_preference, hobbies, mbti })
+                    fetch("http://localhost:8080/setting", {
+                        method : 'POST',
+                        headers : {
+                            'Content-Type': 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+
+                matchRequestSend.onclick = function(e) {
+                    fetch("http://localhost:8080/match", {
+                        method: 'POST'
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+
+                matchRequestStop.onclick = function(e) {
+                    fetch("http://localhost:8080/match", {
+                        method: 'DELETE'
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+
+                createMatchRequest.onsubmit = function(e) {
+                    e.preventDefault()
+                    const num = e.target.qty.value
+                    fetch("http://localhost:8080/testing/match?count="+num, {
+                        method: 'POST'
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Match Setting</h1>
+        <div>
+            <a href="/testing">Go Back</a>
+            <button id="matchRequestSend">Start Match</button>
+            <button id="matchRequestStop">Stop Match</button>
+        </div>
+        <div>
+            <h2>Current Match Settings</h2>
+            <div>Faculty Preference: {{ .matchSetting.FacultyPreference }}</div>
+            <div>Hobbies: </div>
+            {{ range .matchSetting.Hobbies }}
+                <li> {{.}} </li>
+            {{ end }}
+            <div>MBTI type: {{ .matchSetting.MBTI }}</div>
+        </div>
+        <br>
+        <form id="matchSettingForm">
+            <fieldset name="facultyPreference">
+                <label for="preference">Faculty Preference: </label>
+                <select name="preference">
+                    <option value="MIX">Mixed</option>
+                    <option value="SAME">Same</option>
+                    <option value="NONE">No Preferences</option>
+                </select>
+            </fieldset>
+            <fieldset name="hobbies">Hobbies:
+                <input type="checkbox" name="GAMING" value="GAMING">
+                    <label for="GAMING">Gaming</label>
+                <input type="checkbox" name="SINGING" value="SINGING">
+                    <label for="SINGING">Singing</label>
+                <input type="checkbox" name="DANCING" value="DANCING">
+                    <label for="DANCING">Dancing</label>
+                <input type="checkbox" name="MUSIC" value="MUSIC">
+                    <label for="MUSIC">Music</label>
+                <input type="checkbox" name="SPORTS" value="SPORTS">
+                    <label for="SPORTS">Sports</label>
+                <input type="checkbox" name="OUTDOOR" value="OUTDOOR">
+                    <label for="OUTDOOR">Outdoor</label>
+                <input type="checkbox" name="BOOK" value="BOOK">
+                    <label for="BOOK">Books</label>
+                <input type="checkbox" name="ANIME" value="ANIME">
+                    <label for="ANIME">Anime</label>
+                <input type="checkbox" name="MOVIES" value="MOVIES">
+                    <label for="MOVIES">Movies</label>
+                <input type="checkbox" name="TV" value="TV">
+                    <label for="TV">TV</label>
+                <input type="checkbox" name="ART" value="ART">
+                    <label for="ART">Art</label>
+                <input type="checkbox" name="STUDY" value="STUDY">
+                    <label for="STUDY">Study</label>
+            </fieldset> 
+            <fieldset name="mbti">
+                <label for="mbtiType">MBTI type</label>
+                <input type="text" name="mbtiType">
+            </fieldset>
+            <input type="submit" value="Update Match Settings" />
+        </form>
+        <br>
+        <div>
+            There are {{.mrCount}} people waiting to be matched!
+        </div>
+        <form id="createMatchRequest">
+            <label for="qty">Number of Match Request to make: </label>
+            <input type="number" name="qty" min="0" value="0">
+            <input type="submit" value="Create match request">
+        </form>
+    </body>
+</html>

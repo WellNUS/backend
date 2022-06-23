@@ -4,7 +4,8 @@ import (
 	"wellnus/backend/db"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/join"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
+	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
 	"os"
@@ -27,37 +28,12 @@ var (
 	Router *gin.Engine
 	NotFoundErrorMessage 		string = http_error.NotFoundError.Error()
 	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
-	SessionKey1		string
-	SessionKey2		string
 )
 
-var validAddedUser1 User = User{
-	FirstName: "NewFirstName",
-	LastName: "NewLastName",
-	Gender: "M",
-	Faculty: "COMPUTING",
-	Email: "NewEmail@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
-
-var validAddedUser2 User = User{
-	FirstName: "NewFirstName1",
-	LastName: "NewLastName1",
-	Gender: "M",
-	Faculty: "COMPUTING",
-	Email: "NewEmail1@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
-
-var validAddedGroup Group = Group{
-	GroupName: "NewGroupName",
-	GroupDescription: "NewGroupDescription",
-	Category: "SUPPORT",
-}
+var addedJoinRequest JoinRequest
+var testUsers []User
+var sessionKeys []string
+var testGroups []Group
 
 func setupRouter() *gin.Engine {
 	Router := gin.Default()
@@ -74,27 +50,17 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	DB = db.ConnectDB()
 	Router = setupRouter()
-	
-	DB.Exec("DELETE FROM wn_group")
-	DB.Exec("DELETE FROM wn_user")
-
+	test_helper.ResetDB(DB)
 	var err error
-	validAddedUser1, err = model.AddUser(DB, validAddedUser1)
-	validAddedUser2, err = model.AddUser(DB, validAddedUser2)
-	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
-	validAddedGroup.OwnerID = validAddedUser1.ID	//Setting user1 as owner
-	validAddedGroupWithUser, err := model.AddGroup(DB, validAddedGroup)
-	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test group. %v", err)) }
-	validAddedGroup	= validAddedGroupWithUser.Group
 
-	SessionKey1, err = model.CreateNewSession(DB, validAddedUser1.ID)
-	SessionKey2, err = model.CreateNewSession(DB, validAddedUser2.ID)
+	testUsers, err = test_helper.SetupUsers(DB, 2)
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test users. %v", err)) }
+
+	testGroups, err = test_helper.SetupGroupsForUsers(DB, testUsers[:1])
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test group. %v", err)) }
+
+	sessionKeys, err = test_helper.SetupSessionForUsers(DB, testUsers)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test sessions. %v", err)) }
 
-
-	r := m.Run()
-
-	DB.Exec("DELETE FROM wn_group WHERE id = $1", validAddedGroup.ID)
-	DB.Exec("DELETE FROM wn_user WHERE id = $1 OR id = $2", validAddedUser1.ID, validAddedUser2.ID)
-	os.Exit(r)
+	os.Exit(m.Run())
 }

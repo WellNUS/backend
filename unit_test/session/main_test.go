@@ -4,6 +4,7 @@ import (
 	"wellnus/backend/db"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/session"
+	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
 	"os"
@@ -25,16 +26,9 @@ var (
 	sessionKey2 string
 ) 
 
-var validUser User = User{
-	FirstName: "NewFirstName",
-	LastName: "NewLastName",
-	Gender: "M",
-	Faculty: "COMPUTING",
-	Email: "NewEmail@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
+var testUsers []User
+var sessionKey string
+
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
@@ -48,15 +42,11 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	DB = db.ConnectDB()
 	Router = setupRouter()
+	test_helper.ResetDB(DB)
+	var err error
 
-	DB.Exec("DELETE FROM wn_group")
-	DB.Exec("DELETE FROM wn_user")
-
-	user, err := model.AddUser(DB, validUser)
+	testUsers, err = test_helper.SetupUsers(DB, 1)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
-
-	r := m.Run()
-
-	DB.Exec("DELETE FROM wn_user WHERE id = $1", user.ID)
-	os.Exit(r)
+	
+	os.Exit(m.Run())
 }

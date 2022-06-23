@@ -4,7 +4,8 @@ import (
 	"wellnus/backend/db"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/match"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
+	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
 	"os"
@@ -24,25 +25,11 @@ var (
 	Router *gin.Engine
 	NotFoundErrorMessage 		string = http_error.NotFoundError.Error()
 	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
-	SessionKey	string
 )
 
-var validAddedUser User = User{
-	FirstName: "NewFirstName",
-	LastName: "NewLastName",
-	Gender: "M",
-	Faculty: "COMPUTING",
-	Email: "NewEmail@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
-
-var validMatchSetting MatchSetting = MatchSetting{
-	FacultyPreference: "MIX",
-	Hobbies: []string{"GAMING", "SINGING", "DANCING"},
-	MBTI: "INTP",
-}
+var testUsers []User
+var sessionKeys []string
+var validMatchSetting MatchSetting = test_helper.GetRandomTestMatchSetting()
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
@@ -51,9 +38,10 @@ func setupRouter() *gin.Engine {
 	router.POST("/setting", match.AddUpdateMatchSettingOfUserHandler(DB))
 	router.DELETE("/setting", match.DeleteMatchSettingOfUserHandler(DB))
 
-	router.GET("/match", match.GetLoadedMatchRequestOfUserHandler(DB))
+	router.GET("/match", match.GetMatchRequestCount(DB))
 	router.POST("/match", match.AddMatchRequestHandler(DB))
 	router.DELETE("/match", match.DeleteMatchRequestOfUserHandler(DB))
+	router.GET("/match/:id", match.GetLoadedMatchRequestOfUserHandler(DB))
 
 	return router
 }
@@ -61,18 +49,14 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	DB = db.ConnectDB()
 	Router = setupRouter()
-	
-	DB.Exec("DELETE FROM wn_group")
-	DB.Exec("DELETE FROM wn_user")
-
+	test_helper.ResetDB(DB)
 	var err error
-	validAddedUser, err = model.AddUser(DB, validAddedUser)
+
+	testUsers, err = test_helper.SetupUsers(DB, 1)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
-	SessionKey, err = model.CreateNewSession(DB, validAddedUser.ID)
-	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test sessions. %v", err)) }
 
-	r := m.Run()
+	sessionKeys, err = test_helper.SetupSessionForUsers(DB, testUsers)
+	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test sessions. %v", err)) }	
 
-	DB.Exec("DELETE FROM wn_user WHERE id = $1", validAddedUser.ID)
-	os.Exit(r)
+	os.Exit(m.Run())
 }

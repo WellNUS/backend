@@ -11,5 +11,5 @@ var (
 
 	// Matching properties
 	MatchRequestThreshold = 40
-	GroupSizes = 4
+	GroupSize = 4
 )

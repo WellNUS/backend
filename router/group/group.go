@@ -2,8 +2,8 @@ package group
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 
 	"github.com/gin-gonic/gin"
 	"database/sql"
@@ -12,9 +12,9 @@ import (
 // Main functions
 func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userID, _ := misc.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		groups, err := model.GetAllGroupsOfUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -26,9 +26,9 @@ func GetAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 
 func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		groupIDParam, err := misc.GetIDParams(c)
+		groupIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -44,21 +44,21 @@ func GetGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		newGroup, err := misc.GetGroupFromContext(c)
+		newGroup, err := http_helper.GetGroupFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
-		newGroup.OwnerID, err = misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
-		groupWithUsers, err := model.AddGroup(db, newGroup) // Can throw a fatal error
+		groupWithUsers, err := model.AddGroupWithUserIDs(db, newGroup, []int64{userID}) // Can throw a fatal error
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -69,19 +69,19 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		groupIDParam, err := misc.GetIDParams(c)
+		groupIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedGroup, err := misc.GetGroupFromContext(c)
+		updatedGroup, err := http_helper.GetGroupFromContext(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -97,14 +97,14 @@ func UpdateGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		groupIDParam, err := misc.GetIDParams(c)
+		groupIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -120,9 +120,9 @@ func LeaveGroupHandler(db *sql.DB) func(*gin.Context) {
 
 func LeaveAllGroupsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		userIDCookie, err := misc.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

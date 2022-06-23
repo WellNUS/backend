@@ -1,10 +1,11 @@
 package model
 
 import (
-	"wellnus/backend/router/misc/http_error"	
+	"wellnus/backend/router/http_helper/http_error"	
 	"log"
 	"fmt"
 	"database/sql"
+	"errors"
 )
 
 // Helper function
@@ -99,7 +100,11 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 	return groups, nil
 }
 
-func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
+func AddGroupWithUserIDs(db *sql.DB, group Group, userIDs []int64) (GroupWithUsers, error) {
+	if len(userIDs) == 0 { return GroupWithUsers{}, errors.New("Insufficient users to form a group") }
+	ownerID := userIDs[0]
+	userIDs = userIDs[1:]
+	group.OwnerID = ownerID //Taking first userID as ownerID
 	_, err := db.Query(
 		`INSERT INTO wn_group (
 			group_name, 
@@ -107,28 +112,33 @@ func AddGroup(db *sql.DB, newGroup Group) (GroupWithUsers, error) {
 			category, 
 			owner_id) 
 		VALUES ($1, $2, $3, $4);`,
-		newGroup.GroupName,
-		newGroup.GroupDescription,
-		newGroup.Category,
-		newGroup.OwnerID)
+		group.GroupName,
+		group.GroupDescription,
+		group.Category,
+		group.OwnerID)
 	if err != nil { return GroupWithUsers{}, err }
-	newGroup, err = newGroup.LoadLastGroupID(db)
+	group, err = group.LoadLastGroupID(db)
 	if err != nil { return GroupWithUsers{}, err }
-	
-	// newGroup successfully added into DB. Now adding owner into new group
-	err = AddUserToGroup(db, newGroup.ID, newGroup.OwnerID)
-	if err != nil {
+
+	// Adding Owner
+	if err = AddUserToGroup(db, group.ID, ownerID); err != nil {
 		log.Printf("Failed to add Owner: %v", err)
-		if _, fatal := db.Exec("DELETE FROM wn_group WHERE id = $1", newGroup.ID); fatal != nil {
+		if _, fatal := db.Exec("DELETE FROM wn_group WHERE id = $1", group.ID); fatal != nil {
 			log.Fatal(fmt.Sprintf("Failed to remove added group after failing to add owner. Fatal: %v", fatal))
 		}
 		return GroupWithUsers{}, err
 	}
-	users, err := GetAllUsersOfGroup(db, newGroup.ID)
+
+	// Adding Other Users
+	for _, userID := range userIDs {
+		if err := AddUserToGroup(db, group.ID, userID); err != nil {
+			return GroupWithUsers{}, err
+		}
+	}
+	users, err := GetAllUsersOfGroup(db, group.ID)
 	if err != nil { return GroupWithUsers{}, err }
-	groupWithUsers := GroupWithUsers{ Group: newGroup, Users: users }
-	if err != nil { return GroupWithUsers{}, err }
-	return groupWithUsers, nil
+
+	return GroupWithUsers{ Group: group, Users: users }, nil
 }
 
 func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (Group, error) {

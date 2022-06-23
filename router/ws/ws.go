@@ -2,8 +2,8 @@ package ws
 
 import (
 	"wellnus/backend/db/model"
-	"wellnus/backend/router/misc"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper"
+	"wellnus/backend/router/http_helper/http_error"
 	"fmt"
 	"database/sql"
 
@@ -12,14 +12,14 @@ import (
 
 func ConnectToWSHandler(wsHub *Hub, db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		misc.SetHeaders(c)
+		http_helper.SetHeaders(c)
 
-		groupID, err := misc.GetIDParams(c)
+		groupID, err := http_helper.GetIDParams(c)
 		if err != nil {
 			fmt.Printf("An error occured when retrieving group ID params. %v \n", err)
 			return
 		}
-		userID, err := misc.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			fmt.Printf("An error occured when retrieving user ID cookies. %v \n", err)
 			return

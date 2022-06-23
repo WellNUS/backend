@@ -7,8 +7,6 @@ import (
 	"fmt"
 )
 
-var addedJoinRequest JoinRequest
-
 // Full test
 func TestJoinHandler(t *testing.T) {
 	t.Run("AddJoinRequestHandler", testAddJoinRequestHandler)
@@ -31,11 +29,11 @@ func TestJoinHandler(t *testing.T) {
 // Helper
 
 func testAddJoinRequestHandler(t *testing.T) {
-	ioReaderJoinRequest, err := test_helper.GetIOReaderFromJoinRequest(JoinRequest{ GroupID: validAddedGroup.ID })
+	ioReaderJoinRequest, err := test_helper.GetIOReaderFromJoinRequest(JoinRequest{ GroupID: testGroups[0].ID })
 	req, _ := http.NewRequest("POST", "/join", ioReaderJoinRequest)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -45,10 +43,10 @@ func testAddJoinRequestHandler(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error occured while retrieving new join request from response. %v", err)
 	}
-	if addedJoinRequest.GroupID != validAddedGroup.ID {
+	if addedJoinRequest.GroupID != testGroups[0].ID {
 		t.Errorf("Returned addedJoinRequest did not update one of its GroupID correctly")
 	}
-	if addedJoinRequest.UserID != validAddedUser2.ID {
+	if addedJoinRequest.UserID != testUsers[1].ID {
 		t.Errorf("Returned addedJoinRequest did not update one of its UserID correctly")
 	}
 }
@@ -66,11 +64,11 @@ func testGetLoadedJoinRequestHandlerAsNotLoggedIn(t *testing.T) {
 	if !retrievedLoadedJoinRequest.JoinRequest.Equal(addedJoinRequest) {
 		t.Errorf("The retrieved JoinRequest component did not match the added join request")
 	}
-	if !retrievedLoadedJoinRequest.User.Equal(validAddedUser2) {
-		t.Errorf("The retrieved User component did not match the added join  user 2")
+	if !retrievedLoadedJoinRequest.User.Equal(testUsers[1]) {
+		t.Errorf("The retrieved User component did not match the added join user 2")
 	}
-	if !retrievedLoadedJoinRequest.Group.Equal(validAddedGroup) {
-		t.Errorf("The retrieved User component did not match the added join  user 2")
+	if !retrievedLoadedJoinRequest.Group.Equal(testGroups[0]) {
+		t.Errorf("The retrieved User component did not match the added join user 2")
 	}
 }
 
@@ -93,7 +91,7 @@ func testGetAllLoadedJoinRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -109,10 +107,10 @@ func testGetAllLoadedJoinRequestHandlerAsUser1(t *testing.T) {
 	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
 	}
-	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+	if loadedJoinRequests[0].User.ID != testUsers[1].ID {
 		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request.")
 	}
-	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+	if loadedJoinRequests[0].Group.ID != testGroups[0].ID {
 		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
@@ -121,7 +119,7 @@ func testGetAllLoadedJoinRequestHandlerSentAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -140,7 +138,7 @@ func testGetAllLoadedJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -156,10 +154,10 @@ func testGetAllLoadedJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
 	}
-	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+	if loadedJoinRequests[0].User.ID != testUsers[1].ID {
 		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
 	}
-	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+	if loadedJoinRequests[0].Group.ID != testGroups[0].ID {
 		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
@@ -168,7 +166,7 @@ func testGetAllLoadedJoinRequestHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -184,10 +182,10 @@ func testGetAllLoadedJoinRequestHandlerAsUser2(t *testing.T) {
 	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
 	}
-	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+	if loadedJoinRequests[0].User.ID != testUsers[1].ID {
 		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
 	}
-	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+	if loadedJoinRequests[0].Group.ID != testGroups[0].ID {
 		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
@@ -196,7 +194,7 @@ func testGetAllLoadedJoinRequestHandlerSentAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -212,10 +210,10 @@ func testGetAllLoadedJoinRequestHandlerSentAsUser2(t *testing.T) {
 	if loadedJoinRequests[0].JoinRequest.ID != addedJoinRequest.ID {
 		t.Errorf("The single join request was not the added join request")
 	}
-	if loadedJoinRequests[0].User.ID != validAddedUser2.ID {
+	if loadedJoinRequests[0].User.ID != testUsers[1].ID {
 		t.Errorf("The join request sent by user 2 was not reflected by returned loaded join request")
 	}
-	if loadedJoinRequests[0].Group.ID != validAddedGroup.ID {
+	if loadedJoinRequests[0].Group.ID != testGroups[0].ID {
 		t.Errorf("The join request sent to group was not reflected by returned loaded join request")
 	}
 }
@@ -224,7 +222,7 @@ func testGetAllLoadedJoinRequestHandlerReceivedAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -255,7 +253,7 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -287,7 +285,7 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 	rows, err = DB.Query(
 		`SELECT COUNT(*) FROM wn_user_group
 		WHERE user_id = $1`,
-		validAddedUser2.ID)
+		testUsers[1].ID)
 	if err != nil {
 		t.Errorf("An errpr pccired while getting count from DB. %v", err)
 	}
@@ -319,7 +317,7 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -350,8 +348,8 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 	rows, err = DB.Query(
 		`SELECT COUNT(*) FROM wn_user_group
 		WHERE user_id = $1 AND group_id = $2`,
-		validAddedUser2.ID,
-		validAddedGroup.ID)
+		testUsers[1].ID,
+		testGroups[0].ID)
 	if err != nil {
 		t.Errorf("An error occured while getting count from DB. %v", err)
 	}
@@ -381,7 +379,7 @@ func testDeleteJoinRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/join/%d", addedJoinRequest.ID), nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey1,
+		Value: sessionKeys[0],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
@@ -393,7 +391,7 @@ func testDeleteJoinRequestHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/join/%d", addedJoinRequest.ID), nil)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
-		Value: SessionKey2,
+		Value: sessionKeys[1],
 	})
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {

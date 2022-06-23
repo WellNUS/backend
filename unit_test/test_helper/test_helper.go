@@ -10,6 +10,9 @@ import (
 	"errors"
 	"encoding/json"
 	"io"
+	"fmt"
+	"time"
+	"math/rand"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +29,10 @@ type MatchSetting = model.MatchSetting
 type MatchRequest = model.MatchRequest
 type LoadedMatchRequest = model.LoadedMatchRequest
 
+func ResetDB(db *sql.DB) {
+	db.Exec("DELETE FROM wn_group")
+	db.Exec("DELETE FROM wn_user")
+}
 
 func GetBufferFromRecorder(w *httptest.ResponseRecorder) *bytes.Buffer {
 	buf := new(bytes.Buffer)
@@ -54,6 +61,20 @@ func ReadInt(row *sql.Rows) (int, error) {
 	var c int
 	if err := row.Scan(&c); err != nil { return 0, err }
 	return c, nil
+}
+
+func GetInt64FromRecorder(w *httptest.ResponseRecorder) (int64, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return 0, errors.New(buf.String())
+	}
+
+	var num int64
+	err := json.NewDecoder(buf).Decode(&num)
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
 }
 
 func GetUserFromRecorder(w *httptest.ResponseRecorder) (User, error) {
@@ -315,4 +336,107 @@ func GetIOReaderFromMatchSetting(matchSetting MatchSetting) (io.Reader, error) {
 	j, err := json.Marshal(matchSetting)
 	if err != nil { return nil, err }
 	return bytes.NewReader(j), nil
+}
+
+func GenerateRandomString(l int) string {
+	CharSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	Rand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, l)
+	charSetLen := len(CharSet)
+	for i := range b {
+		b[i] = CharSet[Rand.Intn(charSetLen)]
+	}
+	return string(b)
+}
+
+func GetTestUser(i int) User {
+	email := GenerateRandomString(20)
+	return User{
+		FirstName: fmt.Sprintf("TestUser%d", i),
+		LastName: fmt.Sprintf("TestLastName%d", i),
+		Gender: "M",
+		Faculty: "COMPUTING",
+		Email: fmt.Sprintf("%s@u.nus.edu", email),
+		UserRole: "MEMBER",
+		Password: "123",
+		PasswordHash: "",
+	}
+}
+
+func GetTestGroup(i int) Group {
+	return Group{
+		GroupName: fmt.Sprintf("NewGroupName%d", i),
+		GroupDescription: "NewGroupDescription",
+		Category: "SUPPORT",
+	}
+}
+
+func GetRandomTestMatchSetting() MatchSetting {
+	ref_faculty := []string{"MIX", "SAME", "NONE"}
+	ref_hobbies := []string{"GAMING", "SINGING", "DANCING", "MUSIC", "SPORTS", "OUTDOOR", "BOOK", "ANIME", "MOVIES", "TV", "ART", "STUDY"}
+	ref_mbti := []string{"ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"}
+	Rand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	facultyPreference := ref_faculty[Rand.Intn(len(ref_faculty))]
+	mbti := ref_mbti[Rand.Intn(len(ref_mbti))]
+	hobbies := make([]string, 0)
+	for _, hobby := range ref_hobbies {
+		if Rand.Intn(3) == 1 { hobbies = append(hobbies, hobby) }
+		if len(hobbies) >= 4 { break }
+	}
+	matchSetting := MatchSetting{
+		FacultyPreference: facultyPreference,
+		Hobbies: hobbies,
+		MBTI: mbti,
+	}
+	return matchSetting
+}
+
+func SetupUsers(db *sql.DB, num int) ([]User, error) {
+	users := make([]User, num)
+	for i := 0; i < num; i++ {
+		user, err := model.AddUser(db, GetTestUser(i))
+		if err != nil { return nil, err }
+		users[i] = user
+	}
+	return users, nil
+}
+
+func SetupGroupsForUsers(db *sql.DB, users []User) ([]Group, error) {
+	groups := make([]Group, len(users))
+	for i, user := range users {
+		groupWithUsers, err := model.AddGroupWithUserIDs(db, GetTestGroup(i), []int64{ user.ID })
+		if err != nil { return nil, err }
+		groups[i] = groupWithUsers.Group
+	}
+	return groups, nil
+}
+
+func SetupMatchSettingForUsers(db *sql.DB, users []User) ([]MatchSetting, error) {
+	matchSettings := make([]MatchSetting, len(users))
+	for i, user := range users {
+		matchSetting, err := model.AddUpdateMatchSettingOfUser(db, GetRandomTestMatchSetting(), user.ID)
+		if err != nil { return nil, err }
+		matchSettings[i] = matchSetting
+	}
+	return matchSettings, nil
+}
+
+func SetupSessionForUsers(db *sql.DB, users []User) ([]string, error) {
+	sessionKeys := make([]string, len(users))
+	for i, user := range users {
+		sessionKey, err := model.CreateNewSession(db, user.ID)
+		if err != nil { return nil, err }
+		sessionKeys[i] = sessionKey
+	}
+	return sessionKeys, nil
+}
+
+func SetupMatchRequestForUsers(db *sql.DB, users []User) ([]MatchRequest, error) {
+	matchRequests := make([]MatchRequest, len(users))
+	for i, user := range users {
+		matchRequest, err := model.AddMatchRequest(db, user.ID)
+		if err != nil { return nil, err }
+		matchRequests[i] = matchRequest
+	}
+	return matchRequests, nil
 }

@@ -4,7 +4,8 @@ import (
 	"wellnus/backend/db"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/user"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
+	"wellnus/backend/unit_test/test_helper"
 	
 	"testing"
 	"os"
@@ -24,16 +25,8 @@ var (
 	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
 )
 
-var validUser User = User{
-	FirstName: "NewFirstName",
-	LastName: "NewLastName",
-	Gender: "M",
-	Faculty: "COMPUTING",
-	Email: "NewEmail@u.nus.edu",
-	UserRole: "VOLUNTEER",
-	Password: "NewPassword",
-	PasswordHash: "",
-}
+var validUser User = test_helper.GetTestUser(0)
+var sessionKey string
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
@@ -50,9 +43,6 @@ func SetupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	DB = db.ConnectDB()
 	Router = SetupRouter()
-
-	DB.Exec("DELETE FROM wn_group")
-	DB.Exec("DELETE FROM wn_user")
-
+	test_helper.ResetDB(DB)
 	os.Exit(m.Run())
 }

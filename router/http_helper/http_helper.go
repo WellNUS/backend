@@ -1,9 +1,9 @@
-package misc
+package http_helper
 
 import (
 	"wellnus/backend/db/model"
 	"wellnus/backend/config"
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
 	"strconv"
 
 	"database/sql"

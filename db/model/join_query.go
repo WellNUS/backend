@@ -1,7 +1,7 @@
 package model
 
 import (
-	"wellnus/backend/router/misc/http_error"
+	"wellnus/backend/router/http_helper/http_error"
 	"database/sql"
 )
 
