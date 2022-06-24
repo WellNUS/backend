@@ -27,9 +27,11 @@ BACKEND_URL: localhost:8080
 
 FRONTEND_URL: localhost:3000
 
-## Features
+## Entity Relation Diagram
+![WellNUS ERD](./blob/WellNUS%20ERD.svg)
 
-### Notes to connect frontend to backend
+## Features
+##### Notes to connect frontend to backend
 
 All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
 
