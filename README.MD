@@ -30,15 +30,9 @@ FRONTEND_URL: localhost:3000
 ## Entity Relation Diagram
 ![WellNUS ERD](./blob/WellNUS%20ERD.svg)
 
-## Features
+## Testing of features
 
-### Notes to connect frontend to backend
-
-> All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
-
-### Testing of features
-
-> #### Unit Tests
+> ### Unit Tests
 > 
 >> Unit tests are accessible for each major feature in **./unit_test** directory. 
 >> 
@@ -47,9 +41,15 @@ FRONTEND_URL: localhost:3000
 >>     - Unit test of User feature found in **./unit_test/user**
 >> 2. run `go test` in the terminal to run all unit tests for the particular feature.
 >
-> #### Want to test this backend API on a GUI?
+> ### Want to test this backend API on a GUI?
 > 
 >> Test some of the features by accessing "http://(domain_name)/testing" after running the server. Note that not every API implemented is implemented in the above testing GUI interface (coming soon if there is time).
+
+## Features
+
+### Notes to connect frontend to backend
+
+> All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
 
 ### User
 
