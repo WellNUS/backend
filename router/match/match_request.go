@@ -12,6 +12,8 @@ import (
 
 func GetMatchRequestCount(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		count, err := model.GetMatchRequestCount(db)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -23,6 +25,8 @@ func GetMatchRequestCount(db *sql.DB) func(*gin.Context) {
 
 func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -48,6 +52,8 @@ func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddMatchRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())

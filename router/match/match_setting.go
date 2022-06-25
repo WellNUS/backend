@@ -11,6 +11,8 @@ import (
 
 func GetMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -28,6 +30,8 @@ func GetMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func AddUpdateMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
@@ -49,6 +53,8 @@ func AddUpdateMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 func DeleteMatchSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
