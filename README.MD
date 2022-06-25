@@ -34,7 +34,7 @@ FRONTEND_URL: localhost:3000
 
 ### Notes to connect frontend to backend
 
-All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
+> All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
 
 ### Testing of features
 
@@ -43,7 +43,6 @@ All Request made should have **credentials: "include"** so that cookies can be a
 >> Unit tests are accessible for each major feature in **./unit_test** directory. 
 >> 
 >> To run unit test of a feature:
->> 
 >> 1. cd into **./unit_test/(feature)**
 >>     - Unit test of User feature found in **./unit_test/user**
 >> 2. run `go test` in the terminal to run all unit tests for the particular feature.
