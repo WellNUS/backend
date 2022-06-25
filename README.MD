@@ -31,9 +31,28 @@ FRONTEND_URL: localhost:3000
 ![WellNUS ERD](./blob/WellNUS%20ERD.svg)
 
 ## Features
-##### Notes to connect frontend to backend
+
+#### Notes to connect frontend to backend
 
 All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
+
+#### Testing of features
+
+##### Unit Tests
+
+Unit tests are accessible for each major feature in **./unit_test** directory. 
+
+To run unit test of a feature:
+
+1. cd into **./unit_test/<feature>**
+    - Unit test of User feature found in **./unit_test/user**
+2. run `go test` in the terminal to run all unit tests for the particular feature.
+
+##### Want to test this backend API on a GUI?
+
+Test some of the features by accessing "http://(domain_name)/testing" after running the server. 
+
+Note that not every API implemented is implemented in the above testing GUI interface (coming soon if there is time)
 
 ### User
 
@@ -456,12 +475,6 @@ conn.onmessage = function (evt) {
 >> ##### /counsel/:id - UPDATE
 >> 
 >> : Updates a counsel request if user is the owner of the request
-
-## Want to test this backend API on a GUI?
-
-Test some of the features by accessing "http://(domain_name)/testing" after running the server. 
-
-Note that not every API implemented is implemented in the above testing GUI interface (coming soon if there is time)
 
 ## Things to do
 - [x] CRUD on Users
