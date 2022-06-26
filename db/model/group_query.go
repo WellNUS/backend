@@ -23,8 +23,8 @@ func ReadGroups(rows *sql.Rows) ([]Group, error) {
 
 func GetGroup(db *sql.DB, groupID int64) (Group, error) {
 	rows, err := db.Query("SELECT * FROM wn_group WHERE id = $1;", groupID)
-	if err != nil { return Group{}, err }
 	defer rows.Close()
+	if err != nil { return Group{}, err }
 
 	groups, err := ReadGroups(rows)
 	if err != nil { return Group{}, err }
@@ -66,7 +66,7 @@ func RemoveUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
 }
 
 func deleteGroup(db *sql.DB, groupID int64) error {
-	_, err := db.Query("DELETE FROM wn_group WHERE id = $1", groupID)
+	_, err := db.Exec("DELETE FROM wn_group WHERE id = $1", groupID)
 	return err
 }
 
@@ -92,8 +92,8 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 		ON wn_user_group.group_id = wn_group.id 
 		WHERE wn_user_group.user_id = $1`,
 		userID)
-	if err != nil { return nil, err }
 	defer rows.Close()
+	if err != nil { return nil, err }
 	
 	groups, err := ReadGroups(rows)
 	if err != nil { return nil, err}
@@ -160,8 +160,8 @@ func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (G
 		updatedGroup.Category,
 		updatedGroup.OwnerID,
 		groupID)
-	if err != nil { return Group{}, err; }
-	return updatedGroup, nil;
+	if err != nil { return Group{}, err }
+	return updatedGroup, nil
 }
 
 func LeaveGroup(db *sql.DB, groupID int64, userID int64) (GroupWithUsers, error) {
@@ -204,6 +204,7 @@ func IsUserInGroup(db *sql.DB, userID int64, groupID int64) (bool, error) {
 		WHERE user_id = $1 and group_id = $2`,
 		userID,
 		groupID)
+	defer row.Close()
 	if err != nil { return false, err }
 	var membership bool
 	row.Next()

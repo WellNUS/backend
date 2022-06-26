@@ -50,6 +50,7 @@ func ReadLoadedJoinRequests(rows *sql.Rows) ([]LoadedJoinRequest, error) {
 
 func GetJoinRequest(db *sql.DB, joinRequestID int64) (JoinRequest, error) {
 	rows, err := db.Query("SELECT * FROM wn_join_request WHERE id = $1", joinRequestID)
+	defer rows.Close()
 	if err != nil { return JoinRequest{}, err }
 	joinRequests, err := ReadJoinRequests(rows)
 	if err != nil { return JoinRequest{}, err }
@@ -83,6 +84,7 @@ func GetAllLoadedJoinRequestsSentOfUser(db *sql.DB, userID int64) ([]LoadedJoinR
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
 		WHERE wn_join_request.user_id = $1`,
 		userID)
+	defer rows.Close()
 	if err != nil { return nil, err }
 	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
 	if err != nil { return nil, err }
@@ -113,6 +115,7 @@ func GetAllLoadedJoinRequestsReceivedOfUser(db *sql.DB, userID int64) ([]LoadedJ
 		JOIN wn_group ON wn_group.id = wn_join_request.group_id
 		WHERE wn_group.owner_id = $1`,
 		userID)
+	defer rows.Close()
 	if err != nil { return nil, err }
 	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
 	if err != nil { return nil, err }
@@ -144,6 +147,7 @@ func GetAllLoadedJoinRequestsOfUser(db *sql.DB, userID int64) ([]LoadedJoinReque
 		WHERE wn_group.owner_id = $1 OR wn_join_request.user_id = $2`,
 		userID,
 		userID)
+	defer rows.Close()
 	if err != nil { return nil, err }
 	loadedJoinRequests, err := ReadLoadedJoinRequests(rows)
 	if err != nil { return nil, err }

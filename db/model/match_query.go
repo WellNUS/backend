@@ -67,6 +67,7 @@ func ReadLoadedMatchRequests(rows *sql.Rows) ([]LoadedMatchRequest, error) {
 
 func GetMatchSettingOfUser(db *sql.DB, userID int64) (MatchSetting, error){
 	rows, err := db.Query(`SELECT * FROM wn_match_setting WHERE user_id = $1`, userID)
+	defer rows.Close()
 	if err != nil { return MatchSetting{}, err }
 	matchSettings, err := ReadMatchSettings(rows);
 	if err != nil { return MatchSetting{}, err }
@@ -108,6 +109,7 @@ func DeleteMatchSettingOfUser(db *sql.DB, userID int64) (MatchSetting, error) {
 
 func GetMatchRequestCount(db *sql.DB) (int64, error) {
 	rows, err := db.Query(`SELECT COUNT(*) FROM wn_match_request`)
+	defer rows.Close()
 	if err != nil { return 0, err }
 	rows.Next()
 	var count int64
@@ -117,6 +119,7 @@ func GetMatchRequestCount(db *sql.DB) (int64, error) {
 
 func GetMatchRequestOfUser(db *sql.DB, userID int64) (MatchRequest, error) {
 	rows, err := db.Query(`SELECT * FROM wn_match_request WHERE user_id = $1`, userID)
+	defer rows.Close()
 	if err != nil { return MatchRequest{}, err }
 	matchRequests, err := ReadMatchRequests(rows)
 	if err != nil { return MatchRequest{}, err }
@@ -152,6 +155,7 @@ func GetAllLoadedMatchRequest(db *sql.DB) ([]LoadedMatchRequest, error) {
 		FROM wn_match_request
 		JOIN wn_user ON wn_match_request.user_id = wn_user.id
 		LEFT JOIN wn_match_setting ON wn_match_request.user_id = wn_match_setting.user_id`)
+	defer rows.Close()
 	if err != nil { return nil, err }
 	loadedMatchRequests, err := ReadLoadedMatchRequests(rows)
 	if err != nil { return nil, err }

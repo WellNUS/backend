@@ -32,6 +32,7 @@ func (user User) HashPassword() (User, error) {
 
 func (user User) LoadLastUserID(db *sql.DB) (User, error) {
 	row, err := db.Query("SELECT last_value FROM wn_user_id_seq;")
+	defer row.Close()
 	if err != nil { return User{}, err }
 	defer row.Close()
 
