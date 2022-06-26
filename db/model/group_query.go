@@ -23,9 +23,8 @@ func ReadGroups(rows *sql.Rows) ([]Group, error) {
 
 func GetGroup(db *sql.DB, groupID int64) (Group, error) {
 	rows, err := db.Query("SELECT * FROM wn_group WHERE id = $1;", groupID)
-	defer rows.Close()
 	if err != nil { return Group{}, err }
-
+	defer rows.Close()
 	groups, err := ReadGroups(rows)
 	if err != nil { return Group{}, err }
 	if len(groups) == 0 { return Group{}, http_error.NotFoundError }
@@ -92,9 +91,8 @@ func GetAllGroupsOfUser(db *sql.DB, userID int64) ([]Group, error) {
 		ON wn_user_group.group_id = wn_group.id 
 		WHERE wn_user_group.user_id = $1`,
 		userID)
-	defer rows.Close()
 	if err != nil { return nil, err }
-	
+	defer rows.Close()
 	groups, err := ReadGroups(rows)
 	if err != nil { return nil, err}
 	return groups, nil
@@ -105,7 +103,7 @@ func AddGroupWithUserIDs(db *sql.DB, group Group, userIDs []int64) (GroupWithUse
 	ownerID := userIDs[0]
 	userIDs = userIDs[1:]
 	group.OwnerID = ownerID //Taking first userID as ownerID
-	_, err := db.Query(
+	_, err := db.Exec(
 		`INSERT INTO wn_group (
 			group_name, 
 			group_description, 
@@ -204,8 +202,8 @@ func IsUserInGroup(db *sql.DB, userID int64, groupID int64) (bool, error) {
 		WHERE user_id = $1 and group_id = $2`,
 		userID,
 		groupID)
-	defer row.Close()
 	if err != nil { return false, err }
+	defer row.Close()
 	var membership bool
 	row.Next()
 	if err := row.Scan(&membership); err != nil { return false, nil }

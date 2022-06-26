@@ -34,8 +34,8 @@ func GenerateNewSessionKey() string {
 // Main function
 func GetUserIDFromSessionKey(db *sql.DB, sessionKey string) (int64, error) {
 	rows, err := db.Query(`SELECT * FROM wn_session WHERE session_key = $1`, sessionKey)
-	defer rows.Close()
 	if err != nil { return 0, err }
+	defer rows.Close()
 	sessions, err := readSessions(rows)
 	if err != nil { return 0, err }
 	if len(sessions) == 0 { return 0, http_error.UnauthorizedError }

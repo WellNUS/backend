@@ -36,9 +36,8 @@ func (groupMain Group) MergeGroup(groupAdd Group) Group {
 
 func (group Group) LoadLastGroupID(db *sql.DB) (Group, error) {
 	row, err := db.Query("SELECT last_value FROM wn_group_id_seq;")
-	defer row.Close()
 	if err != nil { return Group{}, err }
-
+	defer row.Close()
 	row.Next()
 	if err := row.Scan(&group.ID); err != nil { return Group{}, err }
 	return group, nil

@@ -25,7 +25,6 @@ func readMessagePayloads(rows *sql.Rows) ([]MessagePayload, error) {
 
 func GetMessagesChunkOfGroupCustomise(db *sql.DB, groupID int64, latestTime time.Time, limit int64) (MessagesChunk, error) {
 	var rows *sql.Rows
-	defer rows.Close()
 	var err error
 	if limit <= 0 {
 		rows, err = db.Query(
@@ -71,6 +70,7 @@ func GetMessagesChunkOfGroupCustomise(db *sql.DB, groupID int64, latestTime time
 			limit)
 	}
 	if err != nil { return MessagesChunk{}, err }
+	defer rows.Close()
 	messagePayloads, err := readMessagePayloads(rows)
 	if err != nil { return MessagesChunk{}, err }
 

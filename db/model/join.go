@@ -30,9 +30,8 @@ func (joinRequest JoinRequest) LoadJoinRequest(db *sql.DB) (LoadedJoinRequest, e
 
 func (joinRequest JoinRequest) LoadLastJoinRequestID(db *sql.DB) (JoinRequest, error) {
 	row, err := db.Query("SELECT last_value FROM wn_join_request_id_seq;")
-	defer row.Close()
 	if err != nil { return JoinRequest{}, err }
-
+	defer row.Close()
 	row.Next()
 	if err := row.Scan(&joinRequest.ID); err != nil { return JoinRequest{}, err }
 	return joinRequest, nil

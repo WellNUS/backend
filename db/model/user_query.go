@@ -20,9 +20,8 @@ func readUsers(rows *sql.Rows) ([]User, error) {
 
 func GetUser(db *sql.DB, id int64) (User, error) {
 	rows, err := db.Query("SELECT * FROM wn_user WHERE id = $1;", id)
-	defer rows.Close()
 	if err != nil { return User{}, err }
-	
+	defer rows.Close()
 	users, err := readUsers(rows)
 	if err != nil { return User{}, err}
 	if len(users) == 0 { return User{}, http_error.NotFoundError }
@@ -54,8 +53,8 @@ func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
 		ON wn_user_group.user_id = wn_user.id 
 		WHERE wn_user_group.group_id = $1`, 
 		groupID)
-	defer rows.Close()
 	if err != nil { return nil, err }
+	defer rows.Close()
 	users, err := readUsers(rows)
 	if err != nil { return nil, err }
 	return users, nil
@@ -63,9 +62,8 @@ func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
 
 func GetAllUsers(db *sql.DB) ([]User, error) {
 	rows, err := db.Query("SELECT * FROM wn_user;")
-	defer rows.Close()
 	if err != nil { return nil, err }
-	
+	defer rows.Close()
 	users, err := readUsers(rows)
 	if err != nil { return nil, err}
 	return users, nil
@@ -128,8 +126,8 @@ func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 
 func FindUser(db *sql.DB, email string) (User, error) {
 	rows, err := db.Query("SELECT * FROM wn_user WHERE email = $1;", email)
-	defer rows.Close()
 	if err != nil { return User{}, err }
+	defer rows.Close()
 	users, err := readUsers(rows)
 	if err != nil { return User{}, err}
 	if len(users) == 0 { return User{}, http_error.NotFoundError }
