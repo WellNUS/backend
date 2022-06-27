@@ -61,9 +61,9 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 	inChatMembers := make([]User, 0) 
 	onlineMembers := make([]User, 0)	
 	offlineMembers := make([]User, 0)
-	// fmt.Printf("Websocket Clients UserID: ")
+	fmt.Printf("Websocket Clients UserID: ")
 	for client := range h.Clients {
-		// fmt.Printf("%d, ", client.UserID)
+		fmt.Printf("%d, ", client.UserID)
 		user, ok := usersInGroupMap[client.UserID]
 		if ok {
 			if client.GroupID == groupID {
@@ -74,7 +74,7 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 			delete(usersInGroupMap, client.UserID)
 		}
 	}
-	// fmt.Println("")
+	fmt.Println("")
 	for _, user  := range usersInGroupMap {
 		offlineMembers = append(offlineMembers, user)
 	}
