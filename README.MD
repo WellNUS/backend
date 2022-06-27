@@ -59,6 +59,12 @@ FRONTEND_URL: localhost:3000
 >> 
 >> User = { id, first_name, last_name, gender, faculty, email, user_role, password, password_hash }
 >>
+>>> User field specifications
+>>> - gender = 1 of ('M', 'F')
+>>> - faculty = 1 of ('CHS', 'BUSINESS', 'COMPUTING', 'DENTISTRY', 'CDE', 'LAW', 'MEDICINE', 'NURSING', 'PHARMACY', 'MUSIC')
+>>> - email = ending with '@u.nus.edu'
+>>> - user_role = 1 of ('MEMBER', 'VOLUNTEER', 'COUNSELLOR')
+>>
 >> UserWithGroups = { user: User, groups: Group[] }
 > 
 > #### User Routes
@@ -136,6 +142,9 @@ FRONTEND_URL: localhost:3000
 >> Each group must have at least an owner present in said group.
 >>
 >> Group = { id, group_name, group_description, category, owner_id } 
+>>
+>>> Group field specifications
+>>> - category = 1 of ('COUNSEL', 'SUPPORT')
 >>
 >> GroupWithUsers = { group: Group, users: User[] }
 > 
@@ -351,6 +360,11 @@ conn.onmessage = function (evt) {
 >> These factors are considered during matching
 >> 
 >> MatchSetting = { user_id, faculty_preference, hobbies[], mbti }
+>>
+>>> MatchSetting field specifications
+>>> - faculty_preference = 1 of ('MIX', 'SAME', 'NONE')
+>>> - hobbies = at most 4 of ('GAMING', 'SINGING', 'DANCING', 'MUSIC', 'SPORTS', 'OUTDOOR', 'BOOK', 'ANIME', 'MOVIES', 'TV', 'ART', 'STUDY')
+>>> - mbti = 1 of ('ISTJ','ISFJ','INFJ','INTJ','ISTP','ISFP','INFP','INTP','ESTP','ESFP','ENFP','ENTP','ESTJ','ESFJ','ENFJ','ENTJ')
 >
 > #### Match Setting Routes
 >
