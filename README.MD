@@ -73,6 +73,13 @@ FRONTEND_URL: localhost:3000
 >>
 >>> Description: Get all users
 >>> 
+>>> Query Params: 
+>>> - ?role=MEMBER : Specify to only retrieve users who are members
+>>> - ?role=VOLUNTEER : Specify to only retrieve users who are student volunteers
+>>> - ?role=COUNSELLOR : Specify to only retrieve users who are counsellors
+>>> - ?role=PROVIDER : Specify to retrieve users who are either student volunteers or counsellors
+>>> - no query params : Retrieves all users
+>>>
 >>> Request Body: None
 >>> 
 >>> Response Body: User[]
@@ -81,7 +88,7 @@ FRONTEND_URL: localhost:3000
 >> 
 >>> Description : Create a new user and logins as that
 >>>
->>> Request Body: { first_name, last_name, gender, faculty, email, user_role, password }
+>>> Request Body : { first_name, last_name, gender, faculty, email, user_role, password }
 >>>
 >>> Response Body: User
 >>
@@ -217,9 +224,9 @@ FRONTEND_URL: localhost:3000
 >>> Description : Get all loaded join requests sent by user or directed at user. Query params used to indicate what join request to retrieve.
 >>>
 >>> Query Params:
->>> - ?request=SENT     will get all join request sent by user
->>> - ?request=RECEIVED will get all join request directed at user
->>> - no query params   will get all join request sent by and directed at user
+>>> - ?request=SENT : will get all join request sent by user
+>>> - ?request=RECEIVED : will get all join request directed at user
+>>> - no query params : will get all join request sent by and directed at user
 >>> 
 >>> Request Body : None
 >>> 

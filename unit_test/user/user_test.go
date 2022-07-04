@@ -13,8 +13,12 @@ import (
 // Full test
 
 func TestUserHandlers(t *testing.T) {
-	t.Run("GetAllUsersHandler when DB is empty", testGetAllUsersHandlerWhenDBIsEmpty)
-	t.Run("GetUserHandler when DB is empty", testGetUserHandlerWhenDBIsEmpty)
+	t.Run("GetAllUsersHandler", testGetAllUsersHandler)
+	t.Run("GetAllUsersHandlerMember", testGetAllUsersHandlerMember)
+	t.Run("GetAllUsersHandlerVolunteer", testGetAllUsersHandlerVolunteer)
+	t.Run("GetAllUsersHandlerCounsellor", testGetAllUsersHandlerCounsellor)	
+	t.Run("GetAllUsersHandlerProvider", testGetAllUsersHandlerProvider)
+	t.Run("GetUserHandler miss", testGetUserHandlerMiss)
 	t.Run("AddUserHandler", testAddUserHandler)
 	t.Run("GetUserHandler", testGetUserHandler)
 	t.Run("AddUserHandler no first name", testAddUserHandlerNoFirstName)
@@ -30,7 +34,7 @@ func TestUserHandlers(t *testing.T) {
 	t.Run("DeleteUserHandler authorized", testDeleteUserHandlerAuthorised)
 }
 
-func testGetAllUsersHandlerWhenDBIsEmpty(t *testing.T) {
+func testGetAllUsersHandler(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/user", nil)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
@@ -40,13 +44,73 @@ func testGetAllUsersHandlerWhenDBIsEmpty(t *testing.T) {
 	if err != nil {
 		t.Errorf("An error occured while getting user slice from recorder. %v", err)
 	}
-	if len(users) != 0 {
-		t.Errorf("%d users found despite table being cleared", len(users))
+	if len(users) != 3 {
+		t.Errorf("%d users found despite table setup with 3 users", len(users))
 	}
 }
 
-func testGetUserHandlerWhenDBIsEmpty(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/user/1", nil)
+func testGetAllUsersHandlerMember(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user?role=MEMBER", nil)
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusOK { 
+		t.Errorf("HTTP Request to GetAllUser failed with status code of %d", w.Code)
+	}
+	users, err := test_helper.GetUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while getting user slice from recorder. %v", err)
+	}
+	if len(users) != 1 {
+		t.Errorf("%d users found despite table setup with 1 member", len(users))
+	}
+}
+
+func testGetAllUsersHandlerVolunteer(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user?role=VOLUNTEER", nil)
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusOK { 
+		t.Errorf("HTTP Request to GetAllUser failed with status code of %d", w.Code)
+	}
+	users, err := test_helper.GetUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while getting user slice from recorder. %v", err)
+	}
+	if len(users) != 1 {
+		t.Errorf("%d users found despite table setup with 1 volunteer", len(users))
+	}
+}
+
+func testGetAllUsersHandlerCounsellor(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user?role=COUNSELLOR", nil)
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusOK { 
+		t.Errorf("HTTP Request to GetAllUser failed with status code of %d", w.Code)
+	}
+	users, err := test_helper.GetUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while getting user slice from recorder. %v", err)
+	}
+	if len(users) != 1 {
+		t.Errorf("%d users found despite table setup with 1 counsellor", len(users))
+	}
+}
+
+func testGetAllUsersHandlerProvider(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user?role=PROVIDER", nil)
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusOK { 
+		t.Errorf("HTTP Request to GetAllUser failed with status code of %d", w.Code)
+	}
+	users, err := test_helper.GetUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while getting user slice from recorder. %v", err)
+	}
+	if len(users) != 2 {
+		t.Errorf("%d users found despite table setup with 2 provider", len(users))
+	}
+}
+
+func testGetUserHandlerMiss(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/user/999", nil)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusNotFound {
 		t.Errorf("HTTP Request to GetUser did not have a status code of 404 not found")

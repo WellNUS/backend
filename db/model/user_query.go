@@ -3,6 +3,7 @@ package model
 import (
 	"wellnus/backend/router/http_helper/http_error"
 	"database/sql"
+	"fmt"
 )
 
 //Helper functions
@@ -62,6 +63,17 @@ func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
 
 func GetAllUsers(db *sql.DB) ([]User, error) {
 	rows, err := db.Query("SELECT * FROM wn_user;")
+	if err != nil { return nil, err }
+	defer rows.Close()
+	users, err := readUsers(rows)
+	if err != nil { return nil, err}
+	return users, nil
+}
+
+func GetAllUsersConditional(db *sql.DB, condition string) ([]User, error) {
+	query := fmt.Sprintf("SELECT * FROM wn_user WHERE %s", condition)
+	// Unsafe query
+	rows, err := db.Query(query)
 	if err != nil { return nil, err }
 	defer rows.Close()
 	users, err := readUsers(rows)

@@ -10,12 +10,57 @@ import (
 	"database/sql"
 )
 
+type User = model.User
+
+const (
+	ROLE_MEMBER = 0
+	ROLE_VOLUNTEER = 1
+	ROLE_COUNSELLOR = 2
+	ROLE_PROVIDER = 3
+	ROLE_ALL = 4
+)
+
+func getRoleQuery(c *gin.Context) int {
+	if s := c.Query("role"); s == "MEMBER" {
+		return ROLE_MEMBER
+	} else if s == "VOLUNTEER" {
+		return ROLE_VOLUNTEER
+	} else if s == "COUNSELLOR" {
+		return ROLE_COUNSELLOR
+	} else if s == "PROVIDER" {
+		return ROLE_PROVIDER
+	} else {
+		return ROLE_ALL
+	}
+}
+
 // Main functions
 func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		users, err := model.GetAllUsers(db)
+		role := getRoleQuery(c)
+		var users []User
+		var err error
+		if role == ROLE_MEMBER {
+			users, err = model.GetAllUsersConditional(db, "user_role = 'MEMBER'")
+		}
+		if role == ROLE_VOLUNTEER {
+			users, err = model.GetAllUsersConditional(db, "user_role = 'VOLUNTEER'")
+		}
+
+		if role == ROLE_COUNSELLOR {
+			users, err = model.GetAllUsersConditional(db, "user_role = 'COUNSELLOR'")
+		}
+		
+		if role == ROLE_PROVIDER {
+			users, err = model.GetAllUsersConditional(db, "user_role = 'VOLUNTEER' OR user_role = 'COUNSELLOR'" )
+		}
+
+		if role == ROLE_ALL {
+			users, err = model.GetAllUsers(db)
+		}
+
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

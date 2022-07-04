@@ -351,13 +351,21 @@ func GenerateRandomString(l int) string {
 
 func GetTestUser(i int) User {
 	email := GenerateRandomString(20)
+
+	role := "MEMBER"
+	if i % 3  == 1 {
+		role = "VOLUNTEER"
+	} else if i % 3 == 2 {
+		role = "COUNSELLOR"
+	}
+
 	return User{
 		FirstName: fmt.Sprintf("TestUser%d", i),
 		LastName: fmt.Sprintf("TestLastName%d", i),
 		Gender: "M",
 		Faculty: "COMPUTING",
 		Email: fmt.Sprintf("%s@u.nus.edu", email),
-		UserRole: "MEMBER",
+		UserRole: role,
 		Password: "123",
 		PasswordHash: "",
 	}
