@@ -24,7 +24,7 @@ func testSuccessfulLoginHandler(t *testing.T) {
 	loginAttempt := User{
 		Email: testUsers[0].Email, 
 		Password: password}
-	IOReaderAttempt, _ := test_helper.GetIOReaderFromUser(loginAttempt)
+	IOReaderAttempt, _ := test_helper.GetIOReaderFromObject(loginAttempt)
 	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)
 	w := test_helper.SimulateRequest(Router, req)
 	sessionResponse, err := test_helper.GetSessionResponseFromRecorder(w)
@@ -42,7 +42,7 @@ func testFailedLoginHandler(t *testing.T) {
 	loginAttempt := User{
 		Email: testUsers[0].Email, 
 		Password: "WrongPassword"}
-	IOReaderAttempt, _ := test_helper.GetIOReaderFromUser(loginAttempt)
+	IOReaderAttempt, _ := test_helper.GetIOReaderFromObject(loginAttempt)
 	req, _ := http.NewRequest("POST", "/session", IOReaderAttempt)
 	w := test_helper.SimulateRequest(Router, req)
 	sessionResponse, err := test_helper.GetSessionResponseFromRecorder(w)

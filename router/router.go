@@ -9,6 +9,8 @@ import (
 	"wellnus/backend/router/match"
 	"wellnus/backend/router/chat"
 	"wellnus/backend/router/testing" //Can be removed at production
+	"wellnus/backend/router/counsel"
+	"wellnus/backend/router/provider"
 	
 	"wellnus/backend/router/ws"
 	"database/sql"
@@ -64,6 +66,18 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.POST("/match", match.AddMatchRequestHandler(db))
 	router.DELETE("/match", match.DeleteMatchRequestOfUserHandler(db))
 	router.GET("/match/:id", match.GetLoadedMatchRequestOfUserHandler(db))
+
+	router.GET("/counsel", counsel.GetAllCounselRequestsHandler(db))
+	router.POST("/counsel", counsel.AddUpdateCounselRequestHandler(db))
+	router.DELETE("/counsel", counsel.DeleteCounselRequestHandler(db))
+	router.GET("/counsel/:id", counsel.GetCounselRequestHandler(db))
+	router.POST("/counsel/:id", counsel.AcceptCounselRequestHandler(db))
+	
+	// Not very viable as inbalance of request for providers. Should be like a private hire system
+	router.GET("/provider", provider.GetAllProvidersWithSettingHandler(db))
+	router.GET("/provider/:id", provider.GetProviderWithSettingHandler(db))
+	router.POST("/provider", provider.AddUpdateProviderSettingOfProviderHandler(db))
+	router.DELETE("/provider", provider.DeleteProviderSettingOfProviderHandler(db)) 
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))

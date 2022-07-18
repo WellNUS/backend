@@ -4,7 +4,6 @@ import (
 	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
-	"regexp"
 	"net/http"
 	"fmt"
 )
@@ -62,8 +61,7 @@ func testAddMatchRequestHandlerNoSetting(t *testing.T) {
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Adding match request without setting passed with status code = %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("foreign key constraint", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "foreign key constraint")
 	if !matched {
 		t.Errorf("The error that occured was not due to match setting. %s", errString)
 	}
@@ -90,7 +88,7 @@ func testGetMatchSettingHandlerNotFound(t *testing.T) {
 }
 
 func testAddMatchSettingHandlerUnauthorized(t *testing.T) {
-	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromMatchSetting(validMatchSetting)
+	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromObject(validMatchSetting)
 	req, _ := http.NewRequest("POST", "/setting", ioReaderMatchSetting)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
@@ -99,7 +97,7 @@ func testAddMatchSettingHandlerUnauthorized(t *testing.T) {
 }
 
 func testAddMatchSettingHandler(t *testing.T) {
-	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromMatchSetting(validMatchSetting)
+	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromObject(validMatchSetting)
 	req, _ := http.NewRequest("POST", "/setting", ioReaderMatchSetting)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -121,7 +119,7 @@ func testAddMatchSettingHandler(t *testing.T) {
 
 func testUpdateMatchSettingHandler(t *testing.T) {
 	validMatchSetting.MBTI = "ESFJ"
-	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromMatchSetting(validMatchSetting)
+	ioReaderMatchSetting, _ := test_helper.GetIOReaderFromObject(validMatchSetting)
 	req, _ := http.NewRequest("POST", "/setting", ioReaderMatchSetting)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",

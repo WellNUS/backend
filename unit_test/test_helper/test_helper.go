@@ -4,6 +4,7 @@ import (
 	"wellnus/backend/db/model"
 
 	"database/sql"
+	"regexp"
 	"net/http"
 	"net/http/httptest"
 	"bytes"
@@ -28,6 +29,7 @@ type JoinRequestRespond = model.JoinRequestRespond
 type MatchSetting = model.MatchSetting
 type MatchRequest = model.MatchRequest
 type LoadedMatchRequest = model.LoadedMatchRequest
+type CounselRequest = model.CounselRequest
 
 func ResetDB(db *sql.DB) {
 	db.Exec("DELETE FROM wn_group")
@@ -307,33 +309,40 @@ func GetLoadedMatchRequestFromRecorder(w *httptest.ResponseRecorder) (LoadedMatc
 	return loadedMatchRequest, nil
 }
 
-func GetIOReaderFromUser(user User) (io.Reader, error) {
-	j, err := json.Marshal(user)
-	if err != nil { return nil, err }
-	return bytes.NewReader(j), nil
+func GetCounselRequestFromRecorder(w *httptest.ResponseRecorder) (CounselRequest, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return CounselRequest{}, errors.New(buf.String())
+	}
+	var counselRequest CounselRequest
+	err := json.NewDecoder(buf).Decode(&counselRequest)
+	if err != nil {
+		return CounselRequest{}, err
+	}
+	return counselRequest, nil
 }
 
-
-func GetIOReaderFromGroup(group Group) (io.Reader, error) {
-	j, err := json.Marshal(group)
-	if err != nil { return nil, err }
-	return bytes.NewReader(j), nil
+func GetCounselRequestsFromRecorder(w *httptest.ResponseRecorder) ([]CounselRequest, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var counselRequests []CounselRequest
+	err := json.NewDecoder(buf).Decode(&counselRequests)
+	if err != nil {
+		return nil, err
+	}
+	return counselRequests, nil
 }
 
-func GetIOReaderFromJoinRequestRespond(respond JoinRequestRespond) (io.Reader, error) {
-	j, err := json.Marshal(respond)
-	if err != nil { return nil, err }
-	return bytes.NewReader(j), nil
+func CheckErrorMessageFromRecorder(w *httptest.ResponseRecorder, pattern string) (string, bool) {
+	errString := GetBufferFromRecorder(w).String()
+	matched, _ := regexp.MatchString(pattern, errString)
+	return errString, matched
 }
 
-func GetIOReaderFromJoinRequest(joinRequest JoinRequest) (io.Reader, error) {
-	j, err := json.Marshal(joinRequest)
-	if err != nil { return nil, err }
-	return bytes.NewReader(j), nil
-}
-
-func GetIOReaderFromMatchSetting(matchSetting MatchSetting) (io.Reader, error) {
-	j, err := json.Marshal(matchSetting)
+func GetIOReaderFromObject(obj interface{}) (io.Reader, error) {
+	j, err := json.Marshal(obj)
 	if err != nil { return nil, err }
 	return bytes.NewReader(j), nil
 }
@@ -399,6 +408,20 @@ func GetRandomTestMatchSetting() MatchSetting {
 	return matchSetting
 }
 
+func GetTestCounselRequest(i int) CounselRequest {
+	ref_topics := []string{"Anxiety", "OffMyChest", "SelfHarm"}
+	counselRequest := CounselRequest{
+		Details: "I am stressed",
+		Topics: []string{ref_topics[0], ref_topics[1]},
+		TimeAdded: time.Now()}
+	if i % 3 == 1 {
+		counselRequest.Topics = []string{ref_topics[1], ref_topics[2]}
+	} else if i % 3 == 2 {
+		counselRequest.Topics = []string{ref_topics[0], ref_topics[2]}
+	}
+	return counselRequest
+}
+
 func SetupUsers(db *sql.DB, num int) ([]User, error) {
 	users := make([]User, num)
 	for i := 0; i < num; i++ {
@@ -447,4 +470,14 @@ func SetupMatchRequestForUsers(db *sql.DB, users []User) ([]MatchRequest, error)
 		matchRequests[i] = matchRequest
 	}
 	return matchRequests, nil
+}
+
+func SetupCounselRequestForUsers(db *sql.DB, users []User) ([]CounselRequest, error) {
+	counselRequests := make([]CounselRequest, len(users))
+	for i, user := range users {
+		counselRequest, err := model.AddUpdateCounselRequest(db, GetTestCounselRequest(i), user.ID)
+		if err != nil { return nil, err }
+		counselRequests[i] = counselRequest
+	}
+	return counselRequests, nil
 }

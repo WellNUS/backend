@@ -1,1 +1,0 @@
-DROP TABLE IF EXISTS wn_counsel_setting;

@@ -5,7 +5,6 @@ import (
 	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
-	"regexp"
 	"net/http"
 	"fmt"
 )
@@ -13,7 +12,6 @@ import (
 // Full test
 func TestGroupHandler(t *testing.T) {
 	t.Run("AddGroupHandler with no group name", testAddGroupHandlerNoGroupName)
-	t.Run("AddGroupHandler with no category", testAddGroupHandlerNoCategory)
 	t.Run("AddGroupHandler not logged in", testAddGroupHandlerNotLoggedIn)
 	t.Run("AddGroupHandler successful as User1", testAddGroupHandlerAsUser1)
 	t.Run("AddGroupHandler successful as User2 no description", testAddGroupHandlerAsUser2NoDescription)
@@ -35,7 +33,7 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 		GroupDescription: validAddedGroup1.GroupDescription,
 		Category: validAddedGroup1.Category,
 	}
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(testGroup)
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(testGroup)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -45,37 +43,14 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 	if w.Code == http.StatusOK {
 		t.Errorf("Group with no group_name sucessfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("group_name", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "group_name")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of group_name. %s", errString)
 	}
 }
 
-func testAddGroupHandlerNoCategory(t *testing.T) {
-	testGroup := Group{
-		GroupName: validAddedGroup1.GroupName,
-		GroupDescription: validAddedGroup1.GroupDescription,
-	}
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(testGroup)
-	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
-	w := test_helper.SimulateRequest(Router, req)
-	if w.Code == http.StatusOK {
-		t.Errorf("Group with no category sucessfully added. Status Code: %d", w.Code)
-	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("category", errString)
-	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of category. %s", errString)
-	}
-}
-
 func testAddGroupHandlerNotLoggedIn(t *testing.T) {
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(validAddedGroup1)
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(validAddedGroup1)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
@@ -84,7 +59,7 @@ func testAddGroupHandlerNotLoggedIn(t *testing.T) {
 }
 
 func testAddGroupHandlerAsUser1(t *testing.T) {
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(validAddedGroup1)
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(validAddedGroup1)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -113,7 +88,7 @@ func testAddGroupHandlerAsUser1(t *testing.T) {
 }
 
 func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(validAddedGroup2)
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(validAddedGroup2)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -243,16 +218,15 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 }
 
 func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(Group{ GroupName: "UpdatedGroupName" })
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(Group{ GroupName: "UpdatedGroupName" })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not give an Unauthorized status code. Status Code: %d", w.Code)
 	}
-	_, err := test_helper.GetGroupFromRecorder(w)
-	match, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
-	if !match {
-		t.Errorf("User that was not logged in was not unauthorised. %v", err)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
+	if !matched {
+		t.Errorf("User that was not logged in was not unauthorised. %s", errString)
 	}
 
 	req.AddCookie(&http.Cookie{
@@ -263,16 +237,15 @@ func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not give an Unauthorized status code. Status Code: %d", w.Code)
 	}
-	_, err = test_helper.GetGroupFromRecorder(w)
-	match, _ = regexp.MatchString(UnauthorizedErrorMessage, err.Error())
-	if !match {
-		t.Errorf("Unauthorized user was not unauthorised. %v", err)
+	errString, matched = test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
+	if !matched {
+		t.Errorf("Unauthorized user was not unauthorised. %s", errString)
 	}
 }
 
 func testUpdateGroupHandlerAsUser1(t *testing.T) {
 	newGroupName := "UpdatedGroupName"
-	ioReaderGroup, _ := test_helper.GetIOReaderFromGroup(Group{ GroupName: newGroupName })
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(Group{ GroupName: newGroupName })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",

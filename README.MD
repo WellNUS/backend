@@ -80,9 +80,9 @@ FRONTEND_URL: localhost:3000
 >>> - ?role=PROVIDER : Specify to retrieve users who are either student volunteers or counsellors
 >>> - no query params : Retrieves all users
 >>>
->>> Request Body: None
+>>> Request Body : None
 >>> 
->>> Response Body: User[]
+>>> Response Body : User[]
 >>
 >> ##### /user - POST
 >> 
@@ -90,7 +90,7 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Request Body : { first_name, last_name, gender, faculty, email, user_role, password }
 >>>
->>> Response Body: User
+>>> Response Body : User
 >>
 >> ##### /user/:id - GET
 >> 
@@ -98,7 +98,7 @@ FRONTEND_URL: localhost:3000
 >>>
 >>> Request Body : None
 >>>
->>> Response Body: UserWithGroups
+>>> Response Body : UserWithGroups
 >>
 >> ##### /user/:id - PATCH
 >> 
@@ -151,7 +151,7 @@ FRONTEND_URL: localhost:3000
 >> Group = { id, group_name, group_description, category, owner_id } 
 >>
 >>> Group field specifications
->>> - category = 1 of ('COUNSEL', 'SUPPORT')
+>>> - category = 1 of ('COUNSEL', 'SUPPORT', 'CUSTOM')
 >>
 >> GroupWithUsers = { group: Group, users: User[] }
 > 
@@ -167,9 +167,9 @@ FRONTEND_URL: localhost:3000
 >> 
 >> ##### /group - POST
 >> 
->>> Description : Creates a new group if user is logged in
+>>> Description : Creates a new custom group if user is logged in
 >>>
->>> Request Body : { group_name, group_description?, category }
+>>> Request Body : { group_name, group_description? }
 >>>
 >>> Response Body : GroupWithUsers
 >> 
@@ -457,42 +457,114 @@ conn.onmessage = function (evt) {
 >>>
 >>> Response Body : LoadedMatchRequest
 
-### Routes past this point have not been implemented
+### Provider
+
+> #### Provider Details
+>
+>> Handles CRUD for providers. A Provider refers to either a User with a **user_role = COUNSEL** or **user_role = VOLUNTEER**
+>>
+>> A provider can provide infomation about
+>> - availability
+>> - specialities
+>>
+>> ProviderSetting = { user_id, available, specialities[] }
+>>
+>>> ProviderSetting field specification
+>>> - specialities[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation')
+>>
+>> ProviderWithSetting = { user: User, setting: ProviderSetting }
+>
+> #### Provider Routes
+>
+>> ##### /provider - GET
+>> 
+>>> Description : Gets all providers with settings.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : ProviderWithSetting[]
+>>
+>> ##### /provider - POST
+>>
+>>> Description : Creates / Updates provider setting of the user if the user is logged in and user is a provider
+>>>
+>>> Request Body : { available, specialities[] }
+>>>
+>>> Response Body : ProviderSetting
+>>
+>> ##### /provider - DELETE
+>>
+>>> Description : Deletes provider setting of user if the user is logged in and user is a provider
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { user_id }
+>>
+>> ##### /provider/:id - GET
+>>
+>>> Description : Gets providerWithSetting with given id.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : ProviderWithSetting
+
 ### Counsel
 
 > #### Counsel Details
 > 
->> Similar to a job listing site. Users whose are user_role = COUNSEL will be able to select to take on various request.
->> 
->> Each request a time limit of 3 days. Request approaching time limit will be highlighted for volunteer counsellors to take on.
->> 
->> After request time limit, a non-volunteer paid counsellor will be assigned to take on request at their discretion.
+>> Similar to a job listing site. Users can create counsel request which will be listed to all providers.
+>>
+>> Providers can view these requests and filter with topics, before accepting a counsel request which will make a room.
+>>
+>> CounselRequest = { user_id, details, topics[], time_added }
+>>
+>>> CounselRequest field specification
+>>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation')
 > 
 > #### Counsel Routes
 > 
 >> ##### /counsel - GET
 >> 
->> : Gets all counsel request
+>>> Description : Gets all counsel request if the user is logged in and is a provider
+>>>
+>>> Query Params:
+>>> - ?topic=(topic) : filters counsel request by topic. Multiple topics can be used to filter by repeating te query params.
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : CounselRequest[]
 >> 
 >> ##### /counsel - POST
 >> 
->> : Creates a new counsel request if user is loggedIn
+>>> Description : Create / Updates the counsel request if user is logged in
+>>>
+>>> Request Body : { details, topics[], time_added }
+>>>
+>>> Response Body : CounselRequest
+>> 
+>> ##### /counsel - DELETE
+>> 
+>>> Description : Deletes a counsel request if user is logged in and has a counsel request
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : { user_id }
 >> 
 >> ##### /counsel/:id - GET
 >> 
->> : Gets counsel request with given id
+>>> Description : Gets counsel request of user id if user is logged in and either the owner or a provider
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : CounselRequest
 >> 
 >> ##### /counsel/:id - POST
 >> 
->> : Assigns counsel request to user if user is a counsellor or volunteer
->> 
->> ##### /counsel/:id - DELETE
->> 
->> : Deletes a counsel request if user is the owner of the request
->> 
->> ##### /counsel/:id - UPDATE
->> 
->> : Updates a counsel request if user is the owner of the request
+>>> Description : Accepts a counsel request if the user is a provider and creates a private room for the 2 users
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : GroupWithUsers
 
 ## Things to do
 - [x] CRUD on Users
@@ -521,3 +593,6 @@ conn.onmessage = function (evt) {
 - [x] Unit testing for match setting and match request
 - [x] Implement Matching
 - [x] Unit testing for matching
+- [x] Implement Counsel Request
+- [x] Unit testing for Counsel Request
+- [x] Restructure getting of errormessages in unit tests

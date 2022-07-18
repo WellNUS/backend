@@ -51,6 +51,7 @@ func AddGroupHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
+		newGroup.Category = "CUSTOM"
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {

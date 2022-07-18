@@ -29,7 +29,7 @@ func TestJoinHandler(t *testing.T) {
 // Helper
 
 func testAddJoinRequestHandler(t *testing.T) {
-	ioReaderJoinRequest, err := test_helper.GetIOReaderFromJoinRequest(JoinRequest{ GroupID: testGroups[0].ID })
+	ioReaderJoinRequest, err := test_helper.GetIOReaderFromObject(JoinRequest{ GroupID: testGroups[0].ID })
 	req, _ := http.NewRequest("POST", "/join", ioReaderJoinRequest)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -239,7 +239,7 @@ func testGetAllLoadedJoinRequestHandlerReceivedAsUser2(t *testing.T) {
 
 func testRespondJoinRequestHandlerRejectNotLoggedIn(t *testing.T) {
 	respond := JoinRequestRespond{ Approve: false }
-	ioReaderRespond, _ := test_helper.GetIOReaderFromJoinRequestRespond(respond)
+	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(respond)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
@@ -249,7 +249,7 @@ func testRespondJoinRequestHandlerRejectNotLoggedIn(t *testing.T) {
 
 func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 	joinRequestRespond := JoinRequestRespond{ Approve: false }
-	ioReaderRespond, _ := test_helper.GetIOReaderFromJoinRequestRespond(joinRequestRespond)
+	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(joinRequestRespond)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -313,7 +313,7 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 	}
 
 	joinRequestRespond := JoinRequestRespond{ Approve: true }
-	ioReaderRespond, _ := test_helper.GetIOReaderFromJoinRequestRespond(joinRequestRespond)
+	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(joinRequestRespond)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",

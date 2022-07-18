@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 	"net/http"
-	"regexp"
 )
 
 // Full test
@@ -122,7 +121,7 @@ func testGetUserHandlerMiss(t *testing.T) {
 }
 
 func testAddUserHandler(t *testing.T) {
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(validUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(validUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -169,14 +168,13 @@ func testAddUserHandlerNoFirstName(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no first_name successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("first_name", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "first_name")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of first_name. %s", errString)
 	}
@@ -192,14 +190,13 @@ func testAddUserHandlerNoLastName(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no last_name successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("last_name", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "last_name")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of last_name. %s", errString)
 	}
@@ -215,14 +212,13 @@ func testAddUserHandlerNoGender(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no gender successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("gender", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "gender")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of gender. %s", errString)
 	}
@@ -238,14 +234,13 @@ func testAddUserHandlerNoFaculty(t *testing.T) {
 		UserRole: validUser.UserRole,
 		Password: validUser.Password,
 	}
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no faculty successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("faculty", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "faculty")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of faculty. %s", errString)
 	}
@@ -262,14 +257,13 @@ func testAddUserHandlerNoEmail(t *testing.T) {
 		Password: validUser.Password,
 	}
 	
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no email successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("email", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "email")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of email. %s", errString)
 	}
@@ -285,21 +279,20 @@ func testAddUserHandlerNoUserRole(t *testing.T) {
 		UserRole: "",
 		Password: validUser.Password,
 	}
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(newUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(newUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("User with no user_role successfully added. Status Code: %d", w.Code)
 	}
-	errString := test_helper.GetBufferFromRecorder(w).String()
-	matched, _ := regexp.MatchString("user_role", errString)
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "user_role")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of user_role. %s", errString)
 	}
 }
 
 func testAddSameUserHandler(t *testing.T) {
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(validUser)
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(validUser)
 	req, _ := http.NewRequest("POST", "/user", ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
@@ -308,21 +301,20 @@ func testAddSameUserHandler(t *testing.T) {
 }
 
 func testUpdateUserHandlerUnauthorized(t *testing.T) {
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(User{ FirstName: "UpdatedFirstName" })
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(User{ FirstName: "UpdatedFirstName" })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/user/%d", addedUser.ID), ioReaderUser)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized{
 		t.Errorf("Unauthorised status code not given. Status Code: %d", w.Code)
 	}
-	_, err := test_helper.GetUserFromRecorder(w)
-	matched, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
 	if !matched {
-		t.Errorf("Unauthorized user was not unauthorised %v", err)
+		t.Errorf("Unauthorized user was not unauthorised. %s", errString)
 	}
 }
 
 func testUpdateUserHandlerAuthorized(t *testing.T) {
-	ioReaderUser, _ := test_helper.GetIOReaderFromUser(User{ FirstName: "UpdatedFirstName" })
+	ioReaderUser, _ := test_helper.GetIOReaderFromObject(User{ FirstName: "UpdatedFirstName" })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/user/%d", addedUser.ID), ioReaderUser)
 	req.AddCookie(&http.Cookie{
 		Name: "session_key",
@@ -344,10 +336,9 @@ func testDeleteUserHandlerUnauthorized(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("Unauthorised status code not given. Status Code: %d", w.Code)
 	}
-	_, err := test_helper.GetUserFromRecorder(w)
-	matched, _ := regexp.MatchString(UnauthorizedErrorMessage, err.Error())
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
 	if !matched {
-		t.Errorf("Unauthorized user was able to delete the user. %v", err)
+		t.Errorf("Unauthorized user was able to delete the user. %s", errString)
 	}
 }
 
