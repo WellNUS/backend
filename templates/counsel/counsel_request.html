@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Match</title>
+        <script type="text/javascript">
+            window.onload = function() {
+                const userID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                acceptCounselRequest = document.getElementById("acceptCounselRequest")
+                acceptCounselRequest.onclick = function(e) {
+                    e.preventDefault()
+                    fetch("http://localhost:8080/counsel/"+userID, {
+                        method: "POST"
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Counsel Request</h1>
+        <a href="/testing/counsel">Go Back</a>
+        <div> UserID: {{ .counselRequest.UserID}} </div>
+        <div> Details: {{ .counselRequest.Details }} </div>
+        <div> Topics: {{ .counselRequest.Topics}} </div>
+        <div> TimeAdded: {{ .counselRequest.TimeAdded }}</div>
+        <button id="acceptCounselRequest">Accept</button>
+    </body>
+</html>

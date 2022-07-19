@@ -3,10 +3,10 @@ package model
 import (
 	"wellnus/backend/router/http_helper/http_error"
 
-	"errors"
 	"log"
 	"fmt"
 	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -77,8 +77,8 @@ func GetCounselRequest(db *sql.DB, recipientID int64, userID int64) (CounselRequ
 }
 
 func AddUpdateCounselRequest(db *sql.DB, counselRequest CounselRequest, userID int64) (CounselRequest, error) {
-	if counselRequest.TimeAdded.IsZero() { return CounselRequest{}, errors.New("CounselRequest had a default value for time_added") }
 	counselRequest.UserID = userID
+	counselRequest.TimeAdded = time.Now()
 	_, err := db.Exec(
 		`INSERT INTO wn_counsel_request (
 			user_id,

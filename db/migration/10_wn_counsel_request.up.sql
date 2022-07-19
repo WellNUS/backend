@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS wn_counsel_request (
     topics TEXT[] NOT NULL,
     time_added TIMESTAMP NOT NULL,
     unique(user_id),
-    check(array_length(topics, 1) > 0),
+    check(COALESCE(array_length(topics, 1), 0) > 0),
     check(topics <@ ARRAY['Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation'])
 )

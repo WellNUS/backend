@@ -6,7 +6,6 @@ import (
 	"testing"
 	"net/http"
 	"fmt"
-	"time"
 )
 
 func TestCounselHandler(t *testing.T) {
@@ -23,7 +22,6 @@ func TestCounselHandler(t *testing.T) {
 	t.Run("GetCounselRequests of Anxiety, OffMyChest and SelfHarm", testGetCounselRequestsHandlerOfAnxietyOffMyChestAndSelfHarm)
 	t.Run("GetCounselRequest of User 0 as User 2", testGetCounselRequestHandlerOfUser0AsUser2)
 	t.Run("UpdateCounselRequest of User0 No topics", testUpdateCounselRequestHandlerOfUser0NoTopics)
-	t.Run("UpdateCounselRequest of User0 No time", testUpdateCounselRequestHandlerOfUser0NoTimeAdded)
 	t.Run("UpdateCounselRequest of User0 Success", testUpdateCounselRequestHandlerOfUser0Successful)
 	t.Run("DeleteCounselRequest as not logged in", testDeleteCounselRequestHandlerAsNotLoggedIn)
 	t.Run("DeleteCounselRequest as user1", testDeleteCounselRequestHandlerAsUser1)
@@ -231,7 +229,7 @@ func testGetCounselRequestHandlerOfUser0AsUser2(t *testing.T) {
 func testUpdateCounselRequestHandlerOfUser0NoTopics(t *testing.T) {
 	ioReaderCounselRequest, _ := test_helper.GetIOReaderFromObject(CounselRequest{
 		Details: "This is an updated counselRequest",
-		TimeAdded: time.Now(),
+		Topics: make([]string, 0),
 	})
 	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
 	req.AddCookie(&http.Cookie{
@@ -248,31 +246,10 @@ func testUpdateCounselRequestHandlerOfUser0NoTopics(t *testing.T) {
 	}
 }
 
-func testUpdateCounselRequestHandlerOfUser0NoTimeAdded(t *testing.T) {
-	ioReaderCounselRequest, _ := test_helper.GetIOReaderFromObject(CounselRequest{
-		Details: "This is an updated counselRequest",
-		Topics: []string{"Depression"},
-	})
-	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
-	w := test_helper.SimulateRequest(Router, req)
-	if w.Code == http.StatusOK {
-		t.Errorf("HTTP Request to UpdateCounselRequest of user0 were successful")
-	}
-	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "time")
-	if !matched {
-		t.Errorf("response body was not an error did not contain any instance of time. %s", errString)
-	}
-}
-
 func testUpdateCounselRequestHandlerOfUser0Successful(t *testing.T) {
 	ioReaderCounselRequest, _ := test_helper.GetIOReaderFromObject(CounselRequest{
 		Details: "This is an updated counselRequest",
 		Topics: []string{"Depression"},
-		TimeAdded: time.Now(),
 	})
 	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
 	req.AddCookie(&http.Cookie{

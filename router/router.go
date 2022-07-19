@@ -33,7 +33,8 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
 	router.GET("/testing/match", testing.GetTestingMatchHandler(db))
 	router.POST("/testing/match", testing.SetupUsersWithMatchRequests(db))
-
+	router.GET("/testing/counsel", testing.GetTestingCounselRequestsHandler(db))
+	router.GET("/testing/counsel/:id", testing.GetTestingCounselRequestHandler(db))
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))

@@ -538,7 +538,7 @@ conn.onmessage = function (evt) {
 >> 
 >>> Description : Create / Updates the counsel request if user is logged in
 >>>
->>> Request Body : { details, topics[], time_added }
+>>> Request Body : { details, topics[] }
 >>>
 >>> Response Body : CounselRequest
 >> 

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Match</title>
+        <script type="text/javascript">
+            window.onload = function() {
+                createCounselRequest = document.getElementById("createCounselRequest")
+                deleteCounselRequest = document.getElementById("delete")
+                
+                createCounselRequest.onsubmit = function(e) {
+                    e.preventDefault()
+                    const details = e.target["details"].value
+                    const topics = [...e.target["topics"].elements].filter(x => x.checked).map(x => x.value)
+                    console.log(details, topics)
+                    const body = JSON.stringify({ details, topics })
+                    fetch("http://localhost:8080/counsel", {
+                        method: 'POST',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+
+                deleteCounselRequest.onclick = function(e) {
+                    fetch("http://localhost:8080/counsel", {
+                        method: 'DELETE',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                        }
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Counsel Requests</h1>
+        <div>
+            <a href="/testing">Go Back</a>
+        </div>
+        <div>
+            <h2>My Counsel Request</h2>
+            <div> UserID: {{ .counselRequest.UserID}} </div>
+            <div> Details: {{ .counselRequest.Details }} </div>
+            <div> Topics: {{ .counselRequest.Topics}} </div>
+            <div> TimeAdded: {{ .counselRequest.TimeAdded }}</div>
+        </div>
+        <div>
+            <h2>Create / Update Counsel Request</h2>
+            <form id="createCounselRequest">
+                <div>
+                    <label for="details">Details: </label>
+                    <textarea id="details"></textarea>
+                </div>
+                <fieldset name="topics">Topics: 
+                    <input type="checkbox" name='topic' value='Anxiety'>
+                        <label for='Anxiety'>Anxiety</label>
+                    <input type="checkbox" name='topic' value='OffMyChest'>
+                        <label for='OffMyChest'>OffMyChest</label>
+                    <input type="checkbox" name='topic' value='SelfHarm'>
+                        <label for='SelfHarm'>SelfHarm</label>
+                    <input type="checkbox" name='topic' value='Depression'>
+                        <label for='Depression'>Depression</label>
+                    <input type="checkbox" name='topic' value='SelfEsteem'>
+                        <label for='SelfEsteem'>SelfEsteem</label>
+                    <input type="checkbox" name='topic' value='Stress'>
+                        <label for='Stress'>Stress</label>
+                    <input type="checkbox" name='topic' value='Casual'>
+                        <label for='Casual'>Casual</label>
+                    <input type="checkbox" name='topic' value='Therapy'>
+                        <label for='Therapy'>Therapy</label>
+                    <input type="checkbox" name='topic' value='BadHabits'>
+                        <label for='BadHabits'>BadHabits</label>
+                    <input type="checkbox" name='topic' value='Rehabilitation'>
+                        <label for='Rehabilitation'>Rehabilitation</label>
+                </fieldset>
+                <input type="submit" value="Add / Update counsel request" />
+            </form>
+            <button id="delete">Delete Counsel Request</button>
+        </div>
+        <br>
+        <div>
+            <h2>Filter by topics</h2>
+            <form id="topicSelect">
+                <fieldset name="topic">Topics
+                    <input type="checkbox" name='topic' value='Anxiety'>
+                        <label for='Anxiety'>Anxiety</label>
+                    <input type="checkbox" name='topic' value='OffMyChest'>
+                        <label for='OffMyChest'>OffMyChest</label>
+                    <input type="checkbox" name='topic' value='SelfHarm'>
+                        <label for='SelfHarm'>SelfHarm</label>
+                    <input type="checkbox" name='topic' value='Depression'>
+                        <label for='Depression'>Depression</label>
+                    <input type="checkbox" name='topic' value='SelfEsteem'>
+                        <label for='SelfEsteem'>SelfEsteem</label>
+                    <input type="checkbox" name='topic' value='Stress'>
+                        <label for='Stress'>Stress</label>
+                    <input type="checkbox" name='topic' value='Casual'>
+                        <label for='Casual'>Casual</label>
+                    <input type="checkbox" name='topic' value='Therapy'>
+                        <label for='Therapy'>Therapy</label>
+                    <input type="checkbox" name='topic' value='BadHabits'>
+                        <label for='BadHabits'>BadHabits</label>
+                    <input type="checkbox" name='topic' value='Rehabilitation'>
+                        <label for='Rehabilitation'>Rehabilitation</label>
+                </fieldset>
+                <input type="submit" value="Filter Topics" />
+            </form>
+            {{ range .counselRequests }}
+                <div>
+                    <div> UserID: {{ .UserID}} </div>
+                    <div> Details: {{ .Details }} </div>
+                    <div> Topics: {{ .Topics}} </div>
+                    <div> TimeAdded: {{ .TimeAdded }}</div>
+                    <a href="/testing/counsel/{{ .UserID }}">View</a>
+                </div>
+            {{ end }}
+        </div>
+    </body>
+</html>

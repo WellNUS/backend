@@ -412,8 +412,7 @@ func GetTestCounselRequest(i int) CounselRequest {
 	ref_topics := []string{"Anxiety", "OffMyChest", "SelfHarm"}
 	counselRequest := CounselRequest{
 		Details: "I am stressed",
-		Topics: []string{ref_topics[0], ref_topics[1]},
-		TimeAdded: time.Now()}
+		Topics: []string{ref_topics[0], ref_topics[1]}}
 	if i % 3 == 1 {
 		counselRequest.Topics = []string{ref_topics[1], ref_topics[2]}
 	} else if i % 3 == 2 {

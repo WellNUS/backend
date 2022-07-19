@@ -116,3 +116,22 @@ func SetupUsersWithMatchRequests(db *sql.DB) func(*gin.Context) {
 		c.IndentedJSON(http.StatusOK, users)
 	}
 }
+
+func GetTestingCounselRequestsHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		topics, _ := c.GetQueryArray("topic")
+		counselRequest, _ := model.GetCounselRequest(db, userID, userID)
+		counselRequests, _ := model.GetAllCounselRequests(db, topics, userID)
+		c.HTML(http.StatusOK, "counsel_requests.html", gin.H{"counselRequests": counselRequests, "counselRequest": counselRequest})
+	}
+}
+
+func GetTestingCounselRequestHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userIDParam, _ := http_helper.GetIDParams(c)
+		userIDCookie, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		counselRequest, _ := model.GetCounselRequest(db, userIDParam, userIDCookie)
+		c.HTML(http.StatusOK, "counsel_request.html", gin.H{"counselRequest": counselRequest})
+	}
+}
