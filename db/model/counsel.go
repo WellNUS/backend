@@ -8,7 +8,7 @@ type CounselRequest struct {
 	UserID 		int64		`json:"user_id"`
 	Details 	string		`json:"details"`
 	Topics		[]string	`json:"topics"`
-	TimeAdded	time.Time 	`json:"time_added"`
+	LastUpdated	time.Time 	`json:"last_updated"`
 }
 
 func (cr CounselRequest) HasTopic(topic string) bool {

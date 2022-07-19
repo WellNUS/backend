@@ -19,7 +19,7 @@ func ReadCounselRequests(rows *sql.Rows) ([]CounselRequest, error) {
 			&counselRequest.UserID, 
 			&counselRequest.Details, 
 			pq.Array(&counselRequest.Topics),
-			&counselRequest.TimeAdded);
+			&counselRequest.LastUpdated);
 			err != nil {
 				return nil, err
 			}
@@ -78,7 +78,7 @@ func GetCounselRequest(db *sql.DB, recipientID int64, userID int64) (CounselRequ
 
 func AddUpdateCounselRequest(db *sql.DB, counselRequest CounselRequest, userID int64) (CounselRequest, error) {
 	counselRequest.UserID = userID
-	counselRequest.TimeAdded = time.Now()
+	counselRequest.LastUpdated = time.Now()
 	_, err := db.Exec(
 		`INSERT INTO wn_counsel_request (
 			user_id,
@@ -95,7 +95,7 @@ func AddUpdateCounselRequest(db *sql.DB, counselRequest CounselRequest, userID i
 		counselRequest.UserID,
 		counselRequest.Details,
 		pq.Array(counselRequest.Topics),
-		counselRequest.TimeAdded)
+		counselRequest.LastUpdated)
 	if err != nil { return CounselRequest{}, err }
 	return counselRequest, nil
 }

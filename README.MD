@@ -516,7 +516,7 @@ conn.onmessage = function (evt) {
 >>
 >> Providers can view these requests and filter with topics, before accepting a counsel request which will make a room.
 >>
->> CounselRequest = { user_id, details, topics[], time_added }
+>> CounselRequest = { user_id, details, topics[], last_updated }
 >>
 >>> CounselRequest field specification
 >>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation')
