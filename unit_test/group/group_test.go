@@ -21,6 +21,7 @@ func TestGroupHandler(t *testing.T) {
 	t.Run("GetGrouphandler not logged in", testGetGroupHandlerAsNotLoggedIn)
 	t.Run("GetAllGroupHandler as User2 after joining", testGetAllGroupHandlerAsUser2AfterJoining)
 	t.Run("UpdateGroupHandler as not User1", testUpdateGroupHandlerAsNotUser1)
+	t.Run("UpdateGroupHandler as User1 owner not member", testUpdateGroupHandlerAsUser1OwnerNotMember)
 	t.Run("UpdateGroupHandler as User1", testUpdateGroupHandlerAsUser1)
 	t.Run("GetAllGroupHandler as User2", testGetAllGroupHandlerAsUser2)
 	t.Run("LeaveGroupHandler as User1", testLeaveGroupHandlerAsUser1)
@@ -54,7 +55,7 @@ func testAddGroupHandlerNotLoggedIn(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
-		t.Errorf("Group with no category sucessfully added. Status Code: %d", w.Code)
+		t.Errorf("Group sucessfully added when user is not logged in. Status Code: %d", w.Code)
 	}
 }
 
@@ -240,6 +241,24 @@ func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 	errString, matched = test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
 	if !matched {
 		t.Errorf("Unauthorized user was not unauthorised. %s", errString)
+	}
+}
+
+func testUpdateGroupHandlerAsUser1OwnerNotMember(t *testing.T) {
+	newOwnerID := testUsers[2].ID
+	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(Group{ OwnerID: newOwnerID })
+	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
+	req.AddCookie(&http.Cookie{
+		Name: "session_key",
+		Value: sessionKeys[0],
+	})
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code == http.StatusOK {
+		t.Errorf("HTTP Request returned an OK status")
+	}
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "member")
+	if !matched {
+		t.Errorf("error did not contain any instance of member in it. %s", errString)
 	}
 }
 

@@ -17,7 +17,7 @@ func ReadProviderSettings(rows *sql.Rows) ([]ProviderSetting, error) {
 		var providerSetting ProviderSetting
 		if err := rows.Scan(
 			&providerSetting.UserID,
-			&providerSetting.Available,
+			&providerSetting.Intro,
 			&providerSetting.Specialities);
 			err != nil {
 				return nil, err
@@ -41,7 +41,7 @@ func ReadProvidersWithSetting(rows *sql.Rows) ([]ProviderWithSetting, error) {
 			&providerWithSetting.User.UserRole, 
 			&providerWithSetting.User.PasswordHash,
 			&providerWithSetting.Setting.UserID,
-			&providerWithSetting.Setting.Available,
+			&providerWithSetting.Setting.Intro,
 			&providerWithSetting.Setting.Specialities); 
 			err != nil {
 				return nil, err
@@ -73,7 +73,7 @@ func GetAllProvidersWithSetting(db *sql.DB) ([]ProviderWithSetting, error) {
 			wn_user.user_role,
 			wn_user.password_hash,
 			wn_provider_setting.user_id,
-			wn_provider_setting.available,
+			wn_provider_setting.intro,
 			wn_provider_setting.specialities
 		FROM wn_provider_setting 
 		JOIN wn_user ON wn_user.id = wn_provider_setting.user_id
@@ -101,16 +101,16 @@ func AddUpdateProviderSettingOfProvider(db *sql.DB, providerSetting ProviderSett
 	_, err = db.Exec(
 		`INSERT INTO wn_provider_setting (
 			user_id,
-			available,
+			intro,
 			specialities
 		) VALUES ($1, $2, $3)
 		ON CONFLICT (user_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id,
-			available = EXCLUDED.available,
+			intro = EXCLUDED.intro,
 			specialities = EXCLUDED.specialities`,
 		providerSetting.UserID,
-		providerSetting.Available,
+		providerSetting.Intro,
 		providerSetting.Specialities)
 	if err != nil { return ProviderSetting{}, err }
 	return providerSetting, nil

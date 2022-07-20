@@ -464,13 +464,13 @@ conn.onmessage = function (evt) {
 >> Handles CRUD for providers. A Provider refers to either a User with a **user_role = COUNSEL** or **user_role = VOLUNTEER**
 >>
 >> A provider can provide infomation about
->> - availability
+>> - self-introduction
 >> - specialities
 >>
->> ProviderSetting = { user_id, available, specialities[] }
+>> ProviderSetting = { user_id, intro, specialities[] }
 >>
 >>> ProviderSetting field specification
->>> - specialities[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation')
+>>> - specialities[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 >>
 >> ProviderWithSetting = { user: User, setting: ProviderSetting }
 >
@@ -519,7 +519,7 @@ conn.onmessage = function (evt) {
 >> CounselRequest = { user_id, details, topics[], last_updated }
 >>
 >>> CounselRequest field specification
->>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation')
+>>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 > 
 > #### Counsel Routes
 > 
@@ -566,6 +566,79 @@ conn.onmessage = function (evt) {
 >>>
 >>> Response Body : GroupWithUsers
 
+### Event
+
+> #### Event Details
+>
+>> Handles CRUD for events. Used for booking counsel sessions and can be expanded to other scheduling tasks
+>>
+>> Event = { id, owner_id, event_name, event_description, start_time, duration, access }
+>>
+>>> Event field specification:
+>>> - start_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05Z07:00"
+>>> - duration = A string containing possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+>>> - access = 1 of ('PUBLIC', 'PRIVATE')
+>>
+>> EventWithUsers = { event: Event, users: User[] }
+>
+> #### Event Routes
+>
+>> ##### /event - GET
+>>
+>>> Description: Gets all Event the user is involved in if the user is logged in
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: Event[]
+>>
+>> ##### /event - POST
+>>
+>>> Description: Creates new event and set the owner as the user who created the event, if the user is logged in.
+>>>
+>>> Request Body: { event_name, event_description, start_time, duration, access }
+>>>
+>>> Response Body: EventWithUsers
+>>
+>> ##### /event - DELETE
+>>
+>>> Description: Removes all events from user if user is logged in. If user is the owner of the event, event is deleted.
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: EventWithUsers[]
+>>
+>> ##### /event/:id - GET
+>>
+>>> Description: Gets EventWithUsers with the given id if the user is logged in.
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: EventWithUsers
+>>
+>> ##### /event/:id - POST
+>>
+>>> Description: Add user to event. If event is public, operation can be done by any user, otherwise, can only be done by owner.
+>>>
+>>> Request Body: { user_id }
+>>>
+>>> Response Body: EventWithUsers
+>>
+>> ##### /event/:id - PATCH
+>>
+>>> Description: Update the event if user is the owner of the event.
+>>> 
+>>> Request Body: { event_name?, event_description?, start_time?, duration?, access? }
+>>>
+>>> Response Body: Event
+>>
+>> ##### /event/:id - DELETE
+>>
+>>> Description: Deletes the event if the user is the owner of the event. Otherwise, leaves the event.
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: { id }
+
 ## Things to do
 - [x] CRUD on Users
 - [x] CRUD on Sessions
@@ -596,3 +669,4 @@ conn.onmessage = function (evt) {
 - [x] Implement Counsel Request
 - [x] Unit testing for Counsel Request
 - [x] Restructure getting of errormessages in unit tests
+- [x] Update Unit test for group to include checks for owner's membership on update

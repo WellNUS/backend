@@ -6,7 +6,7 @@ import (
 
 type ProviderSetting struct {
 	UserID 			int64 		`json:"user_id"`
-	Available 		bool 		`json:"available"`
+	Intro			string 		`json:"intro"`
 	Specialities	[]string	`json:"specialities"`
 }
 

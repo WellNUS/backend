@@ -17,6 +17,8 @@ type JoinRequestRespond = model.JoinRequestRespond
 type MatchSetting = model.MatchSetting
 type ProviderSetting = model.ProviderSetting
 type CounselRequest = model.CounselRequest
+type UserIDBody = model.UserIDBody
+type Event = model.Event
 
 func SetHeaders(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
@@ -94,6 +96,22 @@ func GetCounselRequestFromContext(c *gin.Context) (CounselRequest, error) {
 		return CounselRequest{}, err
 	}
 	return counselRequest, nil
+}
+
+func GetEventFromContext(c *gin.Context) (Event, error) {
+	var event Event
+	if err := c.BindJSON(&event); err != nil {
+		return Event{}, err
+	}
+	return event, nil
+}
+
+func GetUserIDFromContext(c *gin.Context) (int64, error) {
+	var userIDBody UserIDBody
+	if err := c.BindJSON(&userIDBody); err != nil {
+		return 0, err
+	}
+	return userIDBody.UserID, nil
 }
 
 func NoRouteHandler(c *gin.Context) {

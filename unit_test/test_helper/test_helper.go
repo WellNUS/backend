@@ -30,10 +30,14 @@ type MatchSetting = model.MatchSetting
 type MatchRequest = model.MatchRequest
 type LoadedMatchRequest = model.LoadedMatchRequest
 type CounselRequest = model.CounselRequest
+type UserIDBody = model.UserIDBody
+type Event = model.Event
+type EventWithUsers = model.EventWithUsers
 
 func ResetDB(db *sql.DB) {
 	db.Exec("DELETE FROM wn_group")
 	db.Exec("DELETE FROM wn_user")
+	db.Exec("DELETE FROM wn_event")
 }
 
 func GetBufferFromRecorder(w *httptest.ResponseRecorder) *bytes.Buffer {
@@ -335,6 +339,58 @@ func GetCounselRequestsFromRecorder(w *httptest.ResponseRecorder) ([]CounselRequ
 	return counselRequests, nil
 }
 
+func GetEventFromRecorder(w *httptest.ResponseRecorder) (Event, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return Event{}, errors.New(buf.String())
+	}
+	var event Event
+	err := json.NewDecoder(buf).Decode(&event)
+	if err != nil {
+		return Event{}, err
+	}
+	return event, nil
+}
+
+func GetEventsFromRecorder(w *httptest.ResponseRecorder) ([]Event, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var events []Event
+	err := json.NewDecoder(buf).Decode(&events)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
+}
+
+func GetEventWithUsersFromRecorder(w *httptest.ResponseRecorder) (EventWithUsers, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return EventWithUsers{}, errors.New(buf.String())
+	}
+	var eventWithUsers EventWithUsers
+	err := json.NewDecoder(buf).Decode(&eventWithUsers)
+	if err != nil {
+		return EventWithUsers{}, err
+	}
+	return eventWithUsers, nil
+}
+
+func GetEventsWithUsersFromRecorder(w *httptest.ResponseRecorder) ([]EventWithUsers, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var eventsWithUsers []EventWithUsers
+	err := json.NewDecoder(buf).Decode(&eventsWithUsers)
+	if err != nil {
+		return nil, err
+	}
+	return eventsWithUsers, nil
+}
+
 func CheckErrorMessageFromRecorder(w *httptest.ResponseRecorder, pattern string) (string, bool) {
 	errString := GetBufferFromRecorder(w).String()
 	matched, _ := regexp.MatchString(pattern, errString)
@@ -421,6 +477,23 @@ func GetTestCounselRequest(i int) CounselRequest {
 	return counselRequest
 }
 
+func GetTestEvent(i int) Event {
+	ref_access := []string{"PUBLIC", "PRIVATE"}
+	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T08:00:00Z08:00")
+	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T08:00:00Z08:00")
+	event := Event{
+		EventName: fmt.Sprintf("TestEvent%d", i),
+		EventDescription: "NewEventDescription",
+		StartTime: startTime,
+		EndTime: endTime,
+		Access: ref_access[0],
+	}
+	if i % 2 == 1 {
+		event.Access = ref_access[1]
+	}
+	return event
+}
+
 func SetupUsers(db *sql.DB, num int) ([]User, error) {
 	users := make([]User, num)
 	for i := 0; i < num; i++ {
@@ -479,4 +552,14 @@ func SetupCounselRequestForUsers(db *sql.DB, users []User) ([]CounselRequest, er
 		counselRequests[i] = counselRequest
 	}
 	return counselRequests, nil
+}
+
+func SetupEventForUsers(db *sql.DB, users []User) ([]Event, error) {
+	events := make([]Event, len(users))
+	for i, user := range users {
+		eventWithUsers, err := model.AddEventWithUserIDs(db, GetTestEvent(i), []int64{user.ID})
+		if err != nil { return nil, err }
+		events[i] = eventWithUsers.Event
+	}
+	return events, nil
 }

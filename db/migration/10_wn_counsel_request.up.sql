@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS wn_counsel_request (
     user_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE,
     details TEXT,
     topics TEXT[] NOT NULL,
-    last_updated TIMESTAMP NOT NULL,
+    last_updated TIMESTAMPTZ NOT NULL,
     unique(user_id),
     check(COALESCE(array_length(topics, 1), 0) > 0),
     check(topics <@ ARRAY[

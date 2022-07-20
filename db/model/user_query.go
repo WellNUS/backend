@@ -61,6 +61,28 @@ func GetAllUsersOfGroup(db *sql.DB, groupID int64) ([]User, error) {
 	return users, nil
 }
 
+func GetAllUsersOfEvent(db *sql.DB, eventID int64) ([]User, error) {
+	rows, err := db.Query(
+		`SELECT 
+			wn_user.id,
+			wn_user.first_name,
+			wn_user.last_name,
+			wn_user.gender,
+			wn_user.faculty,
+			wn_user.email,
+			wn_user.user_role,
+			wn_user.password_hash
+		FROM wn_user_event JOIN wn_user 
+		ON wn_user_event.user_id = wn_user.id 
+		WHERE wn_user_event.event_id = $1`, 
+		eventID)
+	if err != nil { return nil, err }
+	defer rows.Close()
+	users, err := readUsers(rows)
+	if err != nil { return nil, err }
+	return users, nil
+}
+
 func GetAllUsers(db *sql.DB) ([]User, error) {
 	rows, err := db.Query("SELECT * FROM wn_user;")
 	if err != nil { return nil, err }

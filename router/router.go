@@ -11,6 +11,7 @@ import (
 	"wellnus/backend/router/testing" //Can be removed at production
 	"wellnus/backend/router/counsel"
 	"wellnus/backend/router/provider"
+	"wellnus/backend/router/event"
 	
 	"wellnus/backend/router/ws"
 	"database/sql"
@@ -73,6 +74,14 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.DELETE("/counsel", counsel.DeleteCounselRequestHandler(db))
 	router.GET("/counsel/:id", counsel.GetCounselRequestHandler(db))
 	router.POST("/counsel/:id", counsel.AcceptCounselRequestHandler(db))
+
+	router.GET("/event", event.GetAllEventsHandler(db))
+	router.POST("/event", event.AddEventHandler(db))
+	router.DELETE("/event", event.LeaveDeleteAllEventsHandler(db))
+	router.GET("/event/:id", event.GetEventHandler(db))
+	router.POST("/event/:id", event.AddUserToEventHandler(db))
+	router.PATCH("/event/:id", event.UpdateEventHandler(db))
+	router.DELETE("event/:id", event.LeaveDeleteEventHandler(db))
 	
 	// Not very viable as inbalance of request for providers. Should be like a private hire system
 	router.GET("/provider", provider.GetAllProvidersWithSettingHandler(db))

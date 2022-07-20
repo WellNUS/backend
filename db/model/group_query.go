@@ -64,7 +64,7 @@ func RemoveUserFromGroup(db *sql.DB, groupID int64, userID int64) error {
 	return err
 }
 
-func deleteGroup(db *sql.DB, groupID int64) error {
+func DeleteGroup(db *sql.DB, groupID int64) error {
 	_, err := db.Exec("DELETE FROM wn_group WHERE id = $1", groupID)
 	return err
 }
@@ -145,6 +145,9 @@ func UpdateGroup(db *sql.DB, updatedGroup Group, groupID int64, userID int64) (G
 	if targetGroup.OwnerID != userID { return Group{}, http_error.UnauthorizedError }
 
 	updatedGroup = updatedGroup.MergeGroup(targetGroup)
+	inGroup, err := IsUserInGroup(db, updatedGroup.OwnerID, updatedGroup.ID)
+	if err != nil { return Group{}, err }
+	if !inGroup { return Group{}, errors.New("New owner is not a member of group")}
 
 	_, err = db.Exec(
 		`UPDATE wn_group SET 
@@ -168,7 +171,7 @@ func LeaveGroup(db *sql.DB, groupID int64, userID int64) (GroupWithUsers, error)
 	if targetGroupWithUsers.Group.OwnerID == userID {
 		newOwnerID := targetGroupWithUsers.GetNewOwnerID()
 		if newOwnerID == 0 {	
-			err = deleteGroup(db, groupID)
+			err = DeleteGroup(db, groupID)
 			if err != nil { return GroupWithUsers{}, err } // Group not deleted
 			return GroupWithUsers{ Group: Group{ID: groupID} }, nil
 		}
