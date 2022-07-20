@@ -84,14 +84,14 @@ func AddUpdateCounselRequest(db *sql.DB, counselRequest CounselRequest, userID i
 			user_id,
 			details,
 			topics,
-			time_added
+			last_updated
 		) VALUES ($1, $2, $3, $4)
 		ON CONFLICT (user_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id,
 			details = EXCLUDED.details,
 			topics = EXCLUDED.topics,
-			time_added = EXCLUDED.time_added`,
+			last_updated = EXCLUDED.last_updated`,
 		counselRequest.UserID,
 		counselRequest.Details,
 		pq.Array(counselRequest.Topics),

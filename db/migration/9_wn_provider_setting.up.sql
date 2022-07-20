@@ -4,5 +4,23 @@ CREATE TABLE IF NOT EXISTS wn_provider_setting (
     specialites TEXT[],
     unique(user_id),
     check(array_length(specialites, 1) > 0),
-    check(specialites <@ ARRAY['Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation'])
+    check(specialites <@ ARRAY[
+        'Anxiety', 
+        'OffMyChest', 
+        'SelfHarm', 
+        'Depression', 
+        'SelfEsteem', 
+        'Stress', 
+        'Casual', 
+        'Therapy', 
+        'BadHabits', 
+        'Rehabilitation',
+        'Addiction',
+        'Family',
+        'Trauma',
+        'Career',
+        'Abandonment',
+        'Relationships',
+        'Identity',
+        'LGBT'])
 )
