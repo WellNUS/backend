@@ -11,9 +11,18 @@ func readUsers(rows *sql.Rows) ([]User, error) {
 	users := make([]User, 0)
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Gender, &user.Faculty, &user.Email, &user.UserRole, &user.PasswordHash); err != nil {
-			return nil, err
-		}
+		if err := rows.Scan(
+			&user.ID, 
+			&user.FirstName,
+		 	&user.LastName, 
+			&user.Gender, 
+			&user.Faculty, 
+			&user.Email, 
+			&user.UserRole, 
+			&user.PasswordHash); 
+			err != nil {
+				return nil, err
+			}
 		users = append(users, user)
 	}
 	return users, nil

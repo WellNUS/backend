@@ -3,5 +3,3 @@ CREATE TABLE IF NOT EXISTS wn_user_event (
     user_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE,
     unique(event_id, user_id)
 )
-    
-    

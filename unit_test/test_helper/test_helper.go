@@ -33,6 +33,13 @@ type CounselRequest = model.CounselRequest
 type UserIDBody = model.UserIDBody
 type Event = model.Event
 type EventWithUsers = model.EventWithUsers
+type ProviderSetting = model.ProviderSetting
+type Provider = model.Provider
+type ProviderWithEvents = model.ProviderWithEvents
+type Booking = model.Booking
+type BookingUser = model.BookingUser
+type BookingProvider = model.BookingProvider
+type BookingRespond = model.BookingRespond
 
 var ref_user_role 	[]string = []string{"MEMBER", "VOLUNTEER", "COUNSELLOR"}
 var ref_category  	[]string = []string{"COUNSEL", "SUPPORT", "CUSTOM"}
@@ -44,8 +51,8 @@ var ref_access 		[]string = []string{"PUBLIC", "PRIVATE"}
 
 func ResetDB(db *sql.DB) {
 	db.Exec("DELETE FROM wn_group")
-	db.Exec("DELETE FROM wn_user")
 	db.Exec("DELETE FROM wn_event")
+	db.Exec("DELETE FROM wn_user")
 }
 
 func GetBufferFromRecorder(w *httptest.ResponseRecorder) *bytes.Buffer {
@@ -399,6 +406,71 @@ func GetEventsWithUsersFromRecorder(w *httptest.ResponseRecorder) ([]EventWithUs
 	return eventsWithUsers, nil
 }
 
+func GetProviderSettingFromRecorder(w *httptest.ResponseRecorder) (ProviderSetting, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return ProviderSetting{}, errors.New(buf.String())
+	}
+	var providerSetting ProviderSetting
+	err := json.NewDecoder(buf).Decode(&providerSetting)
+	if err != nil {
+		return ProviderSetting{}, err
+	}
+	return providerSetting, nil
+}
+
+func GetProviderSettingsFromRecorder(w *httptest.ResponseRecorder) ([]ProviderSetting, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var providerSettings []ProviderSetting
+	err := json.NewDecoder(buf).Decode(&providerSettings)
+	if err != nil {
+		return nil, err
+	}
+	return providerSettings, nil
+}
+
+func GetProviderFromRecorder(w *httptest.ResponseRecorder) (Provider, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return Provider{}, errors.New(buf.String())
+	}
+	var provider Provider
+	err := json.NewDecoder(buf).Decode(&provider)
+	if err != nil {
+		return Provider{}, err
+	}
+	return provider, nil
+}
+
+func GetProvidersFromRecorder(w *httptest.ResponseRecorder) ([]Provider, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var providers []Provider
+	err := json.NewDecoder(buf).Decode(&providers)
+	if err != nil {
+		return nil, err
+	}
+	return providers, nil
+}
+
+func GetProviderWithEventsFromRecorder(w *httptest.ResponseRecorder) (ProviderWithEvents, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return ProviderWithEvents{}, errors.New(buf.String())
+	}
+	var providerWithEvents ProviderWithEvents
+	err := json.NewDecoder(buf).Decode(&providerWithEvents)
+	if err != nil {
+		return ProviderWithEvents{}, err
+	}
+	return providerWithEvents, nil
+}
+
 func CheckErrorMessageFromRecorder(w *httptest.ResponseRecorder, pattern string) (string, bool) {
 	errString := GetBufferFromRecorder(w).String()
 	matched, _ := regexp.MatchString(pattern, errString)
@@ -466,6 +538,7 @@ func GetRandomTestMatchSetting() MatchSetting {
 
 func GetTestCounselRequest(i int) CounselRequest {
 	counselRequest := CounselRequest{
+		Nickname: "testRecipient",
 		Details: "I am stressed",
 		Topics: []string{ref_topics[0], ref_topics[1]}}
 	if i % 3 == 1 {
@@ -488,6 +561,30 @@ func GetTestEvent(i int) Event {
 		EndTime: endTime,
 		Access: access,
 		Category: category,
+	}
+}
+
+func GetTestProviderSetting(i int) ProviderSetting {
+	providerSetting := ProviderSetting{
+		Intro: "I am a professional counsellor",
+		Topics: []string{ref_topics[0], ref_topics[1]}}
+	if i % 3 == 1 {
+		providerSetting.Topics = []string{ref_topics[1], ref_topics[2]}
+	} else if i % 3 == 2 {
+		providerSetting.Topics = []string{ref_topics[0], ref_topics[2]}
+	}
+	return providerSetting
+}
+
+func GetTestBooking(i int, recipientID int64, providerID int64) Booking {
+	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T08:00:00Z08:00")
+	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T08:00:00Z08:00")
+	return Booking{
+		ProviderID: providerID,
+		Nickname: fmt.Sprintf("TestNickName%d", i),
+		Details: "Looking to talk about my difficulties",
+		StartTime: startTime,
+		EndTime: endTime,
 	}
 }
 
@@ -559,4 +656,14 @@ func SetupEventForUsers(db *sql.DB, users []User) ([]Event, error) {
 		events[i] = eventWithUsers.Event
 	}
 	return events, nil
+}
+
+func SetupProviderSettingForUsers(db *sql.DB, users []User) ([]ProviderSetting, error) {
+	providerSettings := make([]ProviderSetting, len(users))
+	for i, user := range users {
+		providerSetting, err := model.AddUpdateProviderSettingOfUser(db, GetTestProviderSetting(i), user.ID)
+		if err != nil { return nil, err }
+		providerSettings[i] = providerSetting
+	}
+	return providerSettings, nil
 }

@@ -19,6 +19,8 @@ type ProviderSetting = model.ProviderSetting
 type CounselRequest = model.CounselRequest
 type UserIDBody = model.UserIDBody
 type Event = model.Event
+type Booking = model.Booking
+type BookingRespond = model.BookingRespond
 
 func SetHeaders(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
@@ -112,6 +114,22 @@ func GetUserIDFromContext(c *gin.Context) (int64, error) {
 		return 0, err
 	}
 	return userIDBody.UserID, nil
+}
+
+func GetBookingFromContext(c *gin.Context) (Booking, error) {
+	var booking Booking
+	if err := c.BindJSON(&booking); err != nil {
+		return Booking{}, err
+	}
+	return booking, nil
+}
+
+func GetBookingRespondFromContext(c *gin.Context) (BookingRespond, error) {
+	var bookingRespond BookingRespond
+	if err := c.BindJSON(&bookingRespond); err != nil {
+		return BookingRespond{}, err
+	}
+	return bookingRespond, nil
 }
 
 func NoRouteHandler(c *gin.Context) {

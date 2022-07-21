@@ -16,7 +16,8 @@ func ReadCounselRequests(rows *sql.Rows) ([]CounselRequest, error) {
 	for rows.Next() {
 		var counselRequest CounselRequest
 		if err := rows.Scan(
-			&counselRequest.UserID, 
+			&counselRequest.UserID,
+			&counselRequest.Nickname,
 			&counselRequest.Details, 
 			pq.Array(&counselRequest.Topics),
 			&counselRequest.LastUpdated);
@@ -77,17 +78,20 @@ func AddUpdateCounselRequest(db *sql.DB, counselRequest CounselRequest, userID i
 	_, err := db.Exec(
 		`INSERT INTO wn_counsel_request (
 			user_id,
+			nickname,
 			details,
 			topics,
 			last_updated
-		) VALUES ($1, $2, $3, $4)
+		) VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (user_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id,
+			nickname = EXCLUDED.nickname,
 			details = EXCLUDED.details,
 			topics = EXCLUDED.topics,
 			last_updated = EXCLUDED.last_updated`,
 		counselRequest.UserID,
+		counselRequest.Nickname,
 		counselRequest.Details,
 		pq.Array(counselRequest.Topics),
 		counselRequest.LastUpdated)

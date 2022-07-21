@@ -12,6 +12,7 @@ import (
 	"wellnus/backend/router/counsel"
 	"wellnus/backend/router/provider"
 	"wellnus/backend/router/event"
+	"wellnus/backend/router/booking"
 	
 	"wellnus/backend/router/ws"
 	"database/sql"
@@ -87,6 +88,13 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/provider/:id", provider.GetProviderWithEventsHandler(db))
 	router.POST("/provider", provider.AddUpdateProviderSettingOfUserHandler(db))
 	router.DELETE("/provider", provider.DeleteProviderSettingOfUserHandler(db))
+
+	router.GET("/booking", booking.GetAllBookingUsersHandler(db))
+	router.POST("/booking", booking.AddBookingHandler(db))
+	router.GET("/booking/:id", booking.GetBookingProviderHandler(db))
+	router.POST("/booking/:id", booking.RespondBookingHandler(db))
+	router.PATCH("/booking/:id", booking.UpdateBookingHandler(db))
+	router.DELETE("/booking/:id", booking.DeleteBookingHandler(db))
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))

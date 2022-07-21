@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS wn_counsel_request (
     user_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE,
-    details TEXT,
+    nickname TEXT NOT NULL,
+    details TEXT NOT NULL,
     topics TEXT[] NOT NULL,
     last_updated TIMESTAMPTZ NOT NULL,
     unique(user_id),

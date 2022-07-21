@@ -6,6 +6,7 @@ import (
 
 type CounselRequest struct {
 	UserID 		int64		`json:"user_id"`
+	Nickname	string		`json:"nickname"`
 	Details 	string		`json:"details"`
 	Topics		[]string	`json:"topics"`
 	LastUpdated	time.Time 	`json:"last_updated"`

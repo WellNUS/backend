@@ -13,11 +13,13 @@ func GetAllProvidersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		providers, err := model.GetAllProviders(db)
+		topics, _ := c.GetQueryArray("topic")
+		providers, err := model.GetAllProviders(db, topics)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
+		
 		c.IndentedJSON(http_error.GetStatusCode(err), providers)
 	}
 }

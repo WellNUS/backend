@@ -465,12 +465,12 @@ conn.onmessage = function (evt) {
 >>
 >> A provider can provide infomation about
 >> - self-introduction
->> - specialities
+>> - topics
 >>
->> ProviderSetting = { user_id, intro, specialities[] }
+>> ProviderSetting = { user_id, intro, topics[] }
 >>
 >>> ProviderSetting field specification
->>> - specialities[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
+>>> - topics[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 >>
 >> Provider = { user: User, setting: ProviderSetting }
 >>
@@ -482,6 +482,9 @@ conn.onmessage = function (evt) {
 >> 
 >>> Description : Gets all providers with settings.
 >>>
+>>> Query Params:
+>>> - ?topic=(topic) : filters counsel request by topic. Multiple topics can be used to filter by repeating the query params.
+>>>
 >>> Request Body : None
 >>>
 >>> Response Body : Provider[]
@@ -490,7 +493,7 @@ conn.onmessage = function (evt) {
 >>
 >>> Description : Creates / Updates provider setting of the user if the user is logged in and user is a provider
 >>>
->>> Request Body : { available, specialities[] }
+>>> Request Body : { available, topics[] }
 >>>
 >>> Response Body : ProviderSetting
 >>
@@ -518,7 +521,7 @@ conn.onmessage = function (evt) {
 >>
 >> Providers can view these requests and filter with topics, before accepting a counsel request which will make a room.
 >>
->> CounselRequest = { user_id, details, topics[], last_updated }
+>> CounselRequest = { user_id, nickname, details, topics[], last_updated }
 >>
 >>> CounselRequest field specification
 >>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
@@ -530,7 +533,7 @@ conn.onmessage = function (evt) {
 >>> Description : Gets all counsel request if the user is logged in and is a provider
 >>>
 >>> Query Params:
->>> - ?topic=(topic) : filters counsel request by topic. Multiple topics can be used to filter by repeating te query params.
+>>> - ?topic=(topic) : filters counsel request by topic. Multiple topics can be used to filter by repeating the query params.
 >>>
 >>> Request Body : None
 >>>
@@ -572,13 +575,12 @@ conn.onmessage = function (evt) {
 
 > #### Event Details
 >
->> Handles CRUD for events. Used for booking counsel sessions and can be expanded to other scheduling tasks
+>> Handles CRUD for events. Used for managing events that become relevant at certain time.
 >>
->> Event = { id, owner_id, event_name, event_description, start_time, duration, access, category }
+>> Event = { id, owner_id, event_name, event_description, start_time, end_time, access, category }
 >>
 >>> Event field specification:
->>> - start_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05Z07:00"
->>> - duration = A string containing possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+>>> - start_time, end_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05Z07:00"
 >>> - access = 1 of ('PUBLIC', 'PRIVATE')
 >>> - category = 1 of ('COUNSEL', 'SUPPORT', 'CUSTOM')
 >>
@@ -598,7 +600,7 @@ conn.onmessage = function (evt) {
 >>
 >>> Description: Creates new event and set the owner as the user who created the event, if the user is logged in.
 >>>
->>> Request Body: { event_name, event_description, start_time, duration, access, category }
+>>> Request Body: { event_name, event_description, start_time, end_time, access, category }
 >>>
 >>> Response Body: EventWithUsers
 >>
@@ -630,7 +632,7 @@ conn.onmessage = function (evt) {
 >>
 >>> Description: Update the event if user is the owner of the event.
 >>> 
->>> Request Body: { event_name?, event_description?, start_time?, duration?, access? }
+>>> Request Body: { event_name?, event_description?, start_time?, end_time?, access? }
 >>>
 >>> Response Body: Event
 >>
@@ -649,6 +651,82 @@ conn.onmessage = function (evt) {
 >>> Request Body: None
 >>>
 >>> Response Body: GroupWithUsers
+
+### Booking
+
+> #### Booking Details
+>
+>> Handles CRUD for Bookings. Used for booking counsel sessions.
+>>
+>> Booking = { id, recipient_id, provider_id, approve_by, nickname, details, start_time, end_time }
+>>
+>>> Booking field specification:
+>>> - approve_by = user_id of user who is to approve booking. one of (recipient_id, provider_id)
+>>
+>> BookingUser = { booking: Booking, user: User }
+>>
+>>> BookingUser field specification:
+>>> - user refers to the user providing the counselling service
+>>
+>> BookingProvider = { booking: Booking, provider: Provider }
+>>
+>> BookingRespond = { approve, booking: Booking }
+>
+> #### Booking Routes
+>
+>> ##### /booking - GET
+>>
+>>> Description: Gets all bookingUsers of user if the user is logged in
+>>> 
+>>> Query Params:
+>>> - ?booking=SENT : will get all bookings sent by user
+>>> - ?booking=RECEIVED : will get all bookings directed at user
+>>> - ?booking=REQUIRED : will get all bookings requiring approval of user
+>>> - no query params : will get all join request sent by and directed at user
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: BookingUser[]
+>>
+>> ##### /booking - POST
+>>
+>>> Description: Creates new booking if user is logged in
+>>>
+>>> Request Body: { provider_id, nickname, details, start_time, end_time }
+>>>
+>>> Response Body: Booking
+>>
+>> ##### /booking/:id - GET
+>> 
+>>> Description: Gets bookingProvider of given id
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: BookingProvider
+>>
+>> ##### /booking/:id - POST
+>>
+>>> Description: Respond to booking request if user is logged in and authorised to respond
+>>>
+>>> Request Body: BookingRespond
+>>>
+>>> Response Body: BookingRespond
+>>
+>> ##### /booking/:id - PATCH
+>>
+>>> Description: Updates booking request if user is logged in and is the user who created the booking
+>>>
+>>> Request Body: { recipient_id?, provider_id?, approve_by?, nickname?, details?, start_time?, end_time? }
+>>>
+>>> Response Body: Booking
+>>
+>> ##### /booking/:id - DELETE
+>>
+>>> Description: Deletes booking request if user is logged in and is the user who created the booking
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: { id }
 
 ## Things to do
 - [x] CRUD on Users
@@ -683,3 +761,7 @@ conn.onmessage = function (evt) {
 - [x] Update Unit test for group to include checks for owner's membership on update
 - [x] Implement Event
 - [x] Unit testing for Event
+- [x] Implement Provider
+- [x] Unit testing for Provider
+- [x] Implement Booking
+- [ ] Unit testing for Provider

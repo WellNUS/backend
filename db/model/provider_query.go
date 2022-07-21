@@ -4,7 +4,8 @@ import (
 	"wellnus/backend/router/http_helper/http_error"
 
 	"database/sql"
-	"errors"
+
+	"github.com/lib/pq"
 )
 
 func IsProvider(user User) bool {
@@ -23,7 +24,7 @@ func ReadProviderSettings(rows *sql.Rows) ([]ProviderSetting, error) {
 		if err := rows.Scan(
 			&providerSetting.UserID,
 			&providerSetting.Intro,
-			&providerSetting.Specialities);
+			pq.Array(&providerSetting.Topics));
 			err != nil {
 				return nil, err
 			}
@@ -47,7 +48,7 @@ func ReadProviders(rows *sql.Rows) ([]Provider, error) {
 			&provider.User.PasswordHash,
 			&provider.Setting.UserID,
 			&provider.Setting.Intro,
-			&provider.Setting.Specialities); 
+			pq.Array(&provider.Setting.Topics)); 
 			err != nil {
 				return nil, err
 			}
@@ -66,8 +67,11 @@ func GetProviderSetting(db *sql.DB, userID int64) (ProviderSetting, error) {
 	return providerSettings[0], nil
 }
 
-func GetAllProviders(db *sql.DB) ([]Provider, error) {
-	rows, err := db.Query(
+func GetAllProviders(db *sql.DB, topics []string) ([]Provider, error) {
+	var rows *sql.Rows
+	var err error
+	if topics == nil {
+		rows, err = db.Query(
 		`SELECT 
 			wn_user.id,
 			wn_user.first_name,
@@ -79,10 +83,30 @@ func GetAllProviders(db *sql.DB) ([]Provider, error) {
 			wn_user.password_hash,
 			wn_provider_setting.user_id,
 			wn_provider_setting.intro,
-			wn_provider_setting.specialities
+			wn_provider_setting.topics
 		FROM wn_provider_setting 
 		JOIN wn_user ON wn_user.id = wn_provider_setting.user_id
 		WHERE wn_user.user_role IN ('VOLUNTEER', 'COUNSELLOR')`)
+	} else {
+		rows, err = db.Query(
+			`SELECT 
+				wn_user.id,
+				wn_user.first_name,
+				wn_user.last_name,
+				wn_user.gender,
+				wn_user.faculty,
+				wn_user.email,
+				wn_user.user_role,
+				wn_user.password_hash,
+				wn_provider_setting.user_id,
+				wn_provider_setting.intro,
+				wn_provider_setting.topics
+			FROM wn_provider_setting 
+			JOIN wn_user ON wn_user.id = wn_provider_setting.user_id
+			WHERE wn_user.user_role IN ('VOLUNTEER', 'COUNSELLOR') 
+			AND $1 <@ wn_provider_setting.topics`,
+			pq.Array(topics))
+	}
 	if err != nil { return nil, err }
 	defer rows.Close()
 	providers, err := ReadProviders(rows)
@@ -108,21 +132,23 @@ func GetProviderWithEvents(db *sql.DB, userID int64) (ProviderWithEvents, error)
 
 func AddUpdateProviderSettingOfUser(db *sql.DB, providerSetting ProviderSetting, userID int64) (ProviderSetting, error) {
 	providerSetting.UserID = userID
-	if !AuthoriseProvider(db, userID) { return ProviderSetting{}, errors.New("Cannot addupdate provider settings of non-provider") }
+	if !AuthoriseProvider(db, userID) {
+		return ProviderSetting{}, http_error.UnauthorizedError
+	}
 	_, err := db.Exec(
 		`INSERT INTO wn_provider_setting (
 			user_id,
 			intro,
-			specialities
+			topics
 		) VALUES ($1, $2, $3)
 		ON CONFLICT (user_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id,
 			intro = EXCLUDED.intro,
-			specialities = EXCLUDED.specialities`,
+			topics = EXCLUDED.topics`,
 		providerSetting.UserID,
 		providerSetting.Intro,
-		providerSetting.Specialities)
+		pq.Array(providerSetting.Topics))
 	if err != nil { return ProviderSetting{}, err }
 	return providerSetting, nil
 }
