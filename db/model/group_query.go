@@ -129,9 +129,12 @@ func AddGroupWithUserIDs(db *sql.DB, group Group, userIDs []int64) (GroupWithUse
 
 	// Adding Other Users
 	for _, userID := range userIDs {
-		if err := AddUserToGroup(db, group.ID, userID); err != nil {
-			return GroupWithUsers{}, err
-		}
+		AddUserToGroup(db, group.ID, userID)
+
+		// Strict version
+		// if err := AddUserToGroup(db, group.ID, userID); err != nil {
+		// 	return GroupWithUsers{}, err
+		// }
 	}
 	users, err := GetAllUsersOfGroup(db, group.ID)
 	if err != nil { return GroupWithUsers{}, err }

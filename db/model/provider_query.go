@@ -11,6 +11,11 @@ func IsProvider(user User) bool {
 	return user.UserRole == "VOLUNTEER" || user.UserRole == "COUNSELLOR";
 }
 
+func AuthoriseProvider(db *sql.DB, userID int64) bool {
+	user, _ := GetUser(db, userID)
+	return IsProvider(user)
+}
+
 func ReadProviderSettings(rows *sql.Rows) ([]ProviderSetting, error) {
 	providerSettings := make([]ProviderSetting, 0)
 	for rows.Next() {
@@ -27,28 +32,28 @@ func ReadProviderSettings(rows *sql.Rows) ([]ProviderSetting, error) {
 	return providerSettings, nil
 }
 
-func ReadProvidersWithSetting(rows *sql.Rows) ([]ProviderWithSetting, error) {
-	providersWithSetting := make([]ProviderWithSetting, 0)
+func ReadProviders(rows *sql.Rows) ([]Provider, error) {
+	providers := make([]Provider, 0)
 	for rows.Next() {
-		var providerWithSetting ProviderWithSetting
+		var provider Provider
 		if err := rows.Scan(
-			&providerWithSetting.User.ID,
-			&providerWithSetting.User.FirstName, 
-			&providerWithSetting.User.LastName, 
-			&providerWithSetting.User.Gender, 
-			&providerWithSetting.User.Faculty, 
-			&providerWithSetting.User.Email,
-			&providerWithSetting.User.UserRole, 
-			&providerWithSetting.User.PasswordHash,
-			&providerWithSetting.Setting.UserID,
-			&providerWithSetting.Setting.Intro,
-			&providerWithSetting.Setting.Specialities); 
+			&provider.User.ID,
+			&provider.User.FirstName, 
+			&provider.User.LastName, 
+			&provider.User.Gender, 
+			&provider.User.Faculty, 
+			&provider.User.Email,
+			&provider.User.UserRole, 
+			&provider.User.PasswordHash,
+			&provider.Setting.UserID,
+			&provider.Setting.Intro,
+			&provider.Setting.Specialities); 
 			err != nil {
 				return nil, err
 			}
-		providersWithSetting = append(providersWithSetting, providerWithSetting)
+		providers = append(providers, provider)
 	}
-	return providersWithSetting, nil
+	return providers, nil
 }
 
 func GetProviderSetting(db *sql.DB, userID int64) (ProviderSetting, error) {
@@ -61,7 +66,7 @@ func GetProviderSetting(db *sql.DB, userID int64) (ProviderSetting, error) {
 	return providerSettings[0], nil
 }
 
-func GetAllProvidersWithSetting(db *sql.DB) ([]ProviderWithSetting, error) {
+func GetAllProviders(db *sql.DB) ([]Provider, error) {
 	rows, err := db.Query(
 		`SELECT 
 			wn_user.id,
@@ -80,25 +85,31 @@ func GetAllProvidersWithSetting(db *sql.DB) ([]ProviderWithSetting, error) {
 		WHERE wn_user.user_role IN ('VOLUNTEER', 'COUNSELLOR')`)
 	if err != nil { return nil, err }
 	defer rows.Close()
-	providersWithSetting, err := ReadProvidersWithSetting(rows)
+	providers, err := ReadProviders(rows)
 	if err != nil { return nil, err }
-	return providersWithSetting, nil
+	return providers, nil
 }
 
-func GetProviderWithSetting(db *sql.DB, userID int64) (ProviderWithSetting, error) {
+func GetProvider(db *sql.DB, userID int64) (Provider, error) {
 	providerSetting, err := GetProviderSetting(db, userID)
-	if err != nil { return ProviderWithSetting{}, err }
-	providerWithSetting, err := providerSetting.LoadProviderSettings(db)
-	if err != nil { return ProviderWithSetting{}, err }
-	return providerWithSetting, nil
+	if err != nil { return Provider{}, err }
+	provider, err := providerSetting.LoadProviderSetting(db)
+	if err != nil { return Provider{}, err }
+	return provider, nil
 }
 
-func AddUpdateProviderSettingOfProvider(db *sql.DB, providerSetting ProviderSetting, userID int64) (ProviderSetting, error) {
+func GetProviderWithEvents(db *sql.DB, userID int64) (ProviderWithEvents, error) {
+	provider, err := GetProvider(db, userID)
+	if err != nil { return ProviderWithEvents{}, err }
+	providerWithEvents, err := provider.LoadProvider(db)
+	if err != nil { return ProviderWithEvents{}, err }
+	return providerWithEvents, nil
+}
+
+func AddUpdateProviderSettingOfUser(db *sql.DB, providerSetting ProviderSetting, userID int64) (ProviderSetting, error) {
 	providerSetting.UserID = userID
-	user, err := GetUser(db, userID)
-	if err != nil { return ProviderSetting{}, err }
-	if !IsProvider(user) { return ProviderSetting{}, errors.New("Cannot addupdate provider settings of non-provider") }
-	_, err = db.Exec(
+	if !AuthoriseProvider(db, userID) { return ProviderSetting{}, errors.New("Cannot addupdate provider settings of non-provider") }
+	_, err := db.Exec(
 		`INSERT INTO wn_provider_setting (
 			user_id,
 			intro,
@@ -116,7 +127,7 @@ func AddUpdateProviderSettingOfProvider(db *sql.DB, providerSetting ProviderSett
 	return providerSetting, nil
 }
 
-func DeleteProviderSettingOfProvider(db *sql.DB, userID int64) (ProviderSetting, error) {
+func DeleteProviderSettingOfUser(db *sql.DB, userID int64) (ProviderSetting, error) {
 	_, err := db.Exec("DELETE FROM wn_provider_setting WHERE user_id = $1", userID)
 	if err != nil { return ProviderSetting{}, err }
 	return ProviderSetting{ UserID: userID }, nil

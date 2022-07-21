@@ -40,11 +40,6 @@ func CheckCounselRequest(db *sql.DB, userID int64) (bool, error) {
 	return present, nil
 }
 
-func AuthoriseProvider(db *sql.DB, userID int64) bool {
-	user, _ := GetUser(db, userID)
-	return IsProvider(user)
-}
-
 // Main functions
 
 func GetAllCounselRequests(db *sql.DB, topics []string, userID int64) ([]CounselRequest, error) {
@@ -64,10 +59,10 @@ func GetAllCounselRequests(db *sql.DB, topics []string, userID int64) ([]Counsel
 	return counselRequests, nil
 }
 
-func GetCounselRequest(db *sql.DB, recipientID int64, userID int64) (CounselRequest, error) {
-	authorized := recipientID == userID || AuthoriseProvider(db, userID)
+func GetCounselRequest(db *sql.DB, recipientUserID int64, userID int64) (CounselRequest, error) {
+	authorized := recipientUserID == userID || AuthoriseProvider(db, userID)
 	if !authorized { return CounselRequest{}, http_error.UnauthorizedError }
-	rows, err := db.Query("SELECT * FROM wn_counsel_request WHERE user_id = $1", recipientID)
+	rows, err := db.Query("SELECT * FROM wn_counsel_request WHERE user_id = $1", recipientUserID)
 	if err != nil { return CounselRequest{}, err }
 	defer rows.Close()
 	counselRequests, err := ReadCounselRequests(rows)
@@ -106,13 +101,13 @@ func DeleteCounselRequest(db *sql.DB, userID int64) (CounselRequest, error) {
 	return CounselRequest{ UserID: userID }, nil
 }
 
-func AcceptCounselRequest(db *sql.DB, recipientID int64, providerID int64) (GroupWithUsers, error) {
-	authorized := AuthoriseProvider(db, providerID)
+func AcceptCounselRequest(db *sql.DB, recipientUserID int64, providerUserID int64) (GroupWithUsers, error) {
+	authorized := AuthoriseProvider(db, providerUserID)
 	if !authorized { return GroupWithUsers{}, http_error.UnauthorizedError }
-	present, err := CheckCounselRequest(db, recipientID)
+	present, err := CheckCounselRequest(db, recipientUserID)
 	if err != nil { return GroupWithUsers{}, err }
 	if !present { return GroupWithUsers{}, http_error.NotFoundError }
-	user, err := GetUser(db, providerID)
+	user, err := GetUser(db, providerUserID)
 	if err != nil { return GroupWithUsers{}, err }
 	if !IsProvider(user) { return GroupWithUsers{}, http_error.UnauthorizedError }
 	group := Group{
@@ -120,9 +115,9 @@ func AcceptCounselRequest(db *sql.DB, recipientID int64, providerID int64) (Grou
 		GroupDescription: "Welcome to your new Counsel Room",
 		Category: "COUNSEL",
 	}
-	groupWithUsers, err := AddGroupWithUserIDs(db, group, []int64{providerID, recipientID})
+	groupWithUsers, err := AddGroupWithUserIDs(db, group, []int64{providerUserID, recipientUserID})
 	if err != nil { return GroupWithUsers{}, err }
-	if _, fatal := DeleteCounselRequest(db, recipientID); fatal != nil {
+	if _, fatal := DeleteCounselRequest(db, recipientUserID); fatal != nil {
 		log.Fatal(fmt.Sprintf("Failed to remove counsel request after creating group. Fatal: %v", fatal))
 	}
 	return groupWithUsers, nil

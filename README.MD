@@ -472,7 +472,9 @@ conn.onmessage = function (evt) {
 >>> ProviderSetting field specification
 >>> - specialities[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 >>
->> ProviderWithSetting = { user: User, setting: ProviderSetting }
+>> Provider = { user: User, setting: ProviderSetting }
+>>
+>> ProviderWithEvents = { provider: Provider, events: Event[] }
 >
 > #### Provider Routes
 >
@@ -482,7 +484,7 @@ conn.onmessage = function (evt) {
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : ProviderWithSetting[]
+>>> Response Body : Provider[]
 >>
 >> ##### /provider - POST
 >>
@@ -506,7 +508,7 @@ conn.onmessage = function (evt) {
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : ProviderWithSetting
+>>> Response Body : ProviderWithEvents
 
 ### Counsel
 
@@ -572,12 +574,13 @@ conn.onmessage = function (evt) {
 >
 >> Handles CRUD for events. Used for booking counsel sessions and can be expanded to other scheduling tasks
 >>
->> Event = { id, owner_id, event_name, event_description, start_time, duration, access }
+>> Event = { id, owner_id, event_name, event_description, start_time, duration, access, category }
 >>
 >>> Event field specification:
 >>> - start_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05Z07:00"
 >>> - duration = A string containing possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 >>> - access = 1 of ('PUBLIC', 'PRIVATE')
+>>> - category = 1 of ('COUNSEL', 'SUPPORT', 'CUSTOM')
 >>
 >> EventWithUsers = { event: Event, users: User[] }
 >
@@ -595,7 +598,7 @@ conn.onmessage = function (evt) {
 >>
 >>> Description: Creates new event and set the owner as the user who created the event, if the user is logged in.
 >>>
->>> Request Body: { event_name, event_description, start_time, duration, access }
+>>> Request Body: { event_name, event_description, start_time, duration, access, category }
 >>>
 >>> Response Body: EventWithUsers
 >>
@@ -638,6 +641,14 @@ conn.onmessage = function (evt) {
 >>> Request Body: None
 >>>
 >>> Response Body: { id }
+>>
+>> ##### /event/:id/start - POST
+>>
+>>> Description: Creates a new room with all users involved and deletes the event
+>>>
+>>> Request Body: None
+>>>
+>>> Response Body: GroupWithUsers
 
 ## Things to do
 - [x] CRUD on Users
@@ -670,3 +681,5 @@ conn.onmessage = function (evt) {
 - [x] Unit testing for Counsel Request
 - [x] Restructure getting of errormessages in unit tests
 - [x] Update Unit test for group to include checks for owner's membership on update
+- [x] Implement Event
+- [x] Unit testing for Event

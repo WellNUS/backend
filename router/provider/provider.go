@@ -9,20 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllProvidersWithSettingHandler(db *sql.DB) func(*gin.Context) {
+func GetAllProvidersHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		providersWithSetting, err := model.GetAllProvidersWithSetting(db)
+		providers, err := model.GetAllProviders(db)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), providersWithSetting)
+		c.IndentedJSON(http_error.GetStatusCode(err), providers)
 	}
 }
 
-func GetProviderWithSettingHandler(db *sql.DB) func(*gin.Context) {
+func GetProviderWithEventsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
@@ -31,16 +31,16 @@ func GetProviderWithSettingHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		providerWithSetting, err := model.GetProviderWithSetting(db, userID)
+		providerWithEvents, err := model.GetProviderWithEvents(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), providerWithSetting)
+		c.IndentedJSON(http_error.GetStatusCode(err), providerWithEvents)
 	}
 }
 
-func AddUpdateProviderSettingOfProviderHandler(db *sql.DB) func(*gin.Context) {
+func AddUpdateProviderSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
@@ -54,7 +54,7 @@ func AddUpdateProviderSettingOfProviderHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		providerSetting, err = model.AddUpdateProviderSettingOfProvider(db, providerSetting, userID)
+		providerSetting, err = model.AddUpdateProviderSettingOfUser(db, providerSetting, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -63,7 +63,7 @@ func AddUpdateProviderSettingOfProviderHandler(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func DeleteProviderSettingOfProviderHandler(db *sql.DB) func(*gin.Context) {
+func DeleteProviderSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
@@ -72,7 +72,7 @@ func DeleteProviderSettingOfProviderHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		providerSetting, err := model.DeleteProviderSettingOfProvider(db, userID)
+		providerSetting, err := model.DeleteProviderSettingOfUser(db, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return

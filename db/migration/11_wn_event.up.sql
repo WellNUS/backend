@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS wn_event (
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
     access VARCHAR(7) NOT NULL,
+    category VARCHAR(7) NOT NULL,
+    check(event_name != ''),
     check(access IN ('PUBLIC', 'PRIVATE')),
-    check(event_name != '')
+    check(category IN ('COUNSEL', 'SUPPORT', 'CUSTOM'))
 )

@@ -1,7 +1,7 @@
 package event
 
 import (
-	// "wellnus/backend/db/model"
+	"wellnus/backend/db/model"
 	"wellnus/backend/unit_test/test_helper"
 
 	"testing"
@@ -12,6 +12,8 @@ import (
 // Full test
 func TestEventHandler(t *testing.T) {
 	t.Run("AddEventHandler no eventname", testAddEventHandlerNoEventName)
+	t.Run("AddEventHandler no access", testAddEventHandlerNoAccess)
+	t.Run("AddEventHandler no category", testAddEventHandlerNoCategory)
 	t.Run("AddEventHandler not logged in", testAddEventHandlerNotLoggedIn)
 	t.Run("AddEventHandler as user1", testAddEventHandlerAsUser1)
 	t.Run("GetAllEventsHandler as user0", testGetAllEventsHandlerAsUser0)
@@ -30,6 +32,8 @@ func TestEventHandler(t *testing.T) {
 	t.Run("LeaveEvent1Handler as user0", testLeaveEvent1HandlerAsUser0)
 	t.Run("LeaveEvent1handler as user1", testLeaveEvent1HandlerAsUser1)
 	t.Run("LeaveAllEventsHandler as user0", testLeaveAllEventsHandlerAsUser0)
+	t.Run("CreateGroupDeleteEventHandler Unauthorised", testCreateGroupDeleteEventUnauthorised)
+	t.Run("CreateGroupDeleteEventHandler Authorised", testCreateGroupDeleteEventAuthorised)
 }
 
 func testAddEventHandlerNoEventName(t *testing.T) {
@@ -48,6 +52,44 @@ func testAddEventHandlerNoEventName(t *testing.T) {
 	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "event_name")
 	if !matched {
 		t.Errorf("response body was not an error did not contain any instance of event_name. %s", errString)
+	}
+}
+
+func testAddEventHandlerNoAccess(t *testing.T) {
+	testEvent := test_helper.GetTestEvent(1)
+	testEvent.Access = ""
+	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(testEvent)
+	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
+	req.AddCookie(&http.Cookie{
+		Name: "session_key",
+		Value: sessionKeys[1],
+	})
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code == http.StatusOK {
+		t.Errorf("Event with no access sucessfully added. Status Code: %d", w.Code)
+	}
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "access")
+	if !matched {
+		t.Errorf("response body was not an error did not contain any instance of access. %s", errString)
+	}
+}
+
+func testAddEventHandlerNoCategory(t *testing.T) {
+	testEvent := test_helper.GetTestEvent(1)
+	testEvent.Category = ""
+	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(testEvent)
+	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
+	req.AddCookie(&http.Cookie{
+		Name: "session_key",
+		Value: sessionKeys[1],
+	})
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code == http.StatusOK {
+		t.Errorf("Event with no category sucessfully added. Status Code: %d", w.Code)
+	}
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, "category")
+	if !matched {
+		t.Errorf("response body was not an error did not contain any instance of category. %s", errString)
 	}
 }
 
@@ -400,5 +442,69 @@ func testLeaveAllEventsHandlerAsUser0(t *testing.T) {
 	}
 	if count != 0 {
 		t.Errorf("Not all events were deleted was not deleted as count is %d", count)
+	}
+}
+
+func testCreateGroupDeleteEventUnauthorised(t *testing.T) {
+	testEvents, _ = test_helper.SetupEventForUsers(DB, testUsers[:1])
+	eventWithUsers, _ := model.AddUserToEventAuthorized(DB, testUsers[1].ID, testEvents[0].ID, testUsers[0].ID)
+	if l := len(eventWithUsers.Users); l != 2 {
+		t.Errorf("Something went wrong wile setting up event for creategroupdeleteevent. group has only %d users", l)
+	}
+
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d/start", testEvents[0].ID), nil)
+	req.AddCookie(&http.Cookie{
+		Name: "session_key",
+		Value: sessionKeys[1],
+	})
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("HTTP Request to CreateGroupDeleteEvent did not give unauthorized status. StatusCode: %d", w.Code)
+	}
+	errString, matched := test_helper.CheckErrorMessageFromRecorder(w, UnauthorizedErrorMessage)
+	if !matched {
+		t.Errorf("Error thrown did not contain instance of 401 Unauthorized. %s", errString)
+	}
+}
+
+func testCreateGroupDeleteEventAuthorised(t *testing.T) {
+	testEvents, _ = test_helper.SetupEventForUsers(DB, testUsers[:1])
+	eventWithUsers, _ := model.AddUserToEventAuthorized(DB, testUsers[1].ID, testEvents[0].ID, testUsers[0].ID)
+	if l := len(eventWithUsers.Users); l != 2 {
+		t.Errorf("Something went wrong wile setting up event for creategroupdeleteevent. group has only %d users", l)
+	}
+
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d/start", testEvents[0].ID), nil)
+	req.AddCookie(&http.Cookie{
+		Name: "session_key",
+		Value: sessionKeys[0],
+	})
+	w := test_helper.SimulateRequest(Router, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("HTTP Request to CreateGroupDeleteEvent did not give unauthorized status. StatusCode: %d", w.Code)
+	}
+	groupWithUsers, err := test_helper.GetGroupWithUsersFromRecorder(w)
+	if err != nil {
+		t.Errorf("An error occured while retrieving groupWithUsers. %v", err)
+	}
+	if groupWithUsers.Group.OwnerID != testUsers[0].ID {
+		t.Errorf("new group owner is not the event owner")
+	}
+	for i, refUser := range testUsers {
+		found := false
+		for _, user := range groupWithUsers.Users {
+			if user.ID == refUser.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("user%d was not added to the group", i)
+		}
+	}
+
+	_, err = model.GetEvent(DB, testEvents[0].ID)
+	if err.Error() != NotFoundErrorMessage {
+		t.Errorf("error thrown is same as NotfoundError message, suggesting event was not deleted. %v", err)
 	}
 }

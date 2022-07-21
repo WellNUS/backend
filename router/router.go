@@ -49,7 +49,6 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.GET("/group", group.GetAllGroupsHandler(db))
 	router.POST("/group", group.AddGroupHandler(db))
 	router.DELETE("/group", group.LeaveAllGroupsHandler(db))
-	
 	router.GET("/group/:id", group.GetGroupHandler(db))
 	router.PATCH("/group/:id", group.UpdateGroupHandler(db))
 	router.DELETE("/group/:id", group.LeaveGroupHandler(db))
@@ -82,12 +81,12 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.POST("/event/:id", event.AddUserToEventHandler(db))
 	router.PATCH("/event/:id", event.UpdateEventHandler(db))
 	router.DELETE("event/:id", event.LeaveDeleteEventHandler(db))
+	router.POST("/event/:id/start", event.CreateGroupDeleteEventHandler(db))
 	
-	// Not very viable as inbalance of request for providers. Should be like a private hire system
-	router.GET("/provider", provider.GetAllProvidersWithSettingHandler(db))
-	router.GET("/provider/:id", provider.GetProviderWithSettingHandler(db))
-	router.POST("/provider", provider.AddUpdateProviderSettingOfProviderHandler(db))
-	router.DELETE("/provider", provider.DeleteProviderSettingOfProviderHandler(db)) 
+	router.GET("/provider", provider.GetAllProvidersHandler(db))
+	router.GET("/provider/:id", provider.GetProviderWithEventsHandler(db))
+	router.POST("/provider", provider.AddUpdateProviderSettingOfUserHandler(db))
+	router.DELETE("/provider", provider.DeleteProviderSettingOfUserHandler(db))
 
 	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
 	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))

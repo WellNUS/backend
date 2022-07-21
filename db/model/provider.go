@@ -10,13 +10,24 @@ type ProviderSetting struct {
 	Specialities	[]string	`json:"specialities"`
 }
 
-type ProviderWithSetting struct {
+type Provider struct {
 	User 		User 			`json:"user"`
 	Setting		ProviderSetting	`json:"setting"`
 }
 
-func (ps ProviderSetting) LoadProviderSettings(db *sql.DB) (ProviderWithSetting, error) {
+type ProviderWithEvents struct {
+	Provider 	Provider 	`json:"provider"`
+	Events		[]Event		`json:"events"`
+}
+
+func (ps ProviderSetting) LoadProviderSetting(db *sql.DB) (Provider, error) {
 	user, err := GetUser(db, ps.UserID)
-	if err != nil { return ProviderWithSetting{}, err }
-	return ProviderWithSetting{ User: user, Setting: ps }, nil
+	if err != nil { return Provider{}, err }
+	return Provider{ User: user, Setting: ps }, nil
+}
+
+func (p Provider) LoadProvider(db *sql.DB) (ProviderWithEvents, error) {
+	events, err := GetAllEventsOfUser(db, p.User.ID)
+	if err != nil { return ProviderWithEvents{}, err }
+	return ProviderWithEvents{ Provider: p, Events: events }, nil
 }

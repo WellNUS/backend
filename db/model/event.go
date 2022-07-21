@@ -17,6 +17,7 @@ type Event struct {
 	StartTime 			time.Time		`json:"start_time"`
 	EndTime				time.Time		`json:"end_time"`
 	Access				string			`json:"access"`
+	Category			string			`json:"category"`
 }
 
 type EventWithUsers struct {
@@ -44,6 +45,9 @@ func (eventMain Event) MergeEvent(eventAdd Event) Event {
 	if eventMain.Access == "" {
 		eventMain.Access = eventAdd.Access
 	}
+	if eventMain.Category == "" {
+		eventMain.Category = eventAdd.Category
+	}
 	return eventMain
 }
 
@@ -63,5 +67,6 @@ func (event1 Event) Equal(event2 Event) bool {
 		event1.EventDescription == event2.EventDescription &&
 		event1.StartTime == event2.StartTime &&
 		event1.EndTime == event2.EndTime &&
-		event1.Access == event2.Access
+		event1.Access == event2.Access &&
+		event1.Category == event2.Category
 }

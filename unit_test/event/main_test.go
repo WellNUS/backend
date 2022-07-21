@@ -46,6 +46,7 @@ func setupRouter() *gin.Engine {
 	router.POST("/event/:id", event.AddUserToEventHandler(DB))
 	router.PATCH("/event/:id", event.UpdateEventHandler(DB))
 	router.DELETE("event/:id", event.LeaveDeleteEventHandler(DB))
+	router.POST("/event/:id/start", event.CreateGroupDeleteEventHandler(DB))
 
 	return router
 }

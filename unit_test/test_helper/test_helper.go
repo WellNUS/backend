@@ -34,6 +34,14 @@ type UserIDBody = model.UserIDBody
 type Event = model.Event
 type EventWithUsers = model.EventWithUsers
 
+var ref_user_role 	[]string = []string{"MEMBER", "VOLUNTEER", "COUNSELLOR"}
+var ref_category  	[]string = []string{"COUNSEL", "SUPPORT", "CUSTOM"}
+var ref_faculty 	[]string = []string{"MIX", "SAME", "NONE"}
+var ref_hobbies 	[]string = []string{"GAMING", "SINGING", "DANCING", "MUSIC", "SPORTS", "OUTDOOR", "BOOK", "ANIME", "MOVIES", "TV", "ART", "STUDY"}
+var ref_mbti 		[]string = []string{"ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"}
+var ref_topics 		[]string = []string{"Anxiety", "OffMyChest", "SelfHarm"}
+var ref_access 		[]string = []string{"PUBLIC", "PRIVATE"}
+
 func ResetDB(db *sql.DB) {
 	db.Exec("DELETE FROM wn_group")
 	db.Exec("DELETE FROM wn_user")
@@ -416,13 +424,7 @@ func GenerateRandomString(l int) string {
 
 func GetTestUser(i int) User {
 	email := GenerateRandomString(20)
-
-	role := "MEMBER"
-	if i % 3  == 1 {
-		role = "VOLUNTEER"
-	} else if i % 3 == 2 {
-		role = "COUNSELLOR"
-	}
+	role := ref_user_role[i % len(ref_user_role)]
 
 	return User{
 		FirstName: fmt.Sprintf("TestUser%d", i),
@@ -437,17 +439,15 @@ func GetTestUser(i int) User {
 }
 
 func GetTestGroup(i int) Group {
+	category := ref_category[i % len(ref_category)]
 	return Group{
 		GroupName: fmt.Sprintf("NewGroupName%d", i),
 		GroupDescription: "NewGroupDescription",
-		Category: "SUPPORT",
+		Category: category,
 	}
 }
 
 func GetRandomTestMatchSetting() MatchSetting {
-	ref_faculty := []string{"MIX", "SAME", "NONE"}
-	ref_hobbies := []string{"GAMING", "SINGING", "DANCING", "MUSIC", "SPORTS", "OUTDOOR", "BOOK", "ANIME", "MOVIES", "TV", "ART", "STUDY"}
-	ref_mbti := []string{"ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"}
 	Rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	facultyPreference := ref_faculty[Rand.Intn(len(ref_faculty))]
 	mbti := ref_mbti[Rand.Intn(len(ref_mbti))]
@@ -465,7 +465,6 @@ func GetRandomTestMatchSetting() MatchSetting {
 }
 
 func GetTestCounselRequest(i int) CounselRequest {
-	ref_topics := []string{"Anxiety", "OffMyChest", "SelfHarm"}
 	counselRequest := CounselRequest{
 		Details: "I am stressed",
 		Topics: []string{ref_topics[0], ref_topics[1]}}
@@ -478,20 +477,18 @@ func GetTestCounselRequest(i int) CounselRequest {
 }
 
 func GetTestEvent(i int) Event {
-	ref_access := []string{"PUBLIC", "PRIVATE"}
 	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T08:00:00Z08:00")
 	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T08:00:00Z08:00")
-	event := Event{
+	access := ref_access[i % len(ref_access)]
+	category := ref_category[i % len(ref_category)]
+	return Event{
 		EventName: fmt.Sprintf("TestEvent%d", i),
 		EventDescription: "NewEventDescription",
 		StartTime: startTime,
 		EndTime: endTime,
-		Access: ref_access[0],
+		Access: access,
+		Category: category,
 	}
-	if i % 2 == 1 {
-		event.Access = ref_access[1]
-	}
-	return event
 }
 
 func SetupUsers(db *sql.DB, num int) ([]User, error) {

@@ -20,7 +20,8 @@ func ReadEvents(rows *sql.Rows) ([]Event, error) {
 			&event.EventDescription,
 			&event.StartTime,
 			&event.EndTime,
-			&event.Access); 
+			&event.Access,
+			&event.Category); 
 			err != nil {
 				return nil, err
 			}
@@ -84,7 +85,8 @@ func GetAllEventsOfUser(db *sql.DB, userID int64) ([]Event, error) {
 			wn_event.event_description,
 			wn_event.start_time, 
 			wn_event.end_time,
-			wn_event.access
+			wn_event.access,
+			wn_event.category
 		FROM wn_user_event JOIN wn_event 
 		ON wn_user_event.event_id = wn_event.id 
 		WHERE wn_user_event.user_id = $1`,
@@ -108,14 +110,16 @@ func AddEventWithUserIDs(db *sql.DB, event Event, userIDs []int64) (EventWithUse
 			event_description,
 			start_time, 
 			end_time,
-			access) 
-		VALUES ($1, $2, $3, $4, $5, $6);`,
+			access,
+			category) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		event.OwnerID,
 		event.EventName,
 		event.EventDescription,
 		event.StartTime,
 		event.EndTime,
-		event.Access)
+		event.Access,
+		event.Category)
 	if err != nil { return EventWithUsers{}, err }
 	event, err = event.LoadLastEventID(db)
 	if err != nil { return EventWithUsers{}, err }
@@ -131,9 +135,12 @@ func AddEventWithUserIDs(db *sql.DB, event Event, userIDs []int64) (EventWithUse
 
 	// Adding Other Users
 	for _, userID := range userIDs {
-		if err := AddUserToEvent(db, event.ID, userID); err != nil {
-			return EventWithUsers{}, err
-		}
+		AddUserToEvent(db, event.ID, userID)
+
+		// Strict version
+		// if err := AddUserToEvent(db, event.ID, userID); err != nil {
+		// 	return EventWithUsers{}, err
+		// }
 	}
 	users, err := GetAllUsersOfEvent(db, event.ID)
 	if err != nil { return EventWithUsers{}, err }
@@ -155,14 +162,16 @@ func UpdateEvent(db *sql.DB, updatedEvent Event, eventID int64, userID int64) (E
 			event_description = $3,
 			start_time = $4, 
 			end_time = $5,
-			access = $6
-		WHERE id = $7;`,
+			access = $6,
+			category = $7
+		WHERE id = $8;`,
 		updatedEvent.OwnerID,
 		updatedEvent.EventName,
 		updatedEvent.EventDescription,
 		updatedEvent.StartTime,
 		updatedEvent.EndTime,
 		updatedEvent.Access,
+		updatedEvent.Category,
 		eventID)
 	if err != nil { return Event{}, err }
 	return updatedEvent, nil
@@ -222,4 +231,26 @@ func AddUserToEventAuthorized(db *sql.DB, userID int64, eventID int64, adderID i
 	users, err := GetAllUsersOfEvent(db, eventID)
 	if err != nil { return EventWithUsers{}, err }
 	return EventWithUsers{ Event: targetEvent, Users: users }, nil
+}
+
+func CreateGroupDeleteEvent(db *sql.DB, eventID int64, userID int64) (GroupWithUsers, error) {
+	targetEventWithUsers, err := GetEventWithUsers(db, eventID)
+	if err != nil { return GroupWithUsers{}, err }
+	if targetEventWithUsers.Event.OwnerID != userID  {
+		return GroupWithUsers{}, http_error.UnauthorizedError
+	}
+	group := Group{
+		GroupName: fmt.Sprintf("%s Room", targetEventWithUsers.Event.EventName),
+		GroupDescription: targetEventWithUsers.Event.EventDescription,
+		Category: targetEventWithUsers.Event.Category,
+	}
+
+	users := []int64{ userID }
+	for _, user := range targetEventWithUsers.Users {
+		users = append(users, user.ID)
+	}
+	groupWithUsers, err := AddGroupWithUserIDs(db, group, users)
+	if err != nil { return GroupWithUsers{}, err }
+	if err = DeleteEvent(db, eventID); err != nil { return GroupWithUsers{}, err }
+	return groupWithUsers, nil
 }

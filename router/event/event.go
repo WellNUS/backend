@@ -164,3 +164,28 @@ func AddUserToEventHandler(db *sql.DB) func(*gin.Context) {
 		c.IndentedJSON(http_error.GetStatusCode(err), eventWithUsers)
 	}
 }
+
+func CreateGroupDeleteEventHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+
+		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+
+		eventIDParam, err := http_helper.GetIDParams(c)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+
+		groupWithUsers, err := model.CreateGroupDeleteEvent(db, eventIDParam, userIDCookie)
+		if err != nil {
+			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
+		c.IndentedJSON(http_error.GetStatusCode(err), groupWithUsers)
+	}
+}
