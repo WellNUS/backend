@@ -5,10 +5,11 @@
         <script type="text/javascript">
             window.onload = function() {
                 const userID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
-                acceptCounselRequest = document.getElementById("acceptCounselRequest")
+                const acceptCounselRequest = document.getElementById("acceptCounselRequest")
+                const backendURL = {{.backendURL}}                
                 acceptCounselRequest.onclick = function(e) {
                     e.preventDefault()
-                    fetch("http://localhost:8080/counsel/"+userID, {
+                    fetch(backendURL + "/counsel/"+userID, {
                         method: "POST"
                     })
                     .then(res => console.log(res.json()))

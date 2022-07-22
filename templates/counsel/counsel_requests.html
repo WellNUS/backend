@@ -4,16 +4,17 @@
         <title>Match</title>
         <script type="text/javascript">
             window.onload = function() {
-                createCounselRequest = document.getElementById("createCounselRequest")
-                deleteCounselRequest = document.getElementById("delete")
-                
+                const createCounselRequest = document.getElementById("createCounselRequest")
+                const deleteCounselRequest = document.getElementById("delete")
+                const backendURL = {{.backendURL}}
+
                 createCounselRequest.onsubmit = function(e) {
                     e.preventDefault()
                     const details = e.target["details"].value
                     const topics = [...e.target["topics"].elements].filter(x => x.checked).map(x => x.value)
                     console.log(details, topics)
                     const body = JSON.stringify({ details, topics })
-                    fetch("http://localhost:8080/counsel", {
+                    fetch(backendURL + "/counsel", {
                         method: 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
@@ -25,7 +26,7 @@
                 }
 
                 deleteCounselRequest.onclick = function(e) {
-                    fetch("http://localhost:8080/counsel", {
+                    fetch(backendURL + "/counsel", {
                         method: 'DELETE',
                         headers : {
                             'Content-Type' : 'application/json',

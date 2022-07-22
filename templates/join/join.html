@@ -2,17 +2,19 @@
 <html lang="en">
     <head>
     <title>Join Request</title>
+    
     <script type="text/javascript">
         window.onload = function() {
             const approveButton = document.getElementById("approveButton")
             const rejectButton = document.getElementById("rejectButton")
+            const backendURL = {{.backendURL}}
 
             approveButton.onclick = function(e){
                 e.preventDefault()
                 const joinRequestID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
                 if (!joinRequestID) { return }
                 const body = JSON.stringify({ approve: true })
-                const url = "http://localhost:8080/join/" + joinRequestID
+                const url = backendURL + "/join/" + joinRequestID
                 fetch(url, {
                     method : 'PATCH',
                     headers : {
@@ -29,7 +31,7 @@
                 const joinRequestID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
                 if (!joinRequestID) { return }
                 const body = JSON.stringify({ approve: false })
-                const url = "http://localhost:8080/join/" + joinRequestID
+                const url = backendURL + "/join/" + joinRequestID
                 fetch(url, {
                     method : 'PATCH',
                     headers : {

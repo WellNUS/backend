@@ -8,13 +8,14 @@
                 const registerForm = document.getElementById("registerForm")
                 const logout = document.getElementById("logout")
                 const makeGroupForm = document.getElementById("makeGroupForm")
+                const backendURL = {{.backendURL}}
                 
                 loginForm.onsubmit = function(e) {
                     e.preventDefault()
                     const email = e.target[0].value
                     const password = e.target[1].value
                     const body = JSON.stringify({ email, password })
-                    fetch("http://localhost:8080/session", {
+                    fetch(backendURL + "/session", {
                         method : 'POST',
                         headers : {
                             'Content-Type': 'application/json',
@@ -35,7 +36,7 @@
                     const user_role = e.target[5].value
                     const password = e.target[6].value
                     const body = JSON.stringify({ first_name, last_name, gender, faculty, email, user_role, password })
-                    fetch("http://localhost:8080/user", {
+                    fetch(backendURL + "/user", {
                         method : 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
@@ -48,7 +49,7 @@
 
                 logout.onclick = function(e) {
                     e.preventDefault()
-                    fetch("http://localhost:8080/session", {
+                    fetch(backendURL + "/session", {
                         method : 'DELETE'
                     })
                     .then(res => console.log(res.json()))
@@ -61,7 +62,7 @@
                     const group_description = e.target[1].value
                     const category = e.target[2].value
                     body = JSON.stringify({ group_name, group_description, category })
-                    fetch("http://localhost:8080/group", {
+                    fetch(backendURL + "/group", {
                         method : 'POST',
                         headers : {
                             'Content-Type' : 'application/json',

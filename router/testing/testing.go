@@ -9,13 +9,15 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 )
 
 func GetTestingHomeHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		sID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		fmt.Println(config.FRONTEND_DOMAIN)
 		c.HTML(http.StatusOK, "home.html", gin.H{ "userID": sID, "backendURL": config.BACKEND_URL})
 	}
 }
