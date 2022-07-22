@@ -38,24 +38,24 @@ func GetAllLoadedJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 		if request == REQUEST_RECEIVED {
 			joinRequests, err := model.GetAllLoadedJoinRequestsReceivedOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
+			c.JSON(http_error.GetStatusCode(err), joinRequests)
 		} else if request == REQUEST_SENT {
 			joinRequests, err := model.GetAllLoadedJoinRequestsSentOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
+			c.JSON(http_error.GetStatusCode(err), joinRequests)
 		} else {
 			joinRequests, err := model.GetAllLoadedJoinRequestsOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), joinRequests)
+			c.JSON(http_error.GetStatusCode(err), joinRequests)
 		}
 	}
 }
@@ -66,15 +66,15 @@ func GetLoadedJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		loadedJoinRequest, err := model.GetLoadedJoinRequest(db, joinRequestIDParam)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), loadedJoinRequest)
+		c.JSON(http_error.GetStatusCode(err), loadedJoinRequest)
 	}
 }
 
@@ -84,20 +84,20 @@ func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequest, err := http_helper.GetJoinRequestFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequest, err = model.AddJoinRequest(db, joinRequest.GroupID, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), joinRequest)
+		c.JSON(http_error.GetStatusCode(err), joinRequest)
 	}
 }
 
@@ -108,20 +108,20 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequestRespond, err := http_helper.GetJoinRequestRespondFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequestRespond, err = model.RespondJoinRequest(db, joinRequestIDParam, userID, joinRequestRespond.Approve)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), joinRequestRespond)
+		c.JSON(http_error.GetStatusCode(err), joinRequestRespond)
 	}	
 }
 
@@ -131,19 +131,19 @@ func DeleteJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		joinRequest, err := model.DeleteJoinRequest(db, joinRequestIDParam, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), joinRequest)
+		c.JSON(http_error.GetStatusCode(err), joinRequest)
 	}
 }

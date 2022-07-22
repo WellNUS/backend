@@ -16,10 +16,10 @@ func GetMatchRequestCount(db *sql.DB) func(*gin.Context) {
 
 		count, err := model.GetMatchRequestCount(db)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), count)
+		c.JSON(http_error.GetStatusCode(err), count)
 	}
 }
 
@@ -29,24 +29,24 @@ func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		paramID, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 		}
 		if userID != paramID {
 			err = http_error.UnauthorizedError
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 		}
 
 		loadedMatchRequest, err := model.GetLoadedMatchRequestOfUser(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), loadedMatchRequest)
+		c.JSON(http_error.GetStatusCode(err), loadedMatchRequest)
 	}
 }
 
@@ -56,15 +56,15 @@ func AddMatchRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		matchRequest, err := model.AddMatchRequest(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), matchRequest)
+		c.JSON(http_error.GetStatusCode(err), matchRequest)
 	}
 }
 
@@ -72,14 +72,14 @@ func DeleteMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		matchRequest, err := model.DeleteMatchRequestOfUser(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), matchRequest)
+		c.JSON(http_error.GetStatusCode(err), matchRequest)
 	}
 }

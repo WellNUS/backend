@@ -135,9 +135,9 @@ func GetBookingRespondFromContext(c *gin.Context) (BookingRespond, error) {
 func NoRouteHandler(c *gin.Context) {
 	if c.Request.Method == "OPTIONS" {
 		SetHeaders(c)
-		c.IndentedJSON(http_error.GetStatusCode(nil), nil)
+		c.JSON(http_error.GetStatusCode(nil), nil)
 	} else {
 		err := http_error.NotFoundError
-		c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+		c.JSON(http_error.GetStatusCode(err), err.Error())
 	}
 }

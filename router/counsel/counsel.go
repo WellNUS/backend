@@ -15,16 +15,16 @@ func GetAllCounselRequestsHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		topics, _ := c.GetQueryArray("topic")
 		counselRequests, err := model.GetAllCounselRequests(db, topics, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), counselRequests)
+		c.JSON(http_error.GetStatusCode(err), counselRequests)
 	}
 }
 
@@ -34,20 +34,20 @@ func GetCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		counselRequest, err := model.GetCounselRequest(db, userIDParam, userIDCookie)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), counselRequest)
+		c.JSON(http_error.GetStatusCode(err), counselRequest)
 	}
 }
 
@@ -57,22 +57,22 @@ func AddUpdateCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
 		counselRequest, err := http_helper.GetCounselRequestFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
 		counselRequest, err = model.AddUpdateCounselRequest(db, counselRequest, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), counselRequest)
+		c.JSON(http_error.GetStatusCode(err), counselRequest)
 	}
 }
 
@@ -82,16 +82,16 @@ func DeleteCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {	
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
 		counselRequest, err := model.DeleteCounselRequest(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), counselRequest)
+		c.JSON(http_error.GetStatusCode(err), counselRequest)
 	}
 }
 
@@ -99,19 +99,19 @@ func AcceptCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		groupWithUsers, err := model.AcceptCounselRequest(db, userIDParam, userIDCookie)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), groupWithUsers)
+		c.JSON(http_error.GetStatusCode(err), groupWithUsers)
 	}
 }

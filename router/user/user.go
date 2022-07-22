@@ -62,10 +62,10 @@ func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 		}
 
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), users)
+		c.JSON(http_error.GetStatusCode(err), users)
 	}
 }
 
@@ -75,15 +75,15 @@ func GetUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		userWithGroups, err := model.GetUserWithGroups(db, userIDParam)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), userWithGroups)
+		c.JSON(http_error.GetStatusCode(err), userWithGroups)
 	}
 }
 
@@ -93,16 +93,16 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 
 		newUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		newUser, err = model.AddUser(db, newUser)
 		if err != nil { 
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		session.CreateNewSessionCookie(db, c, newUser.ID)
-		c.IndentedJSON(http_error.GetStatusCode(err), newUser)
+		c.JSON(http_error.GetStatusCode(err), newUser)
 	}
 }
 
@@ -112,22 +112,22 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		_, err = model.LeaveAllGroups(db, userID)
 		deletedUser, err := model.DeleteUser(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), deletedUser)
+		c.JSON(http_error.GetStatusCode(err), deletedUser)
 	}
 }
 
@@ -137,25 +137,25 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		updatedUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		updatedUser, err = model.UpdateUser(db,updatedUser, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), updatedUser)
+		c.JSON(http_error.GetStatusCode(err), updatedUser)
 	}
 }

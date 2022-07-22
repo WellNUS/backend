@@ -16,11 +16,11 @@ func GetAllProvidersHandler(db *sql.DB) func(*gin.Context) {
 		topics, _ := c.GetQueryArray("topic")
 		providers, err := model.GetAllProviders(db, topics)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		
-		c.IndentedJSON(http_error.GetStatusCode(err), providers)
+		c.JSON(http_error.GetStatusCode(err), providers)
 	}
 }
 
@@ -30,15 +30,15 @@ func GetProviderWithEventsHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		providerWithEvents, err := model.GetProviderWithEvents(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), providerWithEvents)
+		c.JSON(http_error.GetStatusCode(err), providerWithEvents)
 	}
 }
 
@@ -48,20 +48,20 @@ func AddUpdateProviderSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		providerSetting, err := http_helper.GetProviderSettingFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		providerSetting, err = model.AddUpdateProviderSettingOfUser(db, providerSetting, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), providerSetting)
+		c.JSON(http_error.GetStatusCode(err), providerSetting)
 	}
 }
 
@@ -71,15 +71,15 @@ func DeleteProviderSettingOfUserHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		providerSetting, err := model.DeleteProviderSettingOfUser(db, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), providerSetting)
+		c.JSON(http_error.GetStatusCode(err), providerSetting)
 	}
 }
 

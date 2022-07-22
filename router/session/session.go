@@ -36,31 +36,31 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 
 		loginUser, err := http_helper.GetUserFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
 		storedUser, err := model.FindUser(db, loginUser.Email)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 
 		match, err := argon2id.ComparePasswordAndHash(loginUser.Password, storedUser.PasswordHash)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		if match {
 			err = CreateNewSessionCookie(db, c, storedUser.ID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser })
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser })
 		} else {
 			RemoveSessionCookie(db, c)
-			c.IndentedJSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false, User: User{}})
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false, User: User{}})
 		}
 	} 
 }
@@ -71,9 +71,9 @@ func LogoutHandler(db *sql.DB) func(*gin.Context) {
 
 		err := RemoveSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(nil), SessionResponse{ LoggedIn: false, User: User{}})
+		c.JSON(http_error.GetStatusCode(nil), SessionResponse{ LoggedIn: false, User: User{}})
 	}
 }

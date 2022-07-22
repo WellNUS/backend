@@ -41,31 +41,31 @@ func GetAllBookingUsersHandler(db *sql.DB) func(*gin.Context){
 		if request == BOOKING_RECEIVED {
 			bookingUsers, err := model.GetAllBookingUsersReceivedOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), bookingUsers)
+			c.JSON(http_error.GetStatusCode(err), bookingUsers)
 		} else if request == BOOKING_SENT {
 			bookingUsers, err := model.GetAllBookingUsersSentOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), bookingUsers)
+			c.JSON(http_error.GetStatusCode(err), bookingUsers)
 		} else if request == BOOKING_REQUIRED {
 			bookingUsers, err := model.GetAllBookingUsersRequiredOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), bookingUsers)
+			c.JSON(http_error.GetStatusCode(err), bookingUsers)
 		} else {
 			bookingUsers, err := model.GetAllBookingUsersOfUser(db, userID)
 			if err != nil {
-				c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.IndentedJSON(http_error.GetStatusCode(err), bookingUsers)
+			c.JSON(http_error.GetStatusCode(err), bookingUsers)
 		}
 	}
 }
@@ -76,15 +76,15 @@ func GetBookingProviderHandler(db *sql.DB) func(*gin.Context) {
 
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		bookingProvider, err := model.GetBookingProvider(db, bookingIDParam)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), bookingProvider)
+		c.JSON(http_error.GetStatusCode(err), bookingProvider)
 	}
 }
 
@@ -94,20 +94,20 @@ func AddBookingHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		booking, err := http_helper.GetBookingFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		booking, err = model.AddBooking(db, booking, booking.ProviderID, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), booking)
+		c.JSON(http_error.GetStatusCode(err), booking)
 	}
 }
 
@@ -118,20 +118,20 @@ func UpdateBookingHandler(db *sql.DB) func(*gin.Context) {
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		updatedBooking, err := http_helper.GetBookingFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		updatedBooking, err = model.UpdateBooking(db, updatedBooking, bookingIDParam, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), updatedBooking)
+		c.JSON(http_error.GetStatusCode(err), updatedBooking)
 	}	
 }
 
@@ -142,21 +142,21 @@ func RespondBookingHandler(db *sql.DB) func(*gin.Context) {
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		bookingRespond, err := http_helper.GetBookingRespondFromContext(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		// Either eventWithUsers or BookingRespond
 		response, err := model.RespondBooking(db, bookingRespond, bookingIDParam, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), response)
+		c.JSON(http_error.GetStatusCode(err), response)
 	}	
 }
 
@@ -166,19 +166,19 @@ func DeleteBookingHandler(db *sql.DB) func(*gin.Context) {
 
 		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
 		booking, err := model.DeleteBookingAuthorized(db, bookingIDParam, userID)
 		if err != nil {
-			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
+			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), booking)
+		c.JSON(http_error.GetStatusCode(err), booking)
 	}
 }

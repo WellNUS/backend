@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +16,6 @@ import (
 func GetTestingHomeHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		sID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
-		fmt.Println(config.FRONTEND_DOMAIN)
 		c.HTML(http.StatusOK, "home.html", gin.H{ "userID": sID, "backendURL": config.BACKEND_URL})
 	}
 }
@@ -98,25 +96,25 @@ func SetupUsersWithMatchRequests(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		count, err := strconv.Atoi(c.Query("count"))
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
 		users, err := test_helper.SetupUsers(db, count)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
 		_, err = test_helper.SetupMatchSettingForUsers(db, users)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
 		_, err =test_helper.SetupMatchRequestForUsers(db, users)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
-		c.IndentedJSON(http.StatusOK, users)
+		c.JSON(http.StatusOK, users)
 	}
 }
 
