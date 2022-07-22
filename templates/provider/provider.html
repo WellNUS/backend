@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>ProviderWithEvents</title>
+    <script type="text/javascript">
+        window.onload = function() {
+            const bookingForm = document.getElementById("bookingForm")
+            const backendURL = {{.backendURL}}
+
+            bookingForm.onsubmit = function(e){
+                e.preventDefault()
+                const provider_id = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!provider_id) { return }
+                let [
+                    nickname,
+                    details,
+                    start_time,
+                    end_time
+                ] = [...e.target].map(x => x.value)
+                start_time += ":00+08:00"
+                end_time += ":00+08:00"
+                const body = JSON.stringify({ provider_id, nickname, details, start_time, end_time })
+                fetch(backendURL + "/booking", {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err))
+            }
+        };
+    </script>
+    </head>
+
+    <body>
+        <h1>ProviderWithEvents</h1>
+        <a href="/testing/group">Go back</a>
+        <h2>Make Booking</h2>
+        <form id="bookingForm">
+            <div>
+                <label for="nickname">NickName: </label>
+                <input type="text" id="nickname">
+            </div>
+            <div>
+                <label for="details">Details: </label>
+                <textarea type="text" id="details"></textarea>
+            </div>
+            <div>
+                <label for="startTime">startTime: </label>
+                <input type="datetime-local" name="startTime"/>
+            </div>
+            <div>
+                <label for="endTime">endTime: </label>
+                <input type="datetime-local" name="endTime"/>
+            </div>
+            <input type="submit" value="Make a booking">
+        </form>
+        <h2> Provider {{ .providerWithEvents.Provider.User.ID }}</h2>
+        <div>
+            <div> ID: {{.providerWithEvents.Provider.User.ID}}</div>
+            <div> FirstName: {{.providerWithEvents.Provider.User.FirstName}}</div>
+            <div> LastName: {{.providerWithEvents.Provider.User.LastName}}</div>
+            <div> Gender: {{.providerWithEvents.Provider.User.Gender}}</div>
+            <div> Faculty: {{.providerWithEvents.Provider.User.Faculty}}</div>
+            <div> Email: {{.providerWithEvents.Provider.User.Email}}</div>
+            <div> UserRole: {{.User.UserRole}}</div>
+            <div> PasswordHash: {{.providerWithEvents.Provider.User.PasswordHash}}</div>
+            <div> Intro: {{.providerWithEvents.Provider.Setting.Intro }} </div>
+            <div> Topics: {{.providerWithEvents.Provider.Setting.Topics}} </div>
+        </div>
+        <h2> Events : </h2>
+        {{ range .providerWithEvents.Events }}
+            <div>
+                <div>ID              : {{.ID               }}</div>
+                <div>OwnerID         : {{.OwnerID          }}</div>
+                <div>EventName       : {{.EventName        }}</div>
+                <div>EventDescription: {{.EventDescription }}</div>
+                <div>StartTime       : {{.StartTime        }}</div>
+                <div>EndTime         : {{.EndTime          }}</div>
+                <div>Access          : {{.Access           }}</div>
+                <div>Category        : {{.Category         }}</div>	
+            </div>
+            <br>
+        {{ end }}
+    </body>
+</html>

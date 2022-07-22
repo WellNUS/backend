@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Events</title>
+    </head>
+
+    <body>
+        <h1>Events</h1>
+        <a href="/testing">Go back</a>
+        {{ range .events }}
+            <div>
+                <div>ID              : {{.ID               }}</div>
+                <div>OwnerID         : {{.OwnerID          }}</div>
+                <div>EventName       : {{.EventName        }}</div>
+                <div>EventDescription: {{.EventDescription }}</div>
+                <div>StartTime       : {{.StartTime        }}</div>
+                <div>EndTime         : {{.EndTime          }}</div>
+                <div>Access          : {{.Access           }}</div>
+                <div>Category        : {{.Category         }}</div>	
+                <a href='/testing/event/{{.ID}}'>View</a>
+            </div>
+            <br>
+        {{ end }}
+        <br>
+    </body>
+</html>

@@ -474,7 +474,7 @@ conn.onmessage = function (evt) {
 >> ProviderSetting = { user_id, intro, topics[] }
 >>
 >>> ProviderSetting field specification
->>> - topics[] = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
+>>> - topics[] = at least 1 number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 >>
 >> Provider = { user: User, setting: ProviderSetting }
 >>
@@ -528,7 +528,7 @@ conn.onmessage = function (evt) {
 >> CounselRequest = { user_id, nickname, details, topics[], last_updated }
 >>
 >>> CounselRequest field specification
->>> - topics = any number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
+>>> - topics = at least 1 number of ('Anxiety', 'OffMyChest', 'SelfHarm', 'Depression', 'SelfEsteem', 'Stress', 'Casual', 'Therapy', 'BadHabits', 'Rehabilitation', 'Addiction', 'Family', 'Trauma', 'Career', 'Abandonment', 'Relationships', 'Identity', 'LGBT')
 > 
 > #### Counsel Routes
 > 

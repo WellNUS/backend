@@ -118,7 +118,7 @@ func SetupUsersWithMatchRequests(db *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetTestingCounselRequestsHandler(db *sql.DB) func(*gin.Context) {
+func GetTestingAllCounselRequestsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		topics, _ := c.GetQueryArray("topic")
@@ -134,5 +134,66 @@ func GetTestingCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 		userIDCookie, _ := http_helper.GetUserIDFromSessionCookie(db, c)
 		counselRequest, _ := model.GetCounselRequest(db, userIDParam, userIDCookie)
 		c.HTML(http.StatusOK, "counsel_request.html", gin.H{"counselRequest": counselRequest, "backendURL": config.BACKEND_URL})
+	}
+}
+
+func GetTestingAllEventsHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		events, _ := model.GetAllEventsOfUser(db, userID)
+		c.HTML(http.StatusOK, "events.html", gin.H{"events": events, "backendURL": config.BACKEND_URL})
+	}
+}
+
+func GetTestingEventWithUsersHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		eventID, _ := http_helper.GetIDParams(c)
+		eventWithUsers, _ := model.GetEventWithUsers(db, eventID)
+		c.HTML(http.StatusOK, "event.html", gin.H{"eventWithUsers": eventWithUsers, "backendURL": config.BACKEND_URL})
+	}
+}
+
+func GetTestingAllProvidersHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		topics, _ := c.GetQueryArray("topic")
+		providerSetting, _ := model.GetProviderSetting(db, userID)
+		providers, _ := model.GetAllProviders(db, topics)
+		c.HTML(http.StatusOK, "providers.html", gin.H{"providers": providers, "providerSetting": providerSetting, "backendURL": config.BACKEND_URL})
+	}
+}
+
+func GetTestingProviderWithEventsHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userIDParam, _ := http_helper.GetIDParams(c)
+		providerWithEvents, _ := model.GetProviderWithEvents(db, userIDParam)
+		c.HTML(http.StatusOK, "provider.html", gin.H{"providerWithEvents": providerWithEvents, "backendURL": config.BACKEND_URL})
+	}
+} 
+
+func GetTestingAllBookingUsersHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		if s := c.Query("booking"); s == "RECEIVED" {
+			bookingUsers, _ := model.GetAllBookingUsersReceivedOfUser(db, userID)
+			c.HTML(http.StatusOK, "bookings.html", gin.H{"bookingUsers": bookingUsers, "backendURL": config.BACKEND_URL})
+		} else if s == "SENT" {
+			bookingUsers, _ := model.GetAllBookingUsersSentOfUser(db, userID)
+			c.HTML(http.StatusOK, "bookings.html", gin.H{"bookingUsers": bookingUsers, "backendURL": config.BACKEND_URL})
+		} else if s == "REQUIRED" {
+			bookingUsers, _ := model.GetAllBookingUsersRequiredOfUser(db, userID)
+			c.HTML(http.StatusOK, "bookings.html", gin.H{"bookingUsers": bookingUsers, "backendURL": config.BACKEND_URL})
+		} else {
+			bookingUsers, _ := model.GetAllBookingUsersOfUser(db, userID)
+			c.HTML(http.StatusOK, "bookings.html", gin.H{"bookingUsers": bookingUsers, "backendURL": config.BACKEND_URL})
+		}
+	}
+}
+
+func GetTestingBookingProviderHandler(db *sql.DB) func(*gin.Context) {
+	return func(c *gin.Context) {
+		bookingIDParam, _ := http_helper.GetIDParams(c)
+		bookingProvider, _ := model.GetBookingProvider(db, bookingIDParam)
+		c.HTML(http.StatusOK, "booking.html", gin.H{"bookingProvider": bookingProvider, "backendURL": config.BACKEND_URL})
 	}
 }

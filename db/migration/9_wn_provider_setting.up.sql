@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS wn_provider_setting (
     intro TEXT NOT NULL,
     topics TEXT[],
     unique(user_id),
-    check(array_length(topics, 1) > 0),
+    check(COALESCE(array_length(topics, 1), 0) > 0),
     check(topics <@ ARRAY[
         'Anxiety', 
         'OffMyChest', 

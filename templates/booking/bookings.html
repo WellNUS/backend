@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>BookingUsers</title>
+    </head>
+
+    <body>
+        <h1>BookingUsers</h1>
+        <a href="/testing">Go back</a>
+        <div>
+            <a href="/testing/booking?booking=SENT">SENT</a>
+            <a href="/testing/booking?booking=RECEIVED">RECEIVED</a>
+            <a href="/testing/booking?booking=REQUIRED">REQUIRED</a>
+            <a href="/testing/booking">ALL</a>
+        </div>
+        {{ range .bookingUsers }}
+            <div>
+                <h4>Booking Details</h4>
+                <div>ID			 : {{ .Booking.ID          }}</div>
+                <div>RecipientID : {{ .Booking.RecipientID }}</div>
+                <div>ProviderID  : {{ .Booking.ProviderID  }}</div>
+                <div>ApproveBy   : {{ .Booking.ApproveBy   }}</div>
+                <div>Nickname    : {{ .Booking.Nickname    }}</div>
+                <div>Details     : {{ .Booking.Details     }}</div>
+                <div>StartTime   : {{ .Booking.StartTime   }}</div>
+                <div>EndTime     : {{ .Booking.EndTime     }}</div>
+                <h4>Provider's Details</h4>
+                <div>FirstName   : {{ .User.FirstName       }}</div>
+                <div>LastName    : {{ .User.LastName        }}</div>
+                <div>Gender      : {{ .User.Gender          }}</div>
+                <div>Faculty     : {{ .User.Faculty         }}</div>
+                <div>Email       : {{ .User.Email           }}</div>
+                <div>UserRole    : {{ .User.UserRole        }}</div>
+                <div>PasswordHash: {{ .User.PasswordHash    }}</div>
+                <a href='/testing/booking/{{ .Booking.ID }}'>View</a>
+            </div>
+            <br>
+        {{ end }}
+        <br>
+    </body>
+</html>

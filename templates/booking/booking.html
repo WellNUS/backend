@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>BookingProvider</title>
+    
+    <script type="text/javascript">
+        window.onload = function() {
+            const approveButton = document.getElementById("approveButton")
+            const suggestForm = document.getElementById("suggestForm")
+            const backendURL = {{.backendURL}}
+
+            approveButton.onclick = function(e){
+                e.preventDefault()
+                const bookingID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!bookingID) { return }
+                const body = JSON.stringify({ approve: true })
+                fetch(backendURL + "/booking/" + bookingID, {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err))
+            }
+
+            suggestForm.onsubmit = function(e){
+                e.preventDefault()
+                const bookingID = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!bookingID) { return }
+
+                let [
+                    start_time,
+                    end_time
+                ] = [...e.target].map(x => x.value)
+                start_time += ":00+08:00"
+                end_time += ":00+08:00"
+
+                const body = JSON.stringify({ approve: false, booking: {start_time, end_time} })
+                fetch(backendURL + "/booking/" + bookingID, {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err))
+            }
+        };
+    </script>
+    </head>
+
+    <body>
+        <h1>BookingProvider</h1>
+        <a href="/testing/join">Go back</a>
+        <h2> BookingProvider {{ .bookingProvider.Booking.ID }}</h2>
+        <h3> Booking Details</h3>
+        <div>ID			 : {{ .bookingProvider.Booking.ID          }}</div>
+        <div>RecipientID : {{ .bookingProvider.Booking.RecipientID }}</div>
+        <div>ProviderID  : {{ .bookingProvider.Booking.ProviderID  }}</div>
+        <div>ApproveBy   : {{ .bookingProvider.Booking.ApproveBy   }}</div>
+        <div>Nickname    : {{ .bookingProvider.Booking.Nickname    }}</div>
+        <div>Details     : {{ .bookingProvider.Booking.Details     }}</div>
+        <div>StartTime   : {{ .bookingProvider.Booking.StartTime   }}</div>
+        <div>EndTime     : {{ .bookingProvider.Booking.EndTime     }}</div>
+        <h3> Provider Details</h3>
+        <div> ID: {{.bookingProvider.Provider.User.ID}}</div>
+        <div> FirstName: {{.bookingProvider.Provider.User.FirstName}}</div>
+        <div> LastName: {{.bookingProvider.Provider.User.LastName}}</div>
+        <div> Gender: {{.bookingProvider.Provider.User.Gender}}</div>
+        <div> Faculty: {{.bookingProvider.Provider.User.Faculty}}</div>
+        <div> Email: {{.bookingProvider.Provider.User.Email}}</div>
+        <div> UserRole: {{.User.UserRole}}</div>
+        <div> PasswordHash: {{.bookingProvider.Provider.User.PasswordHash}}</div>
+        <div> Intro: {{.bookingProvider.Provider.Setting.Intro }} </div>
+        <div> Topics: {{.bookingProvider.Provider.Setting.Topics}} </div>
+
+        <button id="approveButton">Approve</button>
+        <form id="suggestForm">
+            <div>
+                <label for="startTime">startTime: </label>
+                <input type="datetime-local" name="startTime"/>
+            </div>
+            <div>
+                <label for="endTime">endTime: </label>
+                <input type="datetime-local" name="endTime"/>
+            </div>
+            <input type="submit" value="Suggest New Timing">
+        </form>
+    </body>
+</html>

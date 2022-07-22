@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Counsel Request</title>
+        <title>Providers</title>
         <script type="text/javascript">
             window.onload = function() {
-                const createCounselRequest = document.getElementById("createCounselRequest")
-                const deleteCounselRequest = document.getElementById("delete")
+                const createProviderSetting = document.getElementById("createProviderSetting")
+                const deleteProviderSetting = document.getElementById("delete")
                 const backendURL = {{.backendURL}}
 
-                createCounselRequest.onsubmit = function(e) {
+                createProviderSetting.onsubmit = function(e) {
                     e.preventDefault()
-                    const details = e.target["details"].value
+                    const intro = e.target["intro"].value
                     const topics = [...e.target["topics"].elements].filter(x => x.checked).map(x => x.value)
-                    console.log(details, topics)
-                    const body = JSON.stringify({ details, topics })
-                    fetch(backendURL + "/counsel", {
+                    const body = JSON.stringify({ intro, topics })
+                    fetch(backendURL + "/provider", {
                         method: 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
@@ -25,8 +24,8 @@
                     .catch(err => console.log(err))
                 }
 
-                deleteCounselRequest.onclick = function(e) {
-                    fetch(backendURL + "/counsel", {
+                deleteProviderSetting.onclick = function(e) {
+                    fetch(backendURL + "/provider", {
                         method: 'DELETE',
                         headers : {
                             'Content-Type' : 'application/json',
@@ -40,23 +39,22 @@
     </head>
 
     <body>
-        <h1>Counsel Requests</h1>
+        <h1>Providers</h1>
         <div>
             <a href="/testing">Go Back</a>
         </div>
         <div>
-            <h2>My Counsel Request</h2>
-            <div> UserID: {{ .counselRequest.UserID}} </div>
-            <div> Details: {{ .counselRequest.Details }} </div>
-            <div> Topics: {{ .counselRequest.Topics}} </div>
-            <div> LastUpdated: {{ .counselRequest.LastUpdated }}</div>
+            <h2>My Provider Setting</h2>
+            <div> UserID: {{ .providerSetting.UserID}} </div>
+            <div> Intro: {{ .providerSetting.Intro }} </div>
+            <div> Topics: {{ .providerSetting.Topics}} </div>
         </div>
         <div>
-            <h2>Create / Update Counsel Request</h2>
-            <form id="createCounselRequest">
+            <h2>Create / Update Provider Setting</h2>
+            <form id="createProviderSetting">
                 <div>
-                    <label for="details">Details: </label>
-                    <textarea id="details"></textarea>
+                    <label for="intro">Intro: </label>
+                    <textarea id="intro"></textarea>
                 </div>
                 <fieldset name="topics">Topics: 
                     <input type="checkbox" name='topic' value='Anxiety'>
@@ -96,9 +94,9 @@
                     <input type="checkbox" name='topic' value='LGBT'>
                         <label for='LGBT'>LGBT</label>
                 </fieldset>
-                <input type="submit" value="Add / Update counsel request" />
+                <input type="submit" value="Add / Update provider setting" />
             </form>
-            <button id="delete">Delete Counsel Request</button>
+            <button id="delete">Delete Provider Setting</button>
         </div>
         <br>
         <div>
@@ -144,13 +142,19 @@
                 </fieldset>
                 <input type="submit" value="Filter Topics" />
             </form>
-            {{ range .counselRequests }}
+            {{ range .providers }}
                 <div>
-                    <div> UserID: {{ .UserID}} </div>
-                    <div> Details: {{ .Details }} </div>
-                    <div> Topics: {{ .Topics}} </div>
-                    <div> LastUpdated: {{ .LastUpdated }}</div>
-                    <a href="/testing/counsel/{{ .UserID }}">View</a>
+                    <div> ID: {{.User.ID}}</div>
+                    <div> FirstName: {{.User.FirstName}}</div>
+                    <div> LastName: {{.User.LastName}}</div>
+                    <div> Gender: {{.User.Gender}}</div>
+                    <div> Faculty: {{.User.Faculty}}</div>
+                    <div> Email: {{.User.Email}}</div>
+                    <div> UserRole: {{.User.UserRole}}</div>
+                    <div> PasswordHash: {{.User.PasswordHash}}</div>
+                    <div> Intro: {{ .Setting.Intro }} </div>
+                    <div> Topics: {{ .Setting.Topics}} </div>
+                    <a href="/testing/provider/{{ .User.ID }}">View</a>
                 </div>
             {{ end }}
         </div>

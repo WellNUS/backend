@@ -284,7 +284,7 @@ func RespondBooking(db *sql.DB, bookingRespond BookingRespond, bookingID int64, 
 		providerName := user.FirstName
 		event := Event{
 			EventName: fmt.Sprintf("%s and %s Counsel Session", nickname, providerName),
-			EventDescription: fmt.Sprint("Counsel Session for %s by %s", nickname, providerName),
+			EventDescription: fmt.Sprintf("Counsel Session for %s by %s", nickname, providerName),
 			StartTime: booking.StartTime,
 			EndTime: booking.EndTime,
 			Access: "PRIVATE",

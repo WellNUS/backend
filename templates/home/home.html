@@ -8,12 +8,15 @@
                 const registerForm = document.getElementById("registerForm")
                 const logout = document.getElementById("logout")
                 const makeGroupForm = document.getElementById("makeGroupForm")
+                const makeEventForm = document.getElementById("makeEventForm")
                 const backendURL = {{.backendURL}}
                 
                 loginForm.onsubmit = function(e) {
                     e.preventDefault()
-                    const email = e.target[0].value
-                    const password = e.target[1].value
+                    const [
+                        email,
+                        password
+                    ] = [...e.target].map(x => x.value)
                     const body = JSON.stringify({ email, password })
                     fetch(backendURL + "/session", {
                         method : 'POST',
@@ -28,13 +31,15 @@
 
                 registerForm.onsubmit = function(e) {
                     e.preventDefault()
-                    const first_name = e.target[0].value
-                    const last_name = e.target[1].value
-                    const gender = e.target[2].value
-                    const faculty = e.target[3].value
-                    const email = e.target[4].value
-                    const user_role = e.target[5].value
-                    const password = e.target[6].value
+                    const [
+                        first_name,
+                        last_name,
+                        gender,
+                        faculty,
+                        email,
+                        user_role,
+                        password
+                    ] = [...e.target].map(x => x.value)
                     const body = JSON.stringify({ first_name, last_name, gender, faculty, email, user_role, password })
                     fetch(backendURL + "/user", {
                         method : 'POST',
@@ -58,14 +63,40 @@
 
                 makeGroupForm.onsubmit = function(e) {
                     e.preventDefault()
-                    const group_name = e.target[0].value
-                    const group_description = e.target[1].value
-                    const category = e.target[2].value
-                    body = JSON.stringify({ group_name, group_description, category })
+                    const [
+                        group_name,
+                        group_description
+                    ] = [...e.target].map(x => x.value)
+
+                    const body = JSON.stringify({ group_name, group_description })
                     fetch(backendURL + "/group", {
                         method : 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
+                        },
+                        body
+                    })
+                    .then(res => console.log(res.json()))
+                    .catch(err => console.log(err))
+                }
+
+                makeEventForm.onsubmit = function(e) {
+                    e.preventDefault()
+                    let [
+                        event_name, 
+                        event_description, 
+                        start_time, 
+                        end_time, 
+                        access, 
+                        category
+                    ] = [...e.target].map(x => x.value)
+                    start_time += ":00+08:00"
+                    end_time += ":00+08:00"
+                    const body = JSON.stringify({ event_name, event_description, start_time, end_time, access, category })
+                    fetch(backendURL + "/event", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
                         },
                         body
                     })
@@ -93,6 +124,15 @@
         </div>
         <div>
             <a href="/testing/counsel">Go to counsel</a>
+        </div>
+        <div>
+            <a href="/testing/event">Go to event</a>
+        </div>
+        <div>
+            <a href="/testing/provider">Go to provider</a>
+        </div>
+        <div>
+            <a href="/testing/booking">Go to booking</a>
         </div>
         <div>
             <h2>Log in as user</h2>
@@ -172,14 +212,42 @@
                     <label for="groupDescription">Group Description: </label>
                     <input type="text" name="groupDescription"/>
                 </div>
+                <input type="submit" value="Create Group"/>
+            </form>
+            <h2>Make Event</h2>
+            <form id="makeEventForm">
+                <div>
+                    <label for="eventName">Event Name: </label>
+                    <input type="text" name="eventName"/>
+                </div>
+                <div>
+                    <label for="eventDescription">Event Description: </label>
+                    <input type="text" name="eventDescription"/>
+                </div>
+                <div>
+                    <label for="startTime">startTime: </label>
+                    <input type="datetime-local" name="startTime"/>
+                </div>
+                <div>
+                    <label for="endTime">endTime: </label>
+                    <input type="datetime-local" name="endTime"/>
+                </div>
+                <div>
+                    <label for="access">Access: </label>
+                    <select name="access">
+                        <option value="PRIVATE">Private</option>
+                        <option value="PUBLIC">Public</option>
+                    </select>
+                </div>
                 <div>
                     <label for="category">Category: </label>
                     <select name="category">
                         <option value="SUPPORT">Support</option>
                         <option value="COUNSEL">Counselling</option>
+                        <option value="CUSTOM">Custom</option>
                     </select>
                 </div>
-                <input type="submit" value="Create Group"/>
+                <input type="submit" value="Create Event"/>
             </form>
         </div>
     </body>

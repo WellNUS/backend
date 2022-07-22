@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>EventWithUsers</title>
+    <script type="text/javascript">
+        window.onload = function() {
+            const addUserForm = document.getElementById("addUserForm")
+            const startEvent = document.getElementById("startEvent")
+            const backendURL = {{.backendURL}}
+            addUserForm.onsubmit = function(e){
+                e.preventDefault()
+                const event_id = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!event_id) { return }
+
+                const user_id = parseInt(e.target[0].value)
+                const body = JSON.stringify({ user_id })
+                fetch(backendURL + "/event/" + event_id, {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    },
+                    body
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err))
+            }
+
+            startEvent.onclick = function(e) {
+                e.preventDefault()
+                const event_id = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+                if (!event_id) { return }
+                fetch(backendURL + "/event/" + event_id + "/start", {
+                    method : 'POST',
+                    headers : {
+                        'Content-Type' : 'application/json',
+                    }
+                })
+                .then(res => console.log(res.json()))
+                .catch(err => console.log(err))
+            }
+        };
+    </script>
+    </head>
+
+    <body>
+        <h1>EventWithUsers</h1>
+        <a href="/testing/event">Go back</a>
+        <button id="startEvent">Start Event</button>
+        <br>
+        <form id="addUserForm">
+            <label for="userID">UserID to join</label>
+            <input id="userID" type="number" min="0">
+            <input type="submit" value="Add User to event">
+        </form>
+        <br>
+        <h2> EventWithUsers {{ .eventWithUsers.Event.ID }}</h2>
+        <div>
+            <div>ID              : {{.eventWithUsers.Event.ID               }}</div>
+            <div>OwnerID         : {{.eventWithUsers.Event.OwnerID          }}</div>
+            <div>EventName       : {{.eventWithUsers.Event.EventName        }}</div>
+            <div>EventDescription: {{.eventWithUsers.Event.EventDescription }}</div>
+            <div>StartTime       : {{.eventWithUsers.Event.StartTime        }}</div>
+            <div>EndTime         : {{.eventWithUsers.Event.EndTime          }}</div>
+            <div>Access          : {{.eventWithUsers.Event.Access           }}</div>
+            <div>Category        : {{.eventWithUsers.Event.Category         }}</div>	
+        </div>
+        <h2> Users : </h2>
+        {{ range .eventWithUsers.Users }}
+            <div>
+                <div>ID: {{.ID}}</div>
+                <div>FirstName: {{.FirstName}}</div>
+                <div>LastName: {{.LastName}}</div>
+                <div>Gender: {{.Gender}}</div>
+                <div>Faculty: {{.Faculty}}</div>
+                <div>Email: {{.Email}}</div>
+                <div>UserRole: {{.UserRole}}</div>
+                <div>PasswordHash: {{.PasswordHash}}</div>
+            </div>
+            <br>
+        {{ end }}
+    </body>
+</html>
