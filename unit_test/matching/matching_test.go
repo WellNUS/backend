@@ -37,7 +37,7 @@ func assertDatabaseState(t *testing.T, nUsers, nGroups, nMS, nMR int) {
 }
 
 func testAssertInitialDatabaseState(t *testing.T) {
-	assertDatabaseState(t, config.MatchRequestThreshold, 0, config.MatchRequestThreshold, config.MatchRequestThreshold - 2)
+	assertDatabaseState(t, config.MATCH_THRESHOLD, 0, config.MATCH_THRESHOLD, config.MATCH_THRESHOLD - 2)
 }
 
 func testAddMatchRequestHandlerAsUser0(t *testing.T) {
@@ -60,7 +60,7 @@ func testAddMatchRequestHandlerAsUser0(t *testing.T) {
 }
 
 func testAssertDatabaseStateAfterUser0(t *testing.T) {
-	assertDatabaseState(t, config.MatchRequestThreshold, 0, config.MatchRequestThreshold, config.MatchRequestThreshold - 1)
+	assertDatabaseState(t, config.MATCH_THRESHOLD, 0, config.MATCH_THRESHOLD, config.MATCH_THRESHOLD - 1)
 }
 
 func testAddMatchRequestHandlerAsUser1(t *testing.T) {
@@ -83,7 +83,7 @@ func testAddMatchRequestHandlerAsUser1(t *testing.T) {
 }
 
 func testAssertDatabaseStateAfterUser1(t *testing.T) {
-	nGroups := config.MatchRequestThreshold / config.GroupSize
-	nMR := config.MatchRequestThreshold % config.GroupSize
-	assertDatabaseState(t, config.MatchRequestThreshold, nGroups, config.MatchRequestThreshold, nMR)
+	nGroups := config.MATCH_THRESHOLD / config.MATCH_GROUPSIZE
+	nMR := config.MATCH_THRESHOLD % config.MATCH_GROUPSIZE
+	assertDatabaseState(t, config.MATCH_THRESHOLD, nGroups, config.MATCH_THRESHOLD, nMR)
 }

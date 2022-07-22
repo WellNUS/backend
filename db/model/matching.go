@@ -39,10 +39,13 @@ func Compatibility(loadedMatchRequest1, loadedMatchRequest2 LoadedMatchRequest) 
 	}
 
 	// MBTI check max 4 points
-	if (loadedMatchRequest1.MatchSetting.MBTI[0] == loadedMatchRequest2.MatchSetting.MBTI[0]) { totalScore += 1 }
-	if (loadedMatchRequest1.MatchSetting.MBTI[1] == loadedMatchRequest2.MatchSetting.MBTI[1]) { totalScore += 1 }
-	if (loadedMatchRequest1.MatchSetting.MBTI[2] == loadedMatchRequest2.MatchSetting.MBTI[2]) { totalScore += 1 }
-	if (loadedMatchRequest1.MatchSetting.MBTI[3] == loadedMatchRequest2.MatchSetting.MBTI[3]) { totalScore += 1 }
+	MBTI1 := loadedMatchRequest1.MatchSetting.MBTI
+	MBTI2 := loadedMatchRequest2.MatchSetting.MBTI
+	for i := 0; i < 4; i++ {
+		if (MBTI1[i] == MBTI2[i]) {
+			totalScore += 1
+		}
+	}
 
 	// Hobbies check max 4 points (max of 4 hobbies)
 	for _, hobby1 := range loadedMatchRequest1.MatchSetting.Hobbies {
@@ -60,7 +63,7 @@ func Compatibility(loadedMatchRequest1, loadedMatchRequest2 LoadedMatchRequest) 
 func PerformMatching(db *sql.DB) ([]GroupWithUsers, error) {
 	loadedMatchRequests, err := GetAllLoadedMatchRequest(db)
 	if err != nil { return nil, err }
-	if len(loadedMatchRequests) < config.MatchRequestThreshold { return make([]GroupWithUsers, 0), nil }
+	if len(loadedMatchRequests) < config.MATCH_THRESHOLD { return make([]GroupWithUsers, 0), nil }
 
 	groupsWithUsers := make([]GroupWithUsers, 0)
 	group := Group{
@@ -69,7 +72,7 @@ func PerformMatching(db *sql.DB) ([]GroupWithUsers, error) {
 		Category: "SUPPORT",
 	}
 
-	for len(loadedMatchRequests) >= config.GroupSize {
+	for len(loadedMatchRequests) >= config.MATCH_GROUPSIZE {
 		groupingIndices, remainingIndices := GetGroupingRemainingIndices(loadedMatchRequests)
 
 		groupingUserIDs := make([]int64, len(groupingIndices))
@@ -98,7 +101,7 @@ func PerformMatching(db *sql.DB) ([]GroupWithUsers, error) {
 // Done by randomly selecting a pivoting match request and building the group to best suit that pivot
 func GetGroupingRemainingIndices(lmrs []LoadedMatchRequest) ([]int, []int) {
 	l := len(lmrs)
-	if l < config.GroupSize { return nil, nil }
+	if l < config.MATCH_GROUPSIZE { return nil, nil }
 	p := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(l)
 	scoreMap := make([]int, l)
 	indices := make([]int, l)
@@ -109,7 +112,7 @@ func GetGroupingRemainingIndices(lmrs []LoadedMatchRequest) ([]int, []int) {
 	sort.Slice(indices, func(i, j int) bool {
 		return scoreMap[indices[i]] > scoreMap[indices[j]]
 	})
-	return indices[:config.GroupSize], indices[config.GroupSize:]
+	return indices[:config.MATCH_GROUPSIZE], indices[config.MATCH_GROUPSIZE:]
 }
 
 func writeToStdOut(item interface{}) {

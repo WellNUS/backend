@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	config.LoadENV("./.env")
+
 	// Runtime global instances
 	DB := db.ConnectDB()
 	WSHub := ws.NewHub(DB)

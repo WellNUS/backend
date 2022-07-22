@@ -5,7 +5,8 @@
 1. Get docker desktop on your machine
 2. Get [migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) dependency
 2. clone repository to you machine and cd into the folder
-3. To setup the database and tables, run the following
+3. Rename example.env to .env and update the configurations within the file
+4. To setup the database and tables, run the following
 
 ```
     $ make postgres
@@ -36,10 +37,13 @@ FRONTEND_URL: localhost:3000
 > 
 >> Unit tests are accessible for each major feature in **./unit_test** directory. 
 >> 
->> To run unit test of a feature:
+>> To run each unit test of a feature:
 >> 1. cd into **./unit_test/(feature)**
 >>     - Unit test of User feature found in **./unit_test/user**
 >> 2. run `go test` in the terminal to run all unit tests for the particular feature.
+>>
+>> To run all unit tests:
+>> 1. run `make unittest`
 >
 > ### Want to test this backend API on a GUI?
 > 

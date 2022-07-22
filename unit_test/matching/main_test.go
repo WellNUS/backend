@@ -38,13 +38,15 @@ func setupRouter() *gin.Engine {
 }
 
 func TestMain(m *testing.M) {
+	config.LoadENV("../../.env")
+
 	DB = db.ConnectDB()
 	Router = setupRouter()
 	
 	test_helper.ResetDB(DB)
 	var err error
 	// Setup test users
-	testUsers, err = test_helper.SetupUsers(DB, config.MatchRequestThreshold)
+	testUsers, err = test_helper.SetupUsers(DB, config.MATCH_THRESHOLD)
 	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test users. %v", err)) }
 
 	// Create match settings for all users

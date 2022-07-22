@@ -1,6 +1,7 @@
 package session
 
 import (
+	"wellnus/backend/config"
 	"wellnus/backend/db"
 	"wellnus/backend/db/model"
 	"wellnus/backend/router/session"
@@ -40,6 +41,8 @@ func setupRouter() *gin.Engine {
 }
 
 func TestMain(m *testing.M) {
+	config.LoadENV("../../.env")
+	
 	DB = db.ConnectDB()
 	Router = setupRouter()
 	test_helper.ResetDB(DB)
