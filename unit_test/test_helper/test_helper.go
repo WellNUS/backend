@@ -471,10 +471,91 @@ func GetProviderWithEventsFromRecorder(w *httptest.ResponseRecorder) (ProviderWi
 	return providerWithEvents, nil
 }
 
+func GetBookingFromRecorder(w *httptest.ResponseRecorder) (Booking, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return Booking{}, errors.New(buf.String())
+	}
+	var booking Booking
+	err := json.NewDecoder(buf).Decode(&booking)
+	if err != nil {
+		return Booking{}, err
+	}
+	return booking, nil
+}
+
+func GetBookingUserFromRecorder(w *httptest.ResponseRecorder) (BookingUser, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return BookingUser{}, errors.New(buf.String())
+	}
+	var bookingUser BookingUser
+	err := json.NewDecoder(buf).Decode(&bookingUser)
+	if err != nil {
+		return BookingUser{}, err
+	}
+	return bookingUser, nil
+}
+
+func GetBookingUsersFromRecorder(w *httptest.ResponseRecorder) ([]BookingUser, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return nil, errors.New(buf.String())
+	}
+	var bookingUsers []BookingUser
+	err := json.NewDecoder(buf).Decode(&bookingUsers)
+	if err != nil {
+		return nil, err
+	}
+	return bookingUsers, nil
+}
+
+func GetBookingProviderFromRecorder(w *httptest.ResponseRecorder) (BookingProvider, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return BookingProvider{}, errors.New(buf.String())
+	}
+	var bookingProvider BookingProvider
+	err := json.NewDecoder(buf).Decode(&bookingProvider)
+	if err != nil {
+		return BookingProvider{}, err
+	}
+	return bookingProvider, nil
+}
+
+func GetBookingRespondFromRecorder(w *httptest.ResponseRecorder) (BookingRespond, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return BookingRespond{}, errors.New(buf.String())
+	}
+	var bookingRespond BookingRespond
+	err := json.NewDecoder(buf).Decode(&bookingRespond)
+	if err != nil {
+		return BookingRespond{}, err
+	}
+	return bookingRespond, nil
+}
+
 func CheckErrorMessageFromRecorder(w *httptest.ResponseRecorder, pattern string) (string, bool) {
 	errString := GetBufferFromRecorder(w).String()
 	matched, _ := regexp.MatchString(pattern, errString)
 	return errString, matched
+}
+
+func CheckBookingsInBookingUsers(bookingUsers []BookingUser, bookings []Booking) bool {
+	for _, booking := range bookings {
+		found := false
+		for _, bookingUser := range bookingUsers {
+			if booking.Equal(bookingUser.Booking) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func GetIOReaderFromObject(obj interface{}) (io.Reader, error) {
@@ -576,9 +657,9 @@ func GetTestProviderSetting(i int) ProviderSetting {
 	return providerSetting
 }
 
-func GetTestBooking(i int, recipientID int64, providerID int64) Booking {
-	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T08:00:00Z08:00")
-	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T08:00:00Z08:00")
+func GetTestBooking(i int, providerID int64) Booking {
+	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T01:00:00+08:00")
+	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T03:00:00+08:00")
 	return Booking{
 		ProviderID: providerID,
 		Nickname: fmt.Sprintf("TestNickName%d", i),
@@ -666,4 +747,14 @@ func SetupProviderSettingForUsers(db *sql.DB, users []User) ([]ProviderSetting, 
 		providerSettings[i] = providerSetting
 	}
 	return providerSettings, nil
+}
+
+func SetupBookingToUserForUsers(db *sql.DB, users []User, pUser User) ([]Booking, error) {
+	bookings := make([]Booking, len(users))
+	for i, user := range users {
+		booking, err := model.AddBooking(db, GetTestBooking(i, pUser.ID), pUser.ID, user.ID)
+		if err != nil { return nil, err }
+		bookings[i] = booking
+	}
+	return bookings, nil
 }

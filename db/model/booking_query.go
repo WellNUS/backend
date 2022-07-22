@@ -157,7 +157,7 @@ func GetAllBookingUsersRequiredOfUser(db *sql.DB, userID int64) ([]BookingUser, 
 			wn_user.password_hash
 		FROM wn_counsel_booking JOIN wn_user
 		ON wn_counsel_booking.provider_id = wn_user.id
-		WHERE wn_counsel_booking.approve_by = $2`,
+		WHERE wn_counsel_booking.approve_by = $1`,
 		userID)
 	if err != nil { return nil, err }
 	defer rows.Close()
@@ -218,6 +218,7 @@ func AddBooking(db *sql.DB, booking Booking, providerID int64, recipientID int64
 	if !AuthoriseProvider(db, providerID) { return Booking{}, http_error.UnauthorizedError }
 	booking.RecipientID = recipientID
 	booking.ProviderID = providerID
+	booking.ApproveBy = providerID
 	_, err := db.Exec(
 		`INSERT INTO wn_counsel_booking (
 			recipient_id, 
@@ -226,11 +227,11 @@ func AddBooking(db *sql.DB, booking Booking, providerID int64, recipientID int64
 			nickname,
 			details,
 			start_time,
-			end_time,
-		) values ($1, $2, $3, $4, $5, $6);`, 
+			end_time
+		) values ($1, $2, $3, $4, $5, $6, $7);`, 
 		booking.RecipientID,
 		booking.ProviderID,
-		booking.ProviderID,
+		booking.ApproveBy,
 		booking.Nickname,
 		booking.Details,
 		booking.StartTime,
@@ -244,7 +245,7 @@ func AddBooking(db *sql.DB, booking Booking, providerID int64, recipientID int64
 func UpdateBooking(db *sql.DB, updatedBooking Booking, bookingID int64, userID int64) (Booking, error) {
 	targetBooking, err := GetBooking(db, bookingID)
 	if err != nil { return Booking{}, err }
-	if userID != targetBooking.RecipientID && userID != targetBooking.ApproveBy {
+	if userID != targetBooking.RecipientID {
 		return Booking{}, http_error.UnauthorizedError
 	}
 	updatedBooking = updatedBooking.MergeBooking(targetBooking)
@@ -256,7 +257,7 @@ func UpdateBooking(db *sql.DB, updatedBooking Booking, bookingID int64, userID i
 			nickname = $4,
 			details = $5,
 			start_time = $6,
-			end_time = $7,
+			end_time = $7
 		WHERE id = $8;`,
 		updatedBooking.RecipientID,
 		updatedBooking.ProviderID,
@@ -264,18 +265,18 @@ func UpdateBooking(db *sql.DB, updatedBooking Booking, bookingID int64, userID i
 		updatedBooking.Nickname,
 		updatedBooking.Details,
 		updatedBooking.StartTime,
-		updatedBooking.EndTime)
+		updatedBooking.EndTime,
+		updatedBooking.ID)
 	if err != nil { return Booking{}, err }
 	return updatedBooking, nil
 }
 
-func RespondBooking(db *sql.DB, bookingRespond BookingRespond, bookingID int64, userID int64) (BookingRespond, error) {
+func RespondBooking(db *sql.DB, bookingRespond BookingRespond, bookingID int64, userID int64) (interface{}, error) {
 	bookingUser, err := GetBookingUser(db, bookingID)
 	if err != nil { return BookingRespond{}, nil }
 	if bookingUser.Booking.ApproveBy != userID {
 		return BookingRespond{}, http_error.UnauthorizedError 
 	}
-
 	booking := bookingUser.Booking
 	user := bookingUser.User
 	if bookingRespond.Approve {
@@ -289,23 +290,25 @@ func RespondBooking(db *sql.DB, bookingRespond BookingRespond, bookingID int64, 
 			Access: "PRIVATE",
 			Category: "COUNSEL",
 		}
-		_, err = AddEventWithUserIDs(db, event, []int64{booking.ProviderID, booking.RecipientID})
+		eventWithUsers, err := AddEventWithUserIDs(db, event, []int64{booking.ProviderID, booking.RecipientID})
 		if err != nil { return BookingRespond{}, err }
 		_, err = DeleteBooking(db, bookingID)
 		if err != nil { return BookingRespond{}, err }
+		return eventWithUsers, nil
 	} else {
 		updatedBooking := bookingRespond.Booking.MergeBooking(booking)
 		updatedBooking.ApproveBy = booking.FlippedApproveBy()
-		_, err = UpdateBooking(db, updatedBooking, bookingID, booking.RecipientID)
+		updatedBooking, err = UpdateBooking(db, updatedBooking, bookingID, booking.RecipientID)
 		if err != nil { return BookingRespond{}, err }
+		bookingRespond.Booking = updatedBooking
+		return bookingRespond, nil
 	}
-	return bookingRespond, nil
 }
 
 func DeleteBookingAuthorized(db *sql.DB, bookingID int64, userID int64) (Booking, error) {
 	targetBooking, err := GetBooking(db, bookingID)
 	if err != nil { return Booking{}, err }
-	if targetBooking.RecipientID != userID { return Booking{}, err }
+	if targetBooking.RecipientID != userID { return Booking{}, http_error.UnauthorizedError }
 	booking, err := DeleteBooking(db, bookingID)
 	if err != nil { return Booking{}, err }
 	return booking, nil

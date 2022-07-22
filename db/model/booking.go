@@ -84,3 +84,14 @@ func (b Booking) FlippedApproveBy() int64 {
 	}
 	return b.RecipientID
 }
+
+func (b1 Booking) Equal(b2 Booking) bool {
+	return b1.ID == b2.ID &&
+		b1.RecipientID == b2.RecipientID &&
+		b1.ProviderID == b2.ProviderID &&
+		b1.ApproveBy == b2.ApproveBy &&
+		b1.Nickname == b2.Nickname &&
+		b1.Details == b2.Details &&
+		b1.StartTime.Equal(b2.StartTime) &&
+		b1.EndTime.Equal(b2.EndTime)
+}

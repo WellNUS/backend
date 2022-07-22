@@ -580,7 +580,7 @@ conn.onmessage = function (evt) {
 >> Event = { id, owner_id, event_name, event_description, start_time, end_time, access, category }
 >>
 >>> Event field specification:
->>> - start_time, end_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05Z07:00"
+>>> - start_time, end_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05+07:00"
 >>> - access = 1 of ('PUBLIC', 'PRIVATE')
 >>> - category = 1 of ('COUNSEL', 'SUPPORT', 'CUSTOM')
 >>
@@ -662,6 +662,7 @@ conn.onmessage = function (evt) {
 >>
 >>> Booking field specification:
 >>> - approve_by = user_id of user who is to approve booking. one of (recipient_id, provider_id)
+>>> - start_time, end_time = Time specified must be in RFC3339 format. Example: "2006-01-02T15:04:05+07:00"
 >>
 >> BookingUser = { booking: Booking, user: User }
 >>
@@ -710,7 +711,7 @@ conn.onmessage = function (evt) {
 >>>
 >>> Request Body: BookingRespond
 >>>
->>> Response Body: BookingRespond
+>>> Response Body: BookingRespond if approve == false, EventWithUsers if approve == true
 >>
 >> ##### /booking/:id - PATCH
 >>
@@ -764,4 +765,4 @@ conn.onmessage = function (evt) {
 - [x] Implement Provider
 - [x] Unit testing for Provider
 - [x] Implement Booking
-- [ ] Unit testing for Provider
+- [x] Unit testing for Provider

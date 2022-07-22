@@ -150,12 +150,13 @@ func RespondBookingHandler(db *sql.DB) func(*gin.Context) {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		bookingRespond, err = model.RespondBooking(db, bookingRespond, bookingIDParam, userID)
+		// Either eventWithUsers or BookingRespond
+		response, err := model.RespondBooking(db, bookingRespond, bookingIDParam, userID)
 		if err != nil {
 			c.IndentedJSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.IndentedJSON(http_error.GetStatusCode(err), bookingRespond)
+		c.IndentedJSON(http_error.GetStatusCode(err), response)
 	}	
 }
 
