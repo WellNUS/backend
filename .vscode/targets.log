@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Jul 23 15:14:56 2022
+# Make data base, printed on Sat Jul 23 16:23:32 2022
 
 # Variables
 
@@ -71,11 +71,11 @@ BACKEND_DOMAIN = localhost:8080
 # environment
 PWD = /home/stanleyneoh/WellNUS/backend
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-44f1c53b-f0c2-46e9-a0d3-ec61a023f29d.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-2482fdd8-1cd5-4395-a749-50315931ef96.sock
 # environment
-WSL_INTEROP = /run/WSL/9_interop
+WSL_INTEROP = /run/WSL/23804_interop
 # environment
-WT_SESSION = 2cf4f434-0575-48ad-8a03-b51b48ee036a
+WT_SESSION = 358ee722-7d43-4002-9bba-2e3a79049935
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -300,6 +300,6 @@ migratedown:
 # strcache performance: lookups = 55 / hit rate = 41%
 # hash-table stats:
 # Load=32/8192=0%, Rehash=0, Collisions=1/55=2%
-# Finished Make data base on Sat Jul 23 15:14:56 2022
+# Finished Make data base on Sat Jul 23 16:23:32 2022
 
  
