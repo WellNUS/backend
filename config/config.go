@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/spf13/viper"
 	"os"
+	"log"
 )
 
 var COOKIE_DOMAIN, FRONTEND_DOMAIN, BACKEND_DOMAIN, FRONTEND_URL, BACKEND_URL, POSTGRES_URL string
@@ -23,6 +24,7 @@ func LoadENV(path string) {
 		os.Setenv("BACKEND_URL", viper.GetString("BACKEND_URL"))
 		os.Setenv("POSTGRES_URL", viper.GetString("POSTGRES_URL"))
 	}
+	log.Println(err.Error())
 
 	COOKIE_DOMAIN 	= 	os.Getenv("COOKIE_DOMAIN")
 	FRONTEND_DOMAIN = 	os.Getenv("FRONTEND_DOMAIN")
