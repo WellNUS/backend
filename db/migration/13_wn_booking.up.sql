@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS wn_counsel_booking (
+CREATE TABLE IF NOT EXISTS wn_booking (
     id BIGSERIAL NOT NULL PRIMARY KEY,
     recipient_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE,
     provider_id BIGINT REFERENCES wn_user(id) ON DELETE CASCADE,

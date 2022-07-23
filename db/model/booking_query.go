@@ -59,7 +59,7 @@ func ReadBookingUsers(rows *sql.Rows) ([]BookingUser, error) {
 }
 
 func GetBooking(db *sql.DB, bookingID int64) (Booking, error) {
-	rows, err := db.Query("SELECT * FROM wn_counsel_booking WHERE id = $1", bookingID)
+	rows, err := db.Query("SELECT * FROM wn_booking WHERE id = $1", bookingID)
 	if err != nil { return Booking{}, err }
 	defer rows.Close()
 	bookings, err := ReadBookings(rows)
@@ -69,7 +69,7 @@ func GetBooking(db *sql.DB, bookingID int64) (Booking, error) {
 }
 
 func DeleteBooking(db *sql.DB, bookingID int64) (Booking, error) {
-	_, err := db.Exec("DELETE FROM wn_counsel_booking WHERE id = $1", bookingID)
+	_, err := db.Exec("DELETE FROM wn_booking WHERE id = $1", bookingID)
 	if err != nil { return Booking{}, err }
 	return Booking{ ID : bookingID }, nil
 }
@@ -79,14 +79,14 @@ func DeleteBooking(db *sql.DB, bookingID int64) (Booking, error) {
 func GetAllBookingUsersSentOfUser(db *sql.DB, userID int64) ([]BookingUser, error) {
 	rows, err := db.Query(
 		`SELECT 
-			wn_counsel_booking.id, 
-			wn_counsel_booking.recipient_id, 
-			wn_counsel_booking.provider_id,
-			wn_counsel_booking.approve_by,
-			wn_counsel_booking.nickname,
-			wn_counsel_booking.details,
-			wn_counsel_booking.start_time,
-			wn_counsel_booking.end_time,
+			wn_booking.id, 
+			wn_booking.recipient_id, 
+			wn_booking.provider_id,
+			wn_booking.approve_by,
+			wn_booking.nickname,
+			wn_booking.details,
+			wn_booking.start_time,
+			wn_booking.end_time,
 			wn_user.id,
 			wn_user.first_name,
 			wn_user.last_name,
@@ -95,9 +95,9 @@ func GetAllBookingUsersSentOfUser(db *sql.DB, userID int64) ([]BookingUser, erro
 			wn_user.email,
 			wn_user.user_role,
 			wn_user.password_hash
-		FROM wn_counsel_booking JOIN wn_user
-		ON wn_counsel_booking.provider_id = wn_user.id
-		WHERE wn_counsel_booking.recipient_id = $1`,
+		FROM wn_booking JOIN wn_user
+		ON wn_booking.provider_id = wn_user.id
+		WHERE wn_booking.recipient_id = $1`,
 		userID)
 	if err != nil { return nil, err }
 	defer rows.Close()
@@ -109,14 +109,14 @@ func GetAllBookingUsersSentOfUser(db *sql.DB, userID int64) ([]BookingUser, erro
 func GetAllBookingUsersReceivedOfUser(db *sql.DB, userID int64) ([]BookingUser, error) {
 	rows, err := db.Query(
 		`SELECT 
-			wn_counsel_booking.id, 
-			wn_counsel_booking.recipient_id, 
-			wn_counsel_booking.provider_id,
-			wn_counsel_booking.approve_by,
-			wn_counsel_booking.nickname,
-			wn_counsel_booking.details,
-			wn_counsel_booking.start_time,
-			wn_counsel_booking.end_time,
+			wn_booking.id, 
+			wn_booking.recipient_id, 
+			wn_booking.provider_id,
+			wn_booking.approve_by,
+			wn_booking.nickname,
+			wn_booking.details,
+			wn_booking.start_time,
+			wn_booking.end_time,
 			wn_user.id,
 			wn_user.first_name,
 			wn_user.last_name,
@@ -125,9 +125,9 @@ func GetAllBookingUsersReceivedOfUser(db *sql.DB, userID int64) ([]BookingUser, 
 			wn_user.email,
 			wn_user.user_role,
 			wn_user.password_hash
-		FROM wn_counsel_booking JOIN wn_user
-		ON wn_counsel_booking.provider_id = wn_user.id
-		WHERE wn_counsel_booking.provider_id = $1`,
+		FROM wn_booking JOIN wn_user
+		ON wn_booking.provider_id = wn_user.id
+		WHERE wn_booking.provider_id = $1`,
 		userID)
 	if err != nil { return nil, err }
 	defer rows.Close()
@@ -139,14 +139,14 @@ func GetAllBookingUsersReceivedOfUser(db *sql.DB, userID int64) ([]BookingUser, 
 func GetAllBookingUsersRequiredOfUser(db *sql.DB, userID int64) ([]BookingUser, error) {
 	rows, err := db.Query(
 		`SELECT 
-			wn_counsel_booking.id, 
-			wn_counsel_booking.recipient_id, 
-			wn_counsel_booking.provider_id,
-			wn_counsel_booking.approve_by,
-			wn_counsel_booking.nickname,
-			wn_counsel_booking.details,
-			wn_counsel_booking.start_time,
-			wn_counsel_booking.end_time,
+			wn_booking.id, 
+			wn_booking.recipient_id, 
+			wn_booking.provider_id,
+			wn_booking.approve_by,
+			wn_booking.nickname,
+			wn_booking.details,
+			wn_booking.start_time,
+			wn_booking.end_time,
 			wn_user.id,
 			wn_user.first_name,
 			wn_user.last_name,
@@ -155,9 +155,9 @@ func GetAllBookingUsersRequiredOfUser(db *sql.DB, userID int64) ([]BookingUser, 
 			wn_user.email,
 			wn_user.user_role,
 			wn_user.password_hash
-		FROM wn_counsel_booking JOIN wn_user
-		ON wn_counsel_booking.provider_id = wn_user.id
-		WHERE wn_counsel_booking.approve_by = $1`,
+		FROM wn_booking JOIN wn_user
+		ON wn_booking.provider_id = wn_user.id
+		WHERE wn_booking.approve_by = $1`,
 		userID)
 	if err != nil { return nil, err }
 	defer rows.Close()
@@ -169,14 +169,14 @@ func GetAllBookingUsersRequiredOfUser(db *sql.DB, userID int64) ([]BookingUser, 
 func GetAllBookingUsersOfUser(db *sql.DB, userID int64) ([]BookingUser, error) {
 	rows, err := db.Query(
 		`SELECT 
-			wn_counsel_booking.id, 
-			wn_counsel_booking.recipient_id, 
-			wn_counsel_booking.provider_id,
-			wn_counsel_booking.approve_by,
-			wn_counsel_booking.nickname,
-			wn_counsel_booking.details,
-			wn_counsel_booking.start_time,
-			wn_counsel_booking.end_time,
+			wn_booking.id, 
+			wn_booking.recipient_id, 
+			wn_booking.provider_id,
+			wn_booking.approve_by,
+			wn_booking.nickname,
+			wn_booking.details,
+			wn_booking.start_time,
+			wn_booking.end_time,
 			wn_user.id,
 			wn_user.first_name,
 			wn_user.last_name,
@@ -185,10 +185,10 @@ func GetAllBookingUsersOfUser(db *sql.DB, userID int64) ([]BookingUser, error) {
 			wn_user.email,
 			wn_user.user_role,
 			wn_user.password_hash
-		FROM wn_counsel_booking JOIN wn_user
-		ON wn_counsel_booking.provider_id = wn_user.id
-		WHERE wn_counsel_booking.recipient_id = $1 
-		OR wn_counsel_booking.provider_id = $2`,
+		FROM wn_booking JOIN wn_user
+		ON wn_booking.provider_id = wn_user.id
+		WHERE wn_booking.recipient_id = $1 
+		OR wn_booking.provider_id = $2`,
 		userID,
 		userID)
 	if err != nil { return nil, err }
@@ -220,7 +220,7 @@ func AddBooking(db *sql.DB, booking Booking, providerID int64, recipientID int64
 	booking.ProviderID = providerID
 	booking.ApproveBy = providerID
 	_, err := db.Exec(
-		`INSERT INTO wn_counsel_booking (
+		`INSERT INTO wn_booking (
 			recipient_id, 
 			provider_id,
 			approve_by,
@@ -250,7 +250,7 @@ func UpdateBooking(db *sql.DB, updatedBooking Booking, bookingID int64, userID i
 	}
 	updatedBooking = updatedBooking.MergeBooking(targetBooking)
 	_, err = db.Exec(
-		`UPDATE wn_counsel_booking SET 
+		`UPDATE wn_booking SET 
 			recipient_id = $1, 
 			provider_id = $2,
 			approve_by = $3,

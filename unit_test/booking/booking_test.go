@@ -258,7 +258,7 @@ func testRespondBookingHandlerApproveAsUser0(t *testing.T) {
 
 	//Assert booking deleted
 	rows, err := DB.Query(
-		`SELECT COUNT(*) FROM wn_counsel_booking
+		`SELECT COUNT(*) FROM wn_booking
 		WHERE id = $1`,
 		testBooking0to1.ID)
 	if err != nil {

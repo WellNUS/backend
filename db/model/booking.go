@@ -58,7 +58,7 @@ func (bMain Booking) MergeBooking(bAdd Booking) Booking {
 }
 
 func (b Booking) LoadLastBookingID(db *sql.DB) (Booking, error) {
-	row, err := db.Query("SELECT last_value FROM wn_counsel_booking_id_seq;")
+	row, err := db.Query("SELECT last_value FROM wn_booking_id_seq;")
 	if err != nil { return Booking{}, err }
 	defer row.Close()
 	row.Next()
