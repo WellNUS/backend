@@ -8,7 +8,7 @@ import (
 	"wellnus/backend/router/join"
 	"wellnus/backend/router/match"
 	"wellnus/backend/router/chat"
-	// "wellnus/backend/router/testing" //Can be removed at production
+	"wellnus/backend/router/testing" //Can be removed at production
 	"wellnus/backend/router/counsel"
 	"wellnus/backend/router/provider"
 	"wellnus/backend/router/event"
@@ -24,25 +24,25 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router := gin.Default()
 
 	// Remove this on production
-	// router.LoadHTMLGlob("templates/**/*")
-	// router.GET("/testing", testing.GetTestingHomeHandler(db))
-	// router.GET("/testing/user", testing.GetTestingAllUsersHandler(db))
-	// router.GET("/testing/user/:id", testing.GetTestingUserHandler(db))
-	// router.GET("/testing/group", testing.GetTestingAllGroupsHandler(db))
-	// router.GET("/testing/group/:id", testing.GetTestingGroupHandler(db))
-	// router.GET("/testing/group/:id/chat", testing.GetTestingChatHandler(db))
-	// router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
-	// router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
-	// router.GET("/testing/match", testing.GetTestingMatchHandler(db))
-	// router.POST("/testing/match", testing.SetupUsersWithMatchRequests(db))
-	// router.GET("/testing/counsel", testing.GetTestingAllCounselRequestsHandler(db))
-	// router.GET("/testing/counsel/:id", testing.GetTestingCounselRequestHandler(db))
-	// router.GET("/testing/event", testing.GetTestingAllEventsHandler(db))
-	// router.GET("/testing/event/:id", testing.GetTestingEventWithUsersHandler(db))
-	// router.GET("/testing/provider", testing.GetTestingAllProvidersHandler(db))
-	// router.GET("/testing/provider/:id", testing.GetTestingProviderWithEventsHandler(db))
-	// router.GET("/testing/booking", testing.GetTestingAllBookingUsersHandler(db))
-	// router.GET("/testing/booking/:id", testing.GetTestingBookingProviderHandler(db))
+	router.LoadHTMLGlob("templates/**/*")
+	router.GET("/testing", testing.GetTestingHomeHandler(db))
+	router.GET("/testing/user", testing.GetTestingAllUsersHandler(db))
+	router.GET("/testing/user/:id", testing.GetTestingUserHandler(db))
+	router.GET("/testing/group", testing.GetTestingAllGroupsHandler(db))
+	router.GET("/testing/group/:id", testing.GetTestingGroupHandler(db))
+	router.GET("/testing/group/:id/chat", testing.GetTestingChatHandler(db))
+	router.GET("/testing/join", testing.GetTestingAllJoinRequestHandler(db))
+	router.GET("/testing/join/:id", testing.GetTestingJoinRequestHandler(db))
+	router.GET("/testing/match", testing.GetTestingMatchHandler(db))
+	router.POST("/testing/match", testing.SetupUsersWithMatchRequests(db))
+	router.GET("/testing/counsel", testing.GetTestingAllCounselRequestsHandler(db))
+	router.GET("/testing/counsel/:id", testing.GetTestingCounselRequestHandler(db))
+	router.GET("/testing/event", testing.GetTestingAllEventsHandler(db))
+	router.GET("/testing/event/:id", testing.GetTestingEventWithUsersHandler(db))
+	router.GET("/testing/provider", testing.GetTestingAllProvidersHandler(db))
+	router.GET("/testing/provider/:id", testing.GetTestingProviderWithEventsHandler(db))
+	router.GET("/testing/booking", testing.GetTestingAllBookingUsersHandler(db))
+	router.GET("/testing/booking/:id", testing.GetTestingBookingProviderHandler(db))
 
 	router.GET("/user", user.GetAllUsersHandler(db))
 	router.POST("/user", user.AddUserHandler(db))

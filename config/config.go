@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-var COOKIE_DOMAIN, FRONTEND_DOMAIN, BACKEND_DOMAIN, FRONTEND_URL, BACKEND_URL, POSTGRES_URL string
+var COOKIE_ADDRESS, SERVER_ADDRESS, FRONTEND_ADDRESS, BACKEND_ADDRESS, DB_ADDRESS string
 	
 var (
 	MATCH_THRESHOLD int = 40
@@ -20,20 +20,26 @@ func LoadENV(path string) {
 		if err := viper.ReadInConfig(); err != nil {
 			log.Fatal(err.Error())
 		}
-		os.Setenv("COOKIE_DOMAIN", viper.GetString("COOKIE_DOMAIN"))
-		os.Setenv("FRONTEND_DOMAIN", viper.GetString("FRONTEND_DOMAIN"))
-		os.Setenv("BACKEND_DOMAIN", viper.GetString("BACKEND_DOMAIN"))
-		os.Setenv("FRONTEND_URL", viper.GetString("FRONTEND_URL"))
-		os.Setenv("BACKEND_URL", viper.GetString("BACKEND_URL"))
-		os.Setenv("POSTGRES_URL", viper.GetString("POSTGRES_URL"))
+		os.Setenv("FRONTEND_ADDRESS", 	viper.GetString("FRONTEND_ADDRESS"))
+		os.Setenv("BACKEND_ADDRESS", 	viper.GetString("BACKEND_ADDRESS"))
+
+		os.Setenv("DB_ADDRESS", 		viper.GetString("DB_ADDRESS"))
+		os.Setenv("SERVER_ADDRESS", 	viper.GetString("SERVER_ADDRESS"))
+		os.Setenv("COOKIE_ADDRESS", 	viper.GetString("COOKIE_ADDRESS"))
 	} else {
 		log.Println(err.Error())
 	}
 
-	COOKIE_DOMAIN 	= 	os.Getenv("COOKIE_DOMAIN")
-	FRONTEND_DOMAIN = 	os.Getenv("FRONTEND_DOMAIN")
-	BACKEND_DOMAIN 	= 	os.Getenv("BACKEND_DOMAIN")
-	FRONTEND_URL 	= 	os.Getenv("FRONTEND_URL")
-	BACKEND_URL 	= 	os.Getenv("BACKEND_URL")
-	POSTGRES_URL 	= 	os.Getenv("POSTGRES_URL")
+	FRONTEND_ADDRESS	= 	os.Getenv("FRONTEND_ADDRESS")
+	BACKEND_ADDRESS 	= 	os.Getenv("BACKEND_ADDRESS")
+	
+	DB_ADDRESS 			= 	os.Getenv("DB_ADDRESS")
+	SERVER_ADDRESS		= 	os.Getenv("SERVER_ADDRESS")
+	COOKIE_ADDRESS 		= 	os.Getenv("COOKIE_ADDRESS")
+
+	// FOR HEROKU ONLY
+	port, ok := os.LookupEnv("PORT")
+    if ok {
+        SERVER_ADDRESS = ":" + port
+    }
 }

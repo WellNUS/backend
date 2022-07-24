@@ -12,7 +12,7 @@ import (
 
 func ConnectDB() *sql.DB {
 	// fmt.Println(connStr)
-	db, err := sql.Open("postgres", config.POSTGRES_URL)
+	db, err := sql.Open("postgres", config.DB_ADDRESS)
 	if err != nil {
 		log.Fatal(err)
 	}

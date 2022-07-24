@@ -28,7 +28,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		return origin == config.FRONTEND_URL || origin == config.BACKEND_URL
+		return origin == config.FRONTEND_ADDRESS || origin == config.BACKEND_ADDRESS
 	},
 }
 

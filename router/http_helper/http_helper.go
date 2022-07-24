@@ -23,7 +23,7 @@ type Booking = model.Booking
 type BookingRespond = model.BookingRespond
 
 func SetHeaders(c *gin.Context) {
-	c.Header("Access-Control-Allow-Origin", config.FRONTEND_URL)
+	c.Header("Access-Control-Allow-Origin", config.FRONTEND_ADDRESS)
 	c.Header("Access-Control-Allow-Methods", "PATCH, POST, GET, DELETE, OPTIONS")
 	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
 	c.Header("Access-Control-Allow-Credentials", "true")

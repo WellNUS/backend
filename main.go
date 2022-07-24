@@ -18,5 +18,5 @@ func main() {
 	go WSHub.Run()
 	Router := router.SetupRouter(DB, WSHub)
 
-	Router.Run(config.BACKEND_DOMAIN)
+	Router.Run(config.SERVER_ADDRESS)
 }

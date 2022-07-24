@@ -18,14 +18,14 @@ type SessionResponse = model.SessionResponse
 func CreateNewSessionCookie(db *sql.DB, c *gin.Context, userID int64) error {
 	newSessionKey, err := model.CreateNewSession(db, userID)
 	if err != nil { return err }
-	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.COOKIE_DOMAIN, false, true)
+	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.COOKIE_ADDRESS, false, true)
 	return nil
 }
 
 func RemoveSessionCookie(db *sql.DB, c *gin.Context) error {
 	sessionKey, _ := c.Cookie("session_key")
 	if err := model.DeleteSessionWithSessionKey(db, sessionKey); err != nil { return err }
-	c.SetCookie("session_key", "", -1, "/", config.COOKIE_DOMAIN, false, true)
+	c.SetCookie("session_key", "", -1, "/", config.COOKIE_ADDRESS, false, true)
 	return nil
 }
 

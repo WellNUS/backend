@@ -3,24 +3,9 @@
 ## Installation and Setup
 
 1. Get docker desktop on your machine
-2. Get [migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) dependency
 2. clone repository to you machine and cd into the folder
 3. Rename example.env to .env and update the configurations within the file
-4. To setup the database and tables, run the following
-
-```
-    $ make postgres
-    $ make createdb
-    $ make migrateup
-```
-
-Note: docker postgres will be using port 5432 on localhost. 
-
-Ensure that given port is available before running `make postgres`. 
-
-Otherwise, you can change the port in 'Makefile'.
-
-4. To start run `go run .`
+4. run `docker compose up` to start
 
 ## Constants
 
@@ -36,6 +21,11 @@ FRONTEND_URL: localhost:3000
 > ### Unit Tests
 > 
 >> Unit tests are accessible for each major feature in **./unit_test** directory. 
+>>
+>> Before starting unit tests, do the following
+>> 1. Go to the .env file
+>> 2. Set the DB_ADDRESS to the second link in the example.env
+>> IMPORTANT: Remember to change back when using docker compose
 >> 
 >> To run each unit test of a feature:
 >> 1. cd into **./unit_test/(feature)**
