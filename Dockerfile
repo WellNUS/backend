@@ -9,7 +9,8 @@ FROM alpine:3.16
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/templates ./templates
-COPY .env .
+# Comment out the following line if deploying
+COPY .env . 
 COPY migrate .
 COPY wait-for.sh .
 COPY start.sh .
