@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-var COOKIE_ADDRESS, SERVER_ADDRESS, FRONTEND_ADDRESS, BACKEND_ADDRESS, DB_ADDRESS string
+var COOKIE_ADDRESS, SERVER_ADDRESS, FRONTEND_ADDRESS, BACKEND_ADDRESS, WS_ADDRESS, DB_ADDRESS string
 	
 var (
 	MATCH_THRESHOLD int = 40
@@ -26,6 +26,7 @@ func LoadENV(path string) {
 		os.Setenv("DB_ADDRESS", 		viper.GetString("DB_ADDRESS"))
 		os.Setenv("SERVER_ADDRESS", 	viper.GetString("SERVER_ADDRESS"))
 		os.Setenv("COOKIE_ADDRESS", 	viper.GetString("COOKIE_ADDRESS"))
+		os.Setenv("WS_ADDRESS",			viper.GetString("WS_ADDRESS"))
 	} else {
 		log.Println(err.Error())
 	}
@@ -36,6 +37,7 @@ func LoadENV(path string) {
 	DB_ADDRESS 			= 	os.Getenv("DB_ADDRESS")
 	SERVER_ADDRESS		= 	os.Getenv("SERVER_ADDRESS")
 	COOKIE_ADDRESS 		= 	os.Getenv("COOKIE_ADDRESS")
+	WS_ADDRESS			=	os.Getenv("WS_ADDRESS")
 
 	// FOR HEROKU ONLY
 	port, ok := os.LookupEnv("PORT")

@@ -79,7 +79,7 @@ func GetTestingChatHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		groupID, _ := http_helper.GetIDParams(c)
 		groupWithUsers, _ := model.GetGroupWithUsers(db, groupID)
-		c.HTML(http.StatusOK, "chat.html", gin.H{"groupWithUsers": groupWithUsers, "backendURL": config.BACKEND_ADDRESS})
+		c.HTML(http.StatusOK, "chat.html", gin.H{"groupWithUsers": groupWithUsers, "backendURL": config.BACKEND_ADDRESS, "wsURL": config.WS_ADDRESS})
 	}
 }
 

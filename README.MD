@@ -1,5 +1,10 @@
 # WellNUS backend
 
+## Now deployed on heroku
+You can access the frontend repository [here](https://github.com/WellNUS/frontend).
+
+You can access the testing GUI environment backend [here](https://wellnus-backend.herokuapp.com/testing).
+
 ## Installation and Setup
 
 1. Get docker desktop on your machine
@@ -34,10 +39,6 @@ FRONTEND_URL: localhost:3000
 >>
 >> To run all unit tests:
 >> 1. run `make unittest`
->
-> ### Want to test this backend API on a GUI?
-> 
->> Test some of the features by accessing "http://(domain_name)/testing" after running the server. Note that not every API implemented is implemented in the above testing GUI interface (coming soon if there is time).
 
 ## Features
 

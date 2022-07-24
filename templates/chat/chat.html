@@ -11,6 +11,8 @@
                 const log = document.getElementById("log")
                 const notif = document.getElementById("notif")
                 const statuses = document.getElementById("statuses")
+                const backendURL = {{.backendURL}}
+                const wsURL = {{.wsURL}}
                 var conn
 
                 //Helper functions
@@ -57,8 +59,7 @@
                 var earliestTime = ""
                 const loadInterval = setInterval(() => {
                     if (log.scrollTop == 0) {
-                        const url = `${document.location.host}/message/${groupID}?latest=${earliestTime}&limit=${loadLimit}`;
-                        fetch("http://" + url)
+                        fetch(backendURL+`/message/${groupID}?latest=${earliestTime}&limit=${loadLimit}`)
                         .then(res => res.json())
                         .then(data => {
                             console.log(data)
@@ -109,7 +110,7 @@
                         return false;
                     };
 
-                    conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
+                    conn = new WebSocket(wsURL + "/ws/" + groupID);
                     conn.onclose = function (evt) {
                         var item = document.createElement("div");
                         item.innerHTML = "<b>Connection closed.</b>";
