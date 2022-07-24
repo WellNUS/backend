@@ -9,14 +9,9 @@ You can access the testing GUI environment backend [here](https://wellnus-backen
 
 1. Get docker desktop on your machine
 2. clone repository to you machine and cd into the folder
-3. Rename example.env to .env and update the configurations within the file
-4. run `docker compose up` to start
-
-## Constants
-
-BACKEND_URL: localhost:8080
-
-FRONTEND_URL: localhost:3000
+3. run `cp example.env .env`
+3. go into .env file and update the configurations within the file
+4. run `make start`
 
 ## Entity Relation Diagram
 ![WellNUS ERD](./blob/WellNUS%20ERD.svg)
@@ -25,20 +20,9 @@ FRONTEND_URL: localhost:3000
 
 > ### Unit Tests
 > 
->> Unit tests are accessible for each major feature in **./unit_test** directory. 
+>> To run all unit tests, run `make unittest`
 >>
->> Before starting unit tests, do the following
->> 1. Go to the .env file
->> 2. Set the DB_ADDRESS to the second link in the example.env
->> IMPORTANT: Remember to change back when using docker compose
->> 
->> To run each unit test of a feature:
->> 1. cd into **./unit_test/(feature)**
->>     - Unit test of User feature found in **./unit_test/user**
->> 2. run `go test` in the terminal to run all unit tests for the particular feature.
->>
->> To run all unit tests:
->> 1. run `make unittest`
+>> Alternatively you may choose to cd to /unit_test/(feature) and run `go test` to run unit_test for a particular feature
 
 ## Features
 

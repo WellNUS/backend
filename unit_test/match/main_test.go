@@ -50,7 +50,7 @@ func setupRouter() *gin.Engine {
 func TestMain(m *testing.M) {
 	config.LoadENV("../../.env")
 	
-	DB = db.ConnectDB()
+	DB = db.ConnectTestDB()
 	Router = setupRouter()
 	test_helper.ResetDB(DB)
 	var err error

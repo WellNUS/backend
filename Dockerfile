@@ -9,8 +9,6 @@ FROM alpine:3.16
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/templates ./templates
-# Comment out the following line if deploying
-COPY .env . 
 COPY migrate .
 COPY wait-for.sh .
 COPY start.sh .
@@ -18,10 +16,8 @@ COPY db/migration ./migration
 
 EXPOSE 8080
 CMD [ "/app/main" ]
-# ENTRYPOINT [ "/app/start.sh" ]
 
 ## Note: entry point is ran before cmd
-
 ## REFER TO: https://docs.docker.com/compose/compose-file/compose-file-v3/#entrypoint
 ##   Setting entrypoint both overrides any default entrypoint 
 ##   set on the service’s image with the ENTRYPOINT Dockerfile instruction, 
