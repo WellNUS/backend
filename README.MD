@@ -213,7 +213,7 @@ $ make migrateup
 >>>
 >>> Response Body : GroupWithUsers
 >>
->> ##### /group/:id - UPDATE
+>> ##### /group/:id - PATCH
 >> 
 >>> Description : Updates the information of the group if user is the owner of the given group
 >>> 
