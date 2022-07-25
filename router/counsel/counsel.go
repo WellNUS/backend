@@ -97,6 +97,8 @@ func DeleteCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 
 func AcceptCounselRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
+		http_helper.SetHeaders(c)
+		
 		userIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
