@@ -6,6 +6,7 @@ import (
 	"wellnus/backend/router/http_helper/http_error"
 	"wellnus/backend/db/model"
 
+	"net/http"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	"database/sql"
@@ -18,14 +19,16 @@ type SessionResponse = model.SessionResponse
 func CreateNewSessionCookie(db *sql.DB, c *gin.Context, userID int64) error {
 	newSessionKey, err := model.CreateNewSession(db, userID)
 	if err != nil { return err }
-	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.COOKIE_ADDRESS, false, true)
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.COOKIE_ADDRESS, true, true)
 	return nil
 }
 
 func RemoveSessionCookie(db *sql.DB, c *gin.Context) error {
 	sessionKey, _ := c.Cookie("session_key")
 	if err := model.DeleteSessionWithSessionKey(db, sessionKey); err != nil { return err }
-	c.SetCookie("session_key", "", -1, "/", config.COOKIE_ADDRESS, false, true)
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie("session_key", "", -1, "/", config.COOKIE_ADDRESS, true, true)
 	return nil
 }
 

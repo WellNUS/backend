@@ -5,7 +5,7 @@ import (
 	"wellnus/backend/config"
 	"wellnus/backend/router/http_helper/http_error"
 	"strconv"
-
+	"log"
 	"database/sql"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,10 @@ func GetIDParams(c *gin.Context) (int64, error) {
 
 func GetUserIDFromSessionCookie(db *sql.DB, c *gin.Context) (int64, error) {
 	sessionKey, err := c.Cookie("session_key")
-	if err != nil { return 0, http_error.UnauthorizedError }
+	if err != nil { 
+		log.Printf("Error while getting UserID from cookie: %v", err)
+		return 0, http_error.UnauthorizedError
+	}
 	userID, err := model.GetUserIDFromSessionKey(db, sessionKey)
 	if err != nil { return 0, err }
 	return userID, nil

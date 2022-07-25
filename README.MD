@@ -1,9 +1,9 @@
-# WellNUS backend
+# [WellNUS backend](https://wellnus-backend.herokuapp.com/testing)
 
 ## Now deployed on heroku
 You can access the frontend repository [here](https://github.com/WellNUS/frontend).
 
-You can access the testing GUI environment backend [here](https://wellnus-backend.herokuapp.com/testing).
+You can access the testing GUI environment backend deployed on heroku [here](https://wellnus-backend.herokuapp.com/testing).
 
 ## Installation and Setup
 **IMPORTANT**: Ensure the database port is available before following any of the instructions below
@@ -16,8 +16,8 @@ You can access the testing GUI environment backend [here](https://wellnus-backen
     - Set `RUN_WITH_DOCKER_COMPOSE=TRUE`
 5. run `make composeup`
 
-> After you are done with the webserver, you may want to clean up.
-> 1. run `make composedown` to clean up containers to make the database ports available again
+After you are done with the webserver, you may want to clean up.
+1. run `make composedown` to clean up containers to make the database ports available again
 
 ### Running without docker compose
 1. Get docker desktop on your machine
@@ -33,8 +33,8 @@ $ make migrateup
 ```
 6. Run `go run .` to start the web server
 
-> After you are done with the webserver, you may want to clean up.
-> 1. run the following to clean up containers to make the database ports available again
+After you are done with the webserver, you may want to clean up.
+1. run the following to clean up containers to make the database ports available again
 ```
 $ make stopdb
 $ make deinitpg
