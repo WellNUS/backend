@@ -41,7 +41,8 @@ $ make deinitpg
 ```
 
 ### Deploying with Heroku
-1. As heroku sets environment variables on their end, set `IGNORE=TRUE` in the .env file
+1. Heroku sets environment variables on their end, hence, set `IGNORE=TRUE` in the .env file
+2. Heroku also does not use docker compose. Hence, set `RUN_WITH_DOCKER_COMPOSE=FALSE` in the .env file
 2. Follow instructions on Heroku with Deployment method as Container Registry
 
 ### Running Unit Tests
