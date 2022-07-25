@@ -11,7 +11,13 @@ import (
 )
 
 func ConnectDB() *sql.DB {
-	db, err := sql.Open("postgres", config.DB_ADDRESS)
+	address := config.DB_ADDRESS
+	if config.RUN_WITH_DOCKER_COMPOSE {
+		fmt.Println("Database starting with docker compose")
+		address = config.DOCKER_COMPOSE_DB_ADDRESS
+	}
+	
+	db, err := sql.Open("postgres", address)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,18 +26,5 @@ func ConnectDB() *sql.DB {
         log.Fatal(pingErr)
     }
     fmt.Println("Database Connected!")
-	return db
-}
-
-func ConnectTestDB() *sql.DB {
-	db, err := sql.Open("postgres", config.DB_ADDRESS_TEST)
-	if err != nil {
-		log.Fatal(err)
-	}
-	pingErr := db.Ping()
-    if pingErr != nil {
-        log.Fatal(pingErr)
-    }
-    fmt.Println("Database For Test Connected!")
 	return db
 }

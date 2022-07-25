@@ -9,9 +9,10 @@ FROM alpine:3.16
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/templates ./templates
+COPY .env .
 COPY migrate .
-COPY wait-for.sh .
-COPY start.sh .
+COPY sh/wait-for.sh .
+COPY sh/start.sh .
 COPY db/migration ./migration
 
 EXPOSE 8080

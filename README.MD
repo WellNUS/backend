@@ -6,29 +6,65 @@ You can access the frontend repository [here](https://github.com/WellNUS/fronten
 You can access the testing GUI environment backend [here](https://wellnus-backend.herokuapp.com/testing).
 
 ## Installation and Setup
+**IMPORTANT**: Ensure the database port is available before following any of the instructions below
 
+### Running with docker compose
 1. Get docker desktop on your machine
 2. clone repository to you machine and cd into the folder
 3. run `cp example.env .env`
-3. go into .env file and update the configurations within the file
-4. run `make start`
+4. go into .env file and update the configurations within the file
+    - Set `RUN_WITH_DOCKER_COMPOSE=TRUE`
+5. run `make composeup`
 
-## Entity Relation Diagram
-![WellNUS ERD](./blob/WellNUS%20ERD.svg)
+> After you are done with the webserver, you may want to clean up.
+> 1. run `make composedown` to clean up containers to make the database ports available again
 
-## Testing of features
+### Running without docker compose
+1. Get docker desktop on your machine
+2. Clone repository to you machine and cd into the folder
+3. Run `cp example.env .env`
+4. Go into .env file and update the configurations within the file
+    - Set `RUN_WITH_DOCKER_COMPOSE=FALSE`
+5. Run the following commands to setup database (Skip if database has been setuped)
+```
+$ make initpg
+$ make createdb
+$ make migrateup
+```
+6. Run `go run .` to start the web server
 
-> ### Unit Tests
-> 
->> To run all unit tests, run `make unittest`
->>
->> Alternatively you may choose to cd to /unit_test/(feature) and run `go test` to run unit_test for a particular feature
+> After you are done with the webserver, you may want to clean up.
+> 1. run the following to clean up containers to make the database ports available again
+```
+$ make stopdb
+$ make deinitpg
+```
 
-## Features
+### Deploying with Heroku
+1. As heroku sets environment variables on their end, set `IGNORE=TRUE` in the .env file
+2. Follow instructions on Heroku with Deployment method as Container Registry
+
+### Running Unit Tests
+Unit tests are only available without docker compose.
+To run unit tests, run the following:
+1. set `RUN_WITH_DOCKER_COMPOSE=FALSE` in the .env file
+2. Run the following commands to setup database (Skp)
+```
+$ make initpg
+$ make createdb
+$ make migrateup
+```
+3. Run `make unittest` to run all unittest
+    - Alternatively you may choose to cd to /unit_test/(feature) and run `go test` to run unit_test for a particular feature
 
 ### Notes to connect frontend to backend
 
 > All Request made should have **credentials: "include"** so that cookies can be accessed and modified by backend
+
+## Features
+
+### Entity Relation Diagram
+![WellNUS ERD](./blob/WellNUS%20ERD.svg)
 
 ### User
 
