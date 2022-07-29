@@ -12,6 +12,10 @@ import (
 	"database/sql"
 )
 
+// JWT vs Cookie authentication
+// App currently uses cookie authentication. Sessions are stored in database
+// JWT uses one secret key across the whole app. When request sent with JWT, secret key is decripted to get userID. No session required in database
+
 type User = model.User
 type SessionResponse = model.SessionResponse
 
