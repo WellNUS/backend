@@ -4,6 +4,22 @@
         <title>Match</title>
         
         <script type="text/javascript">
+            function getCookie(cname) {
+                let name = cname + "=";
+                let decodedCookie = decodeURIComponent(document.cookie);
+                let ca = decodedCookie.split(';');
+                for(let i = 0; i <ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
             window.onload = function() {
                 const matchSettingForm = document.getElementById("matchSettingForm")
                 const matchRequestSend = document.getElementById("matchRequestSend")
@@ -27,6 +43,7 @@
                         method : 'POST',
                         headers : {
                             'Content-Type': 'application/json',
+                            'session_key': getCookie('session_key')
                         },
                         body
                     })
@@ -36,7 +53,10 @@
 
                 matchRequestSend.onclick = function(e) {
                     fetch(backendURL + "/match", {
-                        method: 'POST'
+                        method: 'POST',
+                        headers : {
+                            'session_key': getCookie('session_key')
+                        }
                     })
                     .then(res => console.log(res.json()))
                     .catch(err => console.log(err))
@@ -44,7 +64,10 @@
 
                 matchRequestStop.onclick = function(e) {
                     fetch(backendURL + "/match", {
-                        method: 'DELETE'
+                        method: 'DELETE',
+                        headers: {
+                            'session_key': getCookie('session_key')
+                        }
                     })
                     .then(res => console.log(res.json()))
                     .catch(err => console.log(err))
@@ -54,7 +77,10 @@
                     e.preventDefault()
                     const num = e.target.qty.value
                     fetch(backendURL + "/testing/match?count="+num, {
-                        method: 'POST'
+                        method: 'POST',
+                        headers: {
+                            'session_key': getCookie('session_key')
+                        }
                     })
                     .then(res => console.log(res.json()))
                     .catch(err => console.log(err))

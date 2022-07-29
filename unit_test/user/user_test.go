@@ -127,15 +127,15 @@ func testAddUserHandler(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to AddUser failed with status code of %d", w.Code)
 	}
-	var err error
-	addedUser, err = test_helper.GetUserFromRecorder(w)
+	userWithSessionKey, err := test_helper.GetUserWithSessionKeyFromRecorder(w)
+	addedUser = userWithSessionKey.User
 	if err != nil {
 		t.Errorf("An error occured while getting addedUser from body. %v", err)
 	}
 	if addedUser.ID == 0 {
 		t.Errorf("addedUser ID was not written by addUser call")
 	}
-	sessionKey = test_helper.GetCookieFromRecorder(w, "session_key")
+	sessionKey = userWithSessionKey.SessionKey
 	userID, err := model.GetUserIDFromSessionKey(DB, sessionKey)
 	if err != nil || userID != addedUser.ID {
 		t.Errorf("Error when retrieving userID from sessionKey or the userID does not matched added User. %v", err)
@@ -316,10 +316,7 @@ func testUpdateUserHandlerUnauthorized(t *testing.T) {
 func testUpdateUserHandlerAuthorized(t *testing.T) {
 	ioReaderUser, _ := test_helper.GetIOReaderFromObject(User{ FirstName: "UpdatedFirstName" })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/user/%d", addedUser.ID), ioReaderUser)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKey,
-	})
+	req.Header.Add("session_key", sessionKey)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to updateUserHandler did not statusOk. Status Code: %d", w.Code)
@@ -344,10 +341,7 @@ func testDeleteUserHandlerUnauthorized(t *testing.T) {
 
 func testDeleteUserHandlerAuthorised(t *testing.T) {
 	req, _ :=  http.NewRequest("DELETE", fmt.Sprintf("/user/%d", addedUser.ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKey,
-	})
+	req.Header.Add("session_key", sessionKey)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to updateUserHandler did not statusOk. Status Code: %d", w.Code)

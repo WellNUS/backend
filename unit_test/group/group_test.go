@@ -36,10 +36,7 @@ func testAddGroupHandlerNoGroupName(t *testing.T) {
 	}
 	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(testGroup)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("Group with no group_name sucessfully added. Status Code: %d", w.Code)
@@ -62,10 +59,7 @@ func testAddGroupHandlerNotLoggedIn(t *testing.T) {
 func testAddGroupHandlerAsUser1(t *testing.T) {
 	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(validAddedGroup1)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	// fmt.Println("id:", validAddedUser1.ID)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -91,10 +85,7 @@ func testAddGroupHandlerAsUser1(t *testing.T) {
 func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
 	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(validAddedGroup2)
 	req, _ := http.NewRequest("POST", "/group", ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	// fmt.Println("id:", validAddedUser1.ID)
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
@@ -119,10 +110,7 @@ func testAddGroupHandlerAsUser2NoDescription(t *testing.T) {
 
 func testGetAllGroupsHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllGroup failed with status code of %d", w.Code)
@@ -153,10 +141,7 @@ func testGetAllGroupsHandlerAsNotLoggedIn(t *testing.T) {
 
 func testGetAllGroupsHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllGroups failed with status code of %d", w.Code)
@@ -201,10 +186,7 @@ func testGetAllGroupHandlerAsUser2AfterJoining(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest("GET", "/group", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllGroups failed with status code of %d", w.Code)
@@ -230,10 +212,7 @@ func testUpdateGroupHandlerAsNotUser1(t *testing.T) {
 		t.Errorf("User that was not logged in was not unauthorised. %s", errString)
 	}
 
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w = test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not give an Unauthorized status code. Status Code: %d", w.Code)
@@ -248,10 +227,7 @@ func testUpdateGroupHandlerAsUser1OwnerNotMember(t *testing.T) {
 	newOwnerID := testUsers[2].ID
 	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(Group{ OwnerID: newOwnerID })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("HTTP Request returned an OK status")
@@ -266,10 +242,7 @@ func testUpdateGroupHandlerAsUser1(t *testing.T) {
 	newGroupName := "UpdatedGroupName"
 	ioReaderGroup, _ := test_helper.GetIOReaderFromObject(Group{ GroupName: newGroupName })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/group/%d", validAddedGroup1.ID), ioReaderGroup)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request did not give an OK status code. Status Code: %d", w.Code)
@@ -285,10 +258,7 @@ func testUpdateGroupHandlerAsUser1(t *testing.T) {
 
 func testGetAllGroupHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/group", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetGroup failed with status code of %d", w.Code)
@@ -310,10 +280,7 @@ func testGetAllGroupHandlerAsUser2(t *testing.T) {
 
 func testLeaveGroupHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/group/%d", validAddedGroup1.ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to LeaveGroup failed with status code of %d", w.Code)
@@ -335,10 +302,7 @@ func testLeaveGroupHandlerAsUser1(t *testing.T) {
 
 func testLeaveAllGroupsHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/group", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to LeaveAllGroups failed with status code of %d", w.Code)

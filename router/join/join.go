@@ -33,7 +33,7 @@ func GetAllLoadedJoinRequestsHandler(db *sql.DB) func(*gin.Context){
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		request := getRequestQuery(c)
 		if request == REQUEST_RECEIVED {
 			joinRequests, err := model.GetAllLoadedJoinRequestsReceivedOfUser(db, userID)
@@ -82,7 +82,7 @@ func AddJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -105,7 +105,7 @@ func RespondJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		joinRequestIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
@@ -129,7 +129,7 @@ func DeleteJoinRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

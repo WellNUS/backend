@@ -42,10 +42,7 @@ func testAssertInitialDatabaseState(t *testing.T) {
 
 func testAddMatchRequestHandlerAsUser0(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/match", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Add to match request failed with status code = %d", w.Code)
@@ -65,10 +62,7 @@ func testAssertDatabaseStateAfterUser0(t *testing.T) {
 
 func testAddMatchRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/match", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Add to match request failed with status code = %d", w.Code)

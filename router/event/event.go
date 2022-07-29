@@ -14,7 +14,7 @@ func GetAllEventsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		events, err := model.GetAllEventsOfUser(db, userID)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
@@ -52,7 +52,7 @@ func AddEventHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -76,7 +76,7 @@ func UpdateEventHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -104,7 +104,7 @@ func LeaveDeleteEventHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -122,7 +122,7 @@ func LeaveDeleteAllEventsHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -140,7 +140,7 @@ func AddUserToEventHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -169,7 +169,7 @@ func CreateGroupDeleteEventHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userIDCookie, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDCookie, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

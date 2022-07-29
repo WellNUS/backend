@@ -4,6 +4,22 @@
     <title>Join Request</title>
     
     <script type="text/javascript">
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for(let i = 0; i <ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
         window.onload = function() {
             const approveButton = document.getElementById("approveButton")
             const rejectButton = document.getElementById("rejectButton")
@@ -19,6 +35,7 @@
                     method : 'PATCH',
                     headers : {
                         'Content-Type' : 'application/json',
+                        'session_key': getCookie('session_key')
                     },
                     body
                 })
@@ -36,6 +53,7 @@
                     method : 'PATCH',
                     headers : {
                         'Content-Type' : 'application/json',
+                        'session_key': getCookie('session_key')
                     },
                     body
                 })

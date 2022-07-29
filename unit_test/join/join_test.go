@@ -31,10 +31,7 @@ func TestJoinHandler(t *testing.T) {
 func testAddJoinRequestHandler(t *testing.T) {
 	ioReaderJoinRequest, err := test_helper.GetIOReaderFromObject(JoinRequest{ GroupID: testGroups[0].ID })
 	req, _ := http.NewRequest("POST", "/join", ioReaderJoinRequest)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to AddJoinRequest failed with status code of %d", w.Code)
@@ -89,10 +86,7 @@ func testGetAllLoadedJoinRequestHandlerAsNotLoggedIn(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -117,10 +111,7 @@ func testGetAllLoadedJoinRequestHandlerAsUser1(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerSentAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -136,10 +127,7 @@ func testGetAllLoadedJoinRequestHandlerSentAsUser1(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -164,10 +152,7 @@ func testGetAllLoadedJoinRequestHandlerReceivedAsUser1(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -192,10 +177,7 @@ func testGetAllLoadedJoinRequestHandlerAsUser2(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerSentAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=SENT", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -220,10 +202,7 @@ func testGetAllLoadedJoinRequestHandlerSentAsUser2(t *testing.T) {
 
 func testGetAllLoadedJoinRequestHandlerReceivedAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/join?request=RECEIVED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllJoinRequest failed with status code of %d", w.Code)
@@ -251,10 +230,7 @@ func testRespondJoinRequestHandlerRejectAsUser1(t *testing.T) {
 	joinRequestRespond := JoinRequestRespond{ Approve: false }
 	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(joinRequestRespond)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to respond while authorized gave Status code: %d", w.Code)
@@ -315,10 +291,7 @@ func testRespondJoinRequestHandlerApproveAsUser1(t *testing.T) {
 	joinRequestRespond := JoinRequestRespond{ Approve: true }
 	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(joinRequestRespond)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/join/%d", addedJoinRequest.ID), ioReaderRespond)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to respond while authorized gave Status code: %d", w.Code)
@@ -377,10 +350,7 @@ func testDeleteJoinRequestHandlerAsUser1(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/join/%d", addedJoinRequest.ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not respond with unauthorized code but gave Status code: %d", w.Code)
@@ -389,10 +359,7 @@ func testDeleteJoinRequestHandlerAsUser1(t *testing.T) {
 
 func testDeleteJoinRequestHandlerAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/join/%d", addedJoinRequest.ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request did not respond with OK code but gave Status code: %d", w.Code)

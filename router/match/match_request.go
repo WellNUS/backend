@@ -27,7 +27,7 @@ func GetLoadedMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -54,7 +54,7 @@ func AddMatchRequestHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -72,7 +72,7 @@ func DeleteMatchRequestOfUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 		
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

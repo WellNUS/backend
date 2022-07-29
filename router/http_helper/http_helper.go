@@ -46,6 +46,12 @@ func GetUserIDFromSessionCookie(db *sql.DB, c *gin.Context) (int64, error) {
 	return userID, nil
 }
 
+func GetUserIDFromSessionHeader(db *sql.DB, c *gin.Context) (int64, error) {
+	sessionKey := c.Request.Header.Get("session_key")
+	userID, err := model.GetUserIDFromSessionKey(db, sessionKey)
+	if err != nil { return 0, err }
+	return userID, nil
+}
 
 func GetUserFromContext(c *gin.Context) (User, error) {
 	var user User

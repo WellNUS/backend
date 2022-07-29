@@ -38,10 +38,7 @@ func testAddProviderSettingHandlerNotLoggedIn(t *testing.T) {
 func testAddProviderSettingHandlerAsMember(t *testing.T) {
 	ioReaderProviderSetting, _ := test_helper.GetIOReaderFromObject(test_helper.GetTestProviderSetting(0))
 	req, _ := http.NewRequest("POST", "/provider", ioReaderProviderSetting)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request to add get provider setting request not Unauthorized. Status Code: %d", w.Code)
@@ -55,10 +52,7 @@ func testAddProviderSettingHandlerAsMember(t *testing.T) {
 func testAddProviderSettingHandler(t *testing.T) {
 	ioReaderProviderSetting, _ := test_helper.GetIOReaderFromObject(test_helper.GetTestProviderSetting(1))
 	req, _ := http.NewRequest("POST", "/provider", ioReaderProviderSetting)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Valid add providerSetting gave a status code = %d", w.Code)
@@ -176,10 +170,7 @@ func testUpdateProviderSettingHandlerNotLoggedIn(t *testing.T) {
 func testUpdateProviderSettingHandler(t *testing.T) {
 	ioReaderProviderSetting, _ := test_helper.GetIOReaderFromObject(test_helper.GetTestProviderSetting(0))
 	req, _ := http.NewRequest("POST", "/provider", ioReaderProviderSetting)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Update to providerSetting failed with status code = %d", w.Code)
@@ -204,10 +195,7 @@ func testDeleteProviderSettingHandlerUnauthorized(t *testing.T) {
 
 func testDeleteProviderSettingHandlerSuccessful(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/provider", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to delete providerSetting failed with a Status Code = %d", w.Code)

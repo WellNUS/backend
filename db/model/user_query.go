@@ -138,6 +138,14 @@ func AddUser(db *sql.DB, newUser User) (User, error) {
 	return newUser, nil
 }
 
+func AddUserAndSession(db *sql.DB, newUser User) (UserWithSessionKey, error) {
+	user, err := AddUser(db, newUser)
+	if err != nil { return UserWithSessionKey{}, err }
+	sessionKey, err := CreateNewSession(db, user.ID)
+	if err != nil { return UserWithSessionKey{}, err }
+	return UserWithSessionKey{ User: user, SessionKey: sessionKey }, nil
+}
+
 func UpdateUser(db *sql.DB, updatedUser User, id int64) (User, error) {
 	targetUser, err := GetUser(db, id)
 	if err != nil { return User{}, err }

@@ -41,10 +41,7 @@ func testAddEventHandlerNoEventName(t *testing.T) {
 	testEvent.EventName = ""
 	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(testEvent)
 	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("Event with no event_name sucessfully added. Status Code: %d", w.Code)
@@ -60,10 +57,7 @@ func testAddEventHandlerNoAccess(t *testing.T) {
 	testEvent.Access = ""
 	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(testEvent)
 	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("Event with no access sucessfully added. Status Code: %d", w.Code)
@@ -79,10 +73,7 @@ func testAddEventHandlerNoCategory(t *testing.T) {
 	testEvent.Category = ""
 	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(testEvent)
 	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("Event with no category sucessfully added. Status Code: %d", w.Code)
@@ -105,10 +96,7 @@ func testAddEventHandlerNotLoggedIn(t *testing.T) {
 func testAddEventHandlerAsUser1(t *testing.T) {
 	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(test_helper.GetTestEvent(1))
 	req, _ := http.NewRequest("POST", "/event", ioReaderEvent)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to AddEvent failed with status code of %d", w.Code)
@@ -132,10 +120,7 @@ func testAddEventHandlerAsUser1(t *testing.T) {
 
 func testGetAllEventsHandlerAsUser0(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/event", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllEvent failed with status code of %d", w.Code)
@@ -166,10 +151,7 @@ func testGetAllEventsHandlerAsNotLoggedIn(t *testing.T) {
 
 func testGetAllEventsHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/event", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllEvents failed with status code of %d", w.Code)
@@ -203,10 +185,7 @@ func testGetEvent0HandlerAsNotLoggedIn(t *testing.T) {
 
 func testGetEvent0HandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/event/%d", testEvents[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetEvent failed with status code of %d", w.Code)
@@ -226,10 +205,7 @@ func testGetEvent0HandlerAsUser1(t *testing.T) {
 func testAddUser1ToPublicEvent0HandlerAsUser1(t *testing.T) {
 	ioReaderUserIDBody, _ := test_helper.GetIOReaderFromObject(UserIDBody{ UserID: testUsers[1].ID })
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d", testEvents[0].ID), ioReaderUserIDBody)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request failed with a status code: %d", w.Code)
@@ -246,10 +222,7 @@ func testAddUser1ToPublicEvent0HandlerAsUser1(t *testing.T) {
 func testAddUser0ToPrivateEvent1HandlerAsUser0(t *testing.T) {
 	ioReaderUserIDBody, _ := test_helper.GetIOReaderFromObject(UserIDBody{ UserID: testUsers[1].ID })
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d", testEvents[1].ID), ioReaderUserIDBody)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not fail with unauthorized but with code: %d", w.Code)
@@ -268,10 +241,7 @@ func testAddUser0ToPrivateEvent1HandlerNotLoggedIn(t *testing.T) {
 func testAddUser0ToPrivateEvent1HandlerAsUser1(t *testing.T) {
 	ioReaderUserIDBody, _ := test_helper.GetIOReaderFromObject(UserIDBody{ UserID: testUsers[0].ID })
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d", testEvents[1].ID), ioReaderUserIDBody)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request failed with a status code: %d", w.Code)
@@ -287,10 +257,7 @@ func testAddUser0ToPrivateEvent1HandlerAsUser1(t *testing.T) {
 
 func testGetAllEventHandlerAsUser0AfterAddition(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/event", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllEvents failed with status code of %d", w.Code)
@@ -316,10 +283,7 @@ func testUpdateEvent0HandlerAsNotUser0(t *testing.T) {
 		t.Errorf("User that was not logged in was not unauthorised. %s", errString)
 	}
 
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w = test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not give an Unauthorized status code. Status Code: %d", w.Code)
@@ -334,10 +298,7 @@ func testUpdateEvent0HandlerAsUser0(t *testing.T) {
 	newEventName := "UpdatedEventName"
 	ioReaderEvent, _ := test_helper.GetIOReaderFromObject(Event{ EventName: newEventName })
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/event/%d", testEvents[0].ID), ioReaderEvent)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request did not give an OK status code. Status Code: %d", w.Code)
@@ -353,10 +314,7 @@ func testUpdateEvent0HandlerAsUser0(t *testing.T) {
 
 func testGetAllEventsHandlerAsUser1AfterUpdate(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/event", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetEvent failed with status code of %d", w.Code)
@@ -378,10 +336,7 @@ func testGetAllEventsHandlerAsUser1AfterUpdate(t *testing.T) {
 
 func testLeaveEvent1HandlerAsUser0(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/event/%d", testEvents[1].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to LeaveEvent failed with status code of %d", w.Code)
@@ -400,10 +355,7 @@ func testLeaveEvent1HandlerAsUser0(t *testing.T) {
 
 func testLeaveEvent1HandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/event/%d", testEvents[1].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to LeaveEvent failed with status code of %d", w.Code)
@@ -424,10 +376,7 @@ func testLeaveEvent1HandlerAsUser1(t *testing.T) {
 
 func testLeaveAllEventsHandlerAsUser0(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/event", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to LeaveAllEvents failed with status code of %d", w.Code)
@@ -453,10 +402,7 @@ func testCreateGroupDeleteEventUnauthorised(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d/start", testEvents[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request to CreateGroupDeleteEvent did not give unauthorized status. StatusCode: %d", w.Code)
@@ -475,10 +421,7 @@ func testCreateGroupDeleteEventAuthorised(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/event/%d/start", testEvents[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to CreateGroupDeleteEvent did not give unauthorized status. StatusCode: %d", w.Code)

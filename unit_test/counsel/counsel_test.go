@@ -63,10 +63,7 @@ func testAddCounselRequestHandlerAsNotLoggedIn(t *testing.T) {
 func testAddCounselRequestHandlerAsUser2(t *testing.T) {
 	ioReaderCounselRequest, _ := test_helper.GetIOReaderFromObject(test_helper.GetTestCounselRequest(2))
 	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to AddUpdateCounselRequest as user 2 failed with status code: %d", w.Code)
@@ -99,10 +96,7 @@ func testGetAllCounselRequestsHandlerAsMember(t *testing.T) {
 
 func testGetAllCounselRequestHandlerAsVolunteer(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/counsel", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllCounselRequest as Volunteer failed with Status Code: %d", w.Code)
@@ -118,10 +112,7 @@ func testGetAllCounselRequestHandlerAsVolunteer(t *testing.T) {
 
 func testGetAllCounselRequestHandlerAsCounsellor(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/counsel", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Reqeust to GetAllCounselRequest as Volunteer failed with Status Code: %d", w.Code)
@@ -137,10 +128,7 @@ func testGetAllCounselRequestHandlerAsCounsellor(t *testing.T) {
 
 func testGetCounselRequestsHandlerOfAnxiety(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/counsel?topic=Anxiety", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetAllCounselRequest with anxiety failed with Status Code: %d", w.Code)
@@ -164,10 +152,7 @@ func testGetCounselRequestsHandlerOfAnxiety(t *testing.T) {
 
 func testGetCounselRequestsHandlerOfAnxietyAndOffMyChest(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/counsel?topic=Anxiety&topic=OffMyChest", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetCounselRequests with Anxiety and OffMyChest failed with Status Code: %d", w.Code)
@@ -190,10 +175,7 @@ func testGetCounselRequestsHandlerOfAnxietyAndOffMyChest(t *testing.T) {
 
 func testGetCounselRequestsHandlerOfAnxietyOffMyChestAndSelfHarm(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/counsel?topic=Anxiety&topic=OffMyChest&topic=SelfHarm", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetCounselRequests with Anxiety, OffMyChest and SelfHarm failed with Status Code: %d", w.Code)
@@ -209,10 +191,7 @@ func testGetCounselRequestsHandlerOfAnxietyOffMyChestAndSelfHarm(t *testing.T) {
 
 func testGetCounselRequestHandlerOfUser0AsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/counsel/%d", testUsers[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to GetCounselRequest of user0 by user2 failed with status code: %d", w.Code)
@@ -232,10 +211,7 @@ func testUpdateCounselRequestHandlerOfUser0NoTopics(t *testing.T) {
 		Topics: make([]string, 0),
 	})
 	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code == http.StatusOK {
 		t.Errorf("HTTP Request to UpdateCounselRequest of user0 were successful")
@@ -252,10 +228,7 @@ func testUpdateCounselRequestHandlerOfUser0Successful(t *testing.T) {
 		Topics: []string{"Depression"},
 	})
 	req, _ := http.NewRequest("POST", "/counsel", ioReaderCounselRequest)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to UpdateCounselRequest of user0 failed with status code: %d", w.Code)
@@ -280,10 +253,7 @@ func testDeleteCounselRequestHandlerAsNotLoggedIn(t *testing.T) {
 
 func testDeleteCounselRequestHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/counsel", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to DeleteCounselRequest of failed witha Status Code: %d", w.Code)
@@ -299,10 +269,7 @@ func testDeleteCounselRequestHandlerAsUser1(t *testing.T) {
 
 func testAcceptCounselRequestOfUser2AsUser0(t *testing.T) {
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/counsel/%d", testUsers[2].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request to AcceptCounselRequest did not give an unauthorized status code. Status Code: %d", w.Code)
@@ -311,10 +278,7 @@ func testAcceptCounselRequestOfUser2AsUser0(t *testing.T) {
 
 func testAcceptCounselRequestOfUser0AsUser2(t *testing.T) {
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/counsel/%d", testUsers[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to AcceptCounselRequest failed with Status Code: %d", w.Code)
@@ -333,10 +297,7 @@ func testAcceptCounselRequestOfUser0AsUser2(t *testing.T) {
 
 func testGetCounselRequestOfUser0AfterAccept(t *testing.T) {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/counsel/%d", testUsers[0].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusNotFound {
 		t.Errorf("HTTP Request to GetCounselRqeuest did not give not found status but status code: %d", w.Code)

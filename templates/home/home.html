@@ -3,6 +3,29 @@
     <head>
     <title>Home</title>
         <script type="text/javascript">
+            function getCookie(cname) {
+                let name = cname + "=";
+                let decodedCookie = decodeURIComponent(document.cookie);
+                let ca = decodedCookie.split(';');
+                for(let i = 0; i <ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
+            function setCookie(cname, cvalue, exdays) {
+                const d = new Date();
+                d.setTime(d.getTime() + (exdays*24*60*60*1000));
+                let expires = "expires="+ d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
             window.onload = function() {
                 const loginForm = document.getElementById("loginForm")
                 const registerForm = document.getElementById("registerForm")
@@ -22,10 +45,18 @@
                         method : 'POST',
                         headers : {
                             'Content-Type': 'application/json',
+                            'session_key': getCookie('session_key')
                         },
                         body
                     })
-                    .then(res => console.log(res.json()))
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data)
+                        const { logged_in, session_key } = data
+                        if (logged_in) {
+                            setCookie('session_key', session_key, 7)
+                        }
+                    })
                     .catch(err => console.log(err))
                 }
 
@@ -45,17 +76,25 @@
                         method : 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
+                            'session_key' : getCookie('session_key')
                         },
                         body
                     })
-                    .then(res => console.log(res.json()))
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data)
+                        setCookie('session_key', data.session_key, 7)
+                    })
                     .catch(err => console.log(err))
                 }
 
                 logout.onclick = function(e) {
                     e.preventDefault()
                     fetch(backendURL + "/session", {
-                        method : 'DELETE'
+                        method : 'DELETE',
+                        headers: {
+                            'session_key': getCookie('session_key')
+                        }
                     })
                     .then(res => console.log(res.json()))
                     .catch(err => console.log(err))
@@ -73,6 +112,7 @@
                         method : 'POST',
                         headers : {
                             'Content-Type' : 'application/json',
+                            'session_key' : getCookie('session_key')
                         },
                         body
                     })
@@ -96,7 +136,8 @@
                     fetch(backendURL + "/event", {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'session_key' : getCookie('session_key')
                         },
                         body
                     })

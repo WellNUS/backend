@@ -3,7 +3,6 @@ package user
 import (
 	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/http_helper/http_error"
-	"wellnus/backend/router/session"
 	"wellnus/backend/db/model"
 	
 	"github.com/gin-gonic/gin"
@@ -11,6 +10,7 @@ import (
 )
 
 type User = model.User
+type UserWithSessionKey = model.User
 
 const (
 	ROLE_MEMBER = 0
@@ -96,13 +96,12 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		newUser, err = model.AddUser(db, newUser)
+		newUserWithSession, err := model.AddUserAndSession(db, newUser)
 		if err != nil { 
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		session.CreateNewSessionCookie(db, c, newUser.ID)
-		c.JSON(http_error.GetStatusCode(err), newUser)
+		c.JSON(http_error.GetStatusCode(err), newUserWithSession)
 	}
 }
 
@@ -115,7 +114,7 @@ func DeleteUserHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.JSON(http_error.GetStatusCode(err), err.Error())
@@ -140,7 +139,7 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		if userID != userIDParam {
 			err = http_error.UnauthorizedError
 			c.JSON(http_error.GetStatusCode(err), err.Error())

@@ -59,15 +59,16 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		if match {
-			err = CreateNewSessionCookie(db, c, storedUser.ID)
+			// err = CreateNewSessionCookie(db, c, storedUser.ID)
+			sessionKey, err := model.CreateNewSession(db, storedUser.ID)
 			if err != nil {
 				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser })
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser, SessionKey: sessionKey })
 		} else {
 			RemoveSessionCookie(db, c)
-			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false, User: User{}})
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false })
 		}
 	} 
 }
@@ -76,7 +77,7 @@ func LogoutHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		err := RemoveSessionCookie(db, c)
+		err := model.DeleteSessionWithSessionKey(db, c.Request.Header.Get("session_key"))
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

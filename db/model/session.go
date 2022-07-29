@@ -11,6 +11,7 @@ type Session struct {
 }
 
 type SessionResponse struct {
-	LoggedIn 	bool `json:"logged_in"`
-	User	 	User `json:"user"`
+	LoggedIn 	bool 	`json:"logged_in"`
+	User	 	User 	`json:"user"`
+	SessionKey 	string 	`json:"session_key"`
 }

@@ -82,6 +82,8 @@ $ make migrateup
 >>> - user_role = 1 of ('MEMBER', 'VOLUNTEER', 'COUNSELLOR')
 >>
 >> UserWithGroups = { user: User, groups: Group[] }
+>>
+>> UserWithSessionKey = { user: User, session_key }
 > 
 > #### User Routes
 > 
@@ -106,7 +108,7 @@ $ make migrateup
 >>>
 >>> Request Body : { first_name, last_name, gender, faculty, email, user_role, password }
 >>>
->>> Response Body : User
+>>> Response Body : UserWithSessionKey
 >>
 >> ##### /user/:id - GET
 >> 
@@ -146,7 +148,7 @@ $ make migrateup
 >>>
 >>> Request Body : { email, password }
 >>> 
->>> Response Body : { logged_in, user: User }
+>>> Response Body : { logged_in, user: User, session_key }
 >> 
 >> ##### /session - DELETE
 >> 

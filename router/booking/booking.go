@@ -36,7 +36,7 @@ func GetAllBookingUsersHandler(db *sql.DB) func(*gin.Context){
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		request := getBookingQuery(c)
 		if request == BOOKING_RECEIVED {
 			bookingUsers, err := model.GetAllBookingUsersReceivedOfUser(db, userID)
@@ -92,7 +92,7 @@ func AddBookingHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
@@ -115,7 +115,7 @@ func UpdateBookingHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
@@ -139,7 +139,7 @@ func RespondBookingHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, _ := http_helper.GetUserIDFromSessionHeader(db, c)
 		bookingIDParam, err := http_helper.GetIDParams(c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
@@ -164,7 +164,7 @@ func DeleteBookingHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		http_helper.SetHeaders(c)
 
-		userID, err := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

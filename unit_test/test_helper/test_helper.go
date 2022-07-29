@@ -20,6 +20,7 @@ import (
 
 type User = model.User
 type UserWithGroups = model.UserWithGroups
+type UserWithSessionKey = model.UserWithSessionKey
 type SessionResponse = model.SessionResponse
 type Group = model.Group
 type GroupWithUsers = model.GroupWithUsers
@@ -134,12 +135,25 @@ func GetUsersFromRecorder(w *httptest.ResponseRecorder) ([]User, error) {
 		return nil, errors.New(buf.String())
 	}
 	// fmt.Printf("Response Body: %v \n", buf)
-	users := make([]User, 0)
+	var users []User
 	err := json.NewDecoder(buf).Decode(&users)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+func GetUserWithSessionKeyFromRecorder(w *httptest.ResponseRecorder) (UserWithSessionKey, error) {
+	buf := GetBufferFromRecorder(w)
+	if w.Code != http.StatusOK {
+		return UserWithSessionKey{}, errors.New(buf.String())
+	}
+	var userWithSessionKey UserWithSessionKey
+	err := json.NewDecoder(buf).Decode(&userWithSessionKey)
+	if err != nil {
+		return UserWithSessionKey{}, err
+	}
+	return userWithSessionKey, nil
 }
 
 func GetSessionResponseFromRecorder(w *httptest.ResponseRecorder) (SessionResponse, error) {

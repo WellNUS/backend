@@ -35,10 +35,7 @@ func TestBookingHandler(t *testing.T) {
 func testAddBookingHandlerToNoProviderSettingUser1ByUser0(t *testing.T) {
 	ioReaderBooking, err := test_helper.GetIOReaderFromObject(test_helper.GetTestBooking(0, testUsers[1].ID))
 	req, _ := http.NewRequest("POST", "/booking", ioReaderBooking)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to AddBooking failed with status code of %d", w.Code)
@@ -80,10 +77,7 @@ func testGetAllBookingUsersHandlerAsNotLoggedIn(t *testing.T) {
 
 func testGetAllBookingUserHandlerAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingUser failed with status code of %d", w.Code)
@@ -102,10 +96,7 @@ func testGetAllBookingUserHandlerAsUser1(t *testing.T) {
 
 func testGetAllBookingUsersHandlerSentAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking?booking=SENT", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingusers sent failed with status code of %d", w.Code)
@@ -124,10 +115,7 @@ func testGetAllBookingUsersHandlerSentAsUser1(t *testing.T) {
 
 func testGetAllBookingUsersHandlerReceivedAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking?booking=RECEIVED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingusers sent failed with status code of %d", w.Code)
@@ -146,10 +134,7 @@ func testGetAllBookingUsersHandlerReceivedAsUser1(t *testing.T) {
 
 func testGetAllBookingUsersHandlerRequiredAsUser1(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking?booking=REQUIRED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingusers required failed with status code of %d", w.Code)
@@ -168,10 +153,7 @@ func testGetAllBookingUsersHandlerRequiredAsUser1(t *testing.T) {
 
 func testGetAllBookingUsersHandlerRequiredAsUser2(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking?booking=REQUIRED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingUsers required failed with status code of %d", w.Code)
@@ -202,10 +184,7 @@ func testRespondBookingHandlerRejectAsUser1(t *testing.T) {
 	respond := BookingRespond{ Approve: false, Booking: Booking{ Details: "UpdatedDetails" } }
 	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(respond)
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/booking/%d", testBooking0to1.ID), ioReaderRespond)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to respond while authorized gave Status code: %d", w.Code)
@@ -219,10 +198,7 @@ func testRespondBookingHandlerRejectAsUser1(t *testing.T) {
 
 func testGetAllBookingUserHandlerRequiredAsUser0(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/booking?booking=REQUIRED", nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK { 
 		t.Errorf("HTTP Request to GetAllBookingUsers required failed with status code of %d", w.Code)
@@ -243,10 +219,7 @@ func testRespondBookingHandlerApproveAsUser0(t *testing.T) {
 	bookingRespond := BookingRespond{ Approve: true }
 	ioReaderRespond, _ := test_helper.GetIOReaderFromObject(bookingRespond)
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/booking/%d", testBooking0to1.ID), ioReaderRespond)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[0],
-	})
+	req.Header.Add("session_key", sessionKeys[0])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to respond while authorized gave Status code: %d", w.Code)
@@ -299,10 +272,7 @@ func testUpdateBookingHandlerOfBooking1To2AsUser2Unauthorized(t *testing.T) {
 	updatedBooking := Booking{ Nickname: "Simone Carter" }
 	ioReaderBooking, _ := test_helper.GetIOReaderFromObject(updatedBooking)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/booking/%d", testBookingsTo2[1].ID), ioReaderBooking)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request to update booking did not give unauthorised but gave Status code: %d", w.Code)
@@ -313,10 +283,7 @@ func testUpdateBookingHandlerOfBooking1To2AsUser1Authorized(t *testing.T) {
 	updatedBooking := Booking{ Nickname: "Simone Carter" }
 	ioReaderBooking, _ := test_helper.GetIOReaderFromObject(updatedBooking)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/booking/%d", testBookingsTo2[1].ID), ioReaderBooking)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request to update booking failed with Status code: %d", w.Code)
@@ -345,10 +312,7 @@ func testGetBookingProviderOfBooking1To2AfterUpdate(t *testing.T) {
 
 func testDeleteBookingHandlerOfBooking1To2AsUser2(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/booking/%d", testBookingsTo2[1].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[2],
-	})
+	req.Header.Add("session_key", sessionKeys[2])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("HTTP Request did not respond with unauthorized code but gave Status code: %d", w.Code)
@@ -357,10 +321,7 @@ func testDeleteBookingHandlerOfBooking1To2AsUser2(t *testing.T) {
 
 func testDeleteBookingHandlerOfBooking1To2AsUser1(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/booking/%d", testBookingsTo2[1].ID), nil)
-	req.AddCookie(&http.Cookie{
-		Name: "session_key",
-		Value: sessionKeys[1],
-	})
+	req.Header.Add("session_key", sessionKeys[1])
 	w := test_helper.SimulateRequest(Router, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("HTTP Request did not respond with unauthorized code but gave Status code: %d", w.Code)

@@ -37,7 +37,11 @@ func GetMessagesChunkOfGroupHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		userID, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userID, err := http_helper.GetUserIDFromSessionHeader(db, c)
+		if err != nil {
+			c.JSON(http_error.GetStatusCode(err), err.Error())
+			return
+		}
 		inGroup, err := model.IsUserInGroup(db, userID, groupID)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())

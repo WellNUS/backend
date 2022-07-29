@@ -17,6 +17,11 @@ type User struct {
 	PasswordHash 	string	`json:"password_hash"`
 }
 
+type UserWithSessionKey struct {
+	User 		User 	`json:"user"`
+	SessionKey	string	`json:"session_key"`
+}
+
 type UserWithGroups struct {
 	User 	User 	`json:"user"`
 	Groups 	[]Group `json:"groups"`
