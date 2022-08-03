@@ -5,7 +5,7 @@ import (
 
 	"wellnus/backend/db"
 	"wellnus/backend/router"
-	"wellnus/backend/router/ws"
+	"wellnus/backend/db/model"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 
 	// Runtime global instances
 	DB := db.ConnectDB()
-	WSHub := ws.NewHub(DB)
+	WSHub := model.NewHub(DB)
 
 	go WSHub.Run()
 	Router := router.SetupRouter(DB, WSHub)

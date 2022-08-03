@@ -2,13 +2,49 @@ package ws
 
 import (
 	"wellnus/backend/db/model"
+	"wellnus/backend/config"
 	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/http_helper/http_error"
+	
+	"log"
 	"fmt"
 	"database/sql"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
+
+type Client = model.Client
+type Hub = model.Hub
+
+const (
+	loadedMessageBuffer = 256
+)
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		return origin == config.FRONTEND_ADDRESS || origin == config.BACKEND_ADDRESS
+	},
+}
+
+func ServeWs(Hub *Hub, w http.ResponseWriter, r *http.Request, userID int64, groupID int64) {
+	Conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	client := &Client{ UserID: userID, GroupID: groupID, Hub: Hub, Conn: Conn, Send: make(chan interface{}, loadedMessageBuffer)}
+	client.Hub.Register <- client
+
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go client.WritePump()
+	go client.ReadPump()
+}
 
 func ConnectToWSHandler(wsHub *Hub, db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {

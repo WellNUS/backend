@@ -96,18 +96,35 @@
                     }
                 }
 
+                //const openCamera = async () => {
+                //    const allDevices = await navigator.mediaDevices.enumerateDevices();
+                //    const cameras = allDevices.filter(
+                //        (device) => device.kind == "videoinput"
+                //    );
+                //    console.log(cameras);
+
+                //    const constraints = {
+                //        audio: true,
+                //        video: {
+                //            deviceId: cameras[0].deviceId
+                //        }
+                //    };
+
+                //    try {
+                //        return await navigator.mediaDevices.getUserMedia(constraints);
+                //    } catch (err) {
+                //        console.log(err);
+                //    }
+                //};
+
                 // Performs websocket connection
                 if (window["WebSocket"]) {
-                    form .onsubmit = function () {
-                        if (!conn) {
-                            return false;
-                        }
-                        if (!msg.value) {
-                            return false;
-                        }
-                        conn.send(msg.value);
+                    form.onsubmit = function (e) {
+                        e.preventDefault()
+                        if (!conn) return
+                        if (!msg.value) return
+                        conn.send(JSON.stringify({ tag: 0, data: msg.value}));
                         msg.value = "";
-                        return false;
                     };
 
                     conn = new WebSocket(wsURL + "/ws/" + groupID);
