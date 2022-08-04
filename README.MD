@@ -806,3 +806,7 @@ $ make migrateup
 - [x] Unit testing for Provider
 - [x] Implement Booking
 - [x] Unit testing for Provider
+- [x] Implement direct messenging
+- [ ] Implement direct chat history and clearing of chat history
+- [ ] Booking and Counsel should utilse direct instead of group chat (removal of counsel category groups)
+- [ ] Implement video chat on direct
