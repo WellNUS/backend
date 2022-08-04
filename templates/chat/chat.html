@@ -30,25 +30,25 @@
                     log.scrollTop = log.scrollHeight - curr;
                 }
 
-                function makeMessageItem(messagePayload) {
+                function makeMessageItem(groupMessagePayload) {
                     var item = document.createElement("div");
-                    item.innerText = `${messagePayload.sender_name}: ${messagePayload.message.msg}`
+                    item.innerText = `${groupMessagePayload.sender_name}: ${groupMessagePayload.message.msg}`
                     return item
                 }
 
-                function updateStatuses(chatStatusPayload) {
+                function updateStatuses(groupStatusPayload) {
                     statuses.innerHTML = ''
-                    chatStatusPayload.sorted_in_chat_members.forEach(user => {
+                    groupStatusPayload.sorted_in_chat_members.forEach(user => {
                         var item = document.createElement("li")
                         item.innerText = `${user.first_name} - in chat`
                         statuses.appendChild(item)
                     })
-                    chatStatusPayload.sorted_online_members.forEach(user => {
+                    groupStatusPayload.sorted_online_members.forEach(user => {
                         var item = document.createElement("li")
                         item.innerText = `${user.first_name} - online`
                         statuses.appendChild(item)
                     })
-                    chatStatusPayload.sorted_offline_members.forEach(user => {
+                    groupStatusPayload.sorted_offline_members.forEach(user => {
                         var item = document.createElement("li")
                         item.innerText = `${user.first_name} - offline`
                         statuses.appendChild(item)
@@ -59,16 +59,16 @@
                 var earliestTime = ""
                 const loadInterval = setInterval(() => {
                     if (log.scrollTop == 0) {
-                        fetch(backendURL+`/message/${groupID}?latest=${earliestTime}&limit=${loadLimit}`)
+                        fetch(backendURL+`/message/group/${groupID}?latest=${earliestTime}&limit=${loadLimit}`)
                         .then(res => res.json())
                         .then(data => {
                             console.log(data)
-                            const { message_payloads, earliest_time } = data
-                            if (!message_payloads || message_payloads.length == 0) {
+                            const { payloads, earliest_time } = data
+                            if (!payloads || payloads.length == 0) {
                                 clearInterval(loadInterval)
                                 return
                             }
-                            prependLog(...message_payloads.map(makeMessageItem))
+                            prependLog(...payloads.map(makeMessageItem))
                             earliestTime = earliest_time
                         })
                         .catch(err => {
@@ -83,39 +83,22 @@
                 function handlePayload(payload) {
                     console.log(payload)
                     if (payload.tag == 0) { // 0 is message
-                        if (payload.message.group_id == groupID) {
+                        if (payload.label=="GROUP" && payload.message.group_id == groupID) {
                             appendLog(makeMessageItem(payload))
-                        } else {
-                            clearTimeout(notifTimeOut)
-                            notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
-                            notif.style.display = "inherit"
-                            notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
+                            return
                         }
+                        clearTimeout(notifTimeOut)
+                        if (payload.label=="GROUP") {
+                            notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
+                        } else {
+                            notif.innterHTML = `New direct message from ${payload.sender_name}`
+                        }
+                        notif.style.display = "inherit"
+                        notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
                     } else if(payload.tag == 1) { // 1 is chat status
                         updateStatuses(payload)
                     }
                 }
-
-                //const openCamera = async () => {
-                //    const allDevices = await navigator.mediaDevices.enumerateDevices();
-                //    const cameras = allDevices.filter(
-                //        (device) => device.kind == "videoinput"
-                //    );
-                //    console.log(cameras);
-
-                //    const constraints = {
-                //        audio: true,
-                //        video: {
-                //            deviceId: cameras[0].deviceId
-                //        }
-                //    };
-
-                //    try {
-                //        return await navigator.mediaDevices.getUserMedia(constraints);
-                //    } catch (err) {
-                //        console.log(err);
-                //    }
-                //};
 
                 // Performs websocket connection
                 if (window["WebSocket"]) {
@@ -127,7 +110,7 @@
                         msg.value = "";
                     };
 
-                    conn = new WebSocket(wsURL + "/ws/" + groupID);
+                    conn = new WebSocket(wsURL + "/ws/group/" + groupID);
                     conn.onclose = function (evt) {
                         var item = document.createElement("div");
                         item.innerHTML = "<b>Connection closed.</b>";

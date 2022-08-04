@@ -2,6 +2,152 @@
 <html lang="en">
     <head>
     <title>User</title>
+    <script>
+        window.onload = function () {
+            const loadLimit = 30
+            const userIDParam = window.location.pathname.match(/[0-9][0-9]*/).map(parseInt)[0]
+            const userIDCookie = {{.userIDCookie}}
+            const form = document.getElementById("form")
+            const msg = document.getElementById("msg")
+            const log = document.getElementById("log")
+            const notif = document.getElementById("notif")
+            const statuses = document.getElementById("statuses")
+            const backendURL = {{.backendURL}}
+            const wsURL = {{.wsURL}}
+            var conn
+
+            //Helper functions
+            function appendLog(item) {
+                var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
+                log.appendChild(item);
+                if (doScroll) {
+                    log.scrollTop = log.scrollHeight - log.clientHeight;
+                }
+            }
+
+            function prependLog(...items){
+                var curr = log.scrollHeight - log.scrollTop
+                log.prepend(...items);
+                log.scrollTop = log.scrollHeight - curr;
+            }
+
+            function makeMessageItem(directMessagePayload) {
+                var item = document.createElement("div");
+                item.innerText = `${directMessagePayload.sender_name}: ${directMessagePayload.message.msg}`
+                return item
+            }
+
+            function updateStatuses(userStatusPayload) {
+                statuses.innerHTML = ''
+                const { user, status } = userStatusPayload
+                var item = document.createElement("li")
+                item.innerText = `${user.first_name} - ${status}`
+                statuses.appendChild(item)
+            }
+
+            //Handles loading of past messages
+            var earliestTime = ""
+            const loadInterval = setInterval(() => {
+                if (log.scrollTop == 0) {
+                    fetch(backendURL+`/message/direct/${userIDParam}?latest=${earliestTime}&limit=${loadLimit}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data)
+                        const { payloads, earliest_time } = data
+                        if (!payloads || payloads.length == 0) {
+                            clearInterval(loadInterval)
+                            return
+                        }
+                        prependLog(...payloads.map(makeMessageItem))
+                        earliestTime = earliest_time
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        clearInterval(loadInterval)
+                    })
+                }
+            }, 100)
+
+            function toDisplay(payload) {
+                if (payload.label != "DIRECT") return false
+                const {sender_id, recipient_id} = payload.message
+                return (sender_id == userIDCookie && recipient_id == userIDParam) ||
+                        (sender_id == userIDParam && recipient_id == userIDCookie)
+            }
+            // Handle payload delivery (brains of the unit)
+            var notifTimeOut
+            function handlePayload(payload) {
+                console.log(payload)
+                if (payload.tag == 0) { // 0 is message
+                    if (toDisplay(payload)) {
+                        appendLog(makeMessageItem(payload))
+                        return
+                    }
+                    clearTimeout(notifTimeOut)
+                    if (payload.label == "GROUP") {
+                        notif.innerHTML = `New message from ${payload.sender_name} in ${payload.group_name}`
+                    } else {
+                        notif.innerHTML = `New direct message from ${payload.sender_name}`
+                    }
+                    notif.style.display = "inherit"
+                    notifTimeOut = setTimeout(() => notif.style.display="none", 2000)
+                } else if(payload.tag == 1) { // 1 is chat status
+                    if (payload.label != "USER") {
+                        console.log("Received status rejected", payload)
+                        return
+                    }
+                    updateStatuses(payload)
+                }
+            }
+
+            // Performs websocket connection
+            if (window["WebSocket"]) {
+                form.onsubmit = function (e) {
+                    e.preventDefault()
+                    if (!conn) return
+                    if (!msg.value) return
+                    conn.send(JSON.stringify({ tag: 0, data: msg.value}));
+                    msg.value = "";
+                };
+
+                conn = new WebSocket(wsURL + "/ws/direct/" + userIDParam);
+                conn.onclose = function (evt) {
+                    var item = document.createElement("div");
+                    item.innerHTML = "<b>Connection closed.</b>";
+                    appendLog(item);
+                };
+                conn.onmessage = function (evt) {
+                    var payload = JSON.parse(evt.data)
+                    handlePayload(payload)
+                };
+            } else {
+                var item = document.createElement("div");
+                item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+                appendLog(item);
+            }
+        };
+    </script>
+    <style type="text/css">
+        #log {
+            border: 1px solid black;
+            height: 30em;
+            margin: 0;
+            padding: 0.5em 0.5em 0.5em 0.5em;
+            overflow-y: auto;
+        }
+
+        #form {
+            padding: 0 0.5em 0 0.5em;
+            margin: 0;
+            width: 100%;
+        }
+
+        #notif {
+            background-color: red;
+            color: white;
+            display: none;
+        }
+    </style>
     </head>
 
     <body>
@@ -17,6 +163,16 @@
             <div>UserRole: {{.userWithGroups.User.UserRole}}</div>
             <div>PasswordHash: {{.userWithGroups.User.PasswordHash}}</div>
         </div>
+
+        <div id="notif"></div>
+        <div id="log"></div>
+        <form id="form">
+            <input type="submit" value="Send" />
+            <input type="text" id="msg" size="64" autofocus />
+        </form>
+        <h4>Chat Status</h4>
+        <ul id="statuses"></ul>
+
         <h2> Groups : </h2>
         {{ range .userWithGroups.Groups }}
             <div>

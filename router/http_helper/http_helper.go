@@ -5,6 +5,7 @@ import (
 	"wellnus/backend/config"
 	"wellnus/backend/router/http_helper/http_error"
 	"strconv"
+	"time"
 	"log"
 	"database/sql"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,19 @@ func GetIDParams(c *gin.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
 	if err != nil { return 0, http_error.NotFoundError }
 	return id, nil
+}
+
+func GetLatestQuery(c *gin.Context) (time.Time, error) {
+	// RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
+	if stime := c.Query("latest"); stime == "" {
+		return time.Now(), nil
+	} else {
+		return time.Parse(time.RFC3339Nano, stime)
+	}
+}
+
+func GetLimitQuery(c *gin.Context) (int64, error) {
+	return strconv.ParseInt(c.Query("limit"), 0, 64)
 }
 
 func GetUserIDFromSessionCookie(db *sql.DB, c *gin.Context) (int64, error) {

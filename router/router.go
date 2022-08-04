@@ -7,7 +7,7 @@ import (
 	"wellnus/backend/router/group"
 	"wellnus/backend/router/join"
 	"wellnus/backend/router/match"
-	"wellnus/backend/router/chat"
+	"wellnus/backend/router/message"
 	"wellnus/backend/router/testing" //Can be removed at production
 	"wellnus/backend/router/counsel"
 	"wellnus/backend/router/provider"
@@ -102,8 +102,11 @@ func SetupRouter(db *sql.DB, wsHub *ws.Hub) *gin.Engine {
 	router.PATCH("/booking/:id", booking.UpdateBookingHandler(db))
 	router.DELETE("/booking/:id", booking.DeleteBookingHandler(db))
 
-	router.GET("/message/:id", chat.GetMessagesChunkOfGroupHandler(db))
-	router.GET("/ws/:id", ws.ConnectToWSHandler(wsHub, db))
+	router.GET("/message/group/:id", message.GetGroupMessagesChunkHandler(db))
+	router.GET("/message/direct/:id", message.GetDirectMessagesChunkHandler(db))
+	
+	router.GET("/ws/group/:id", ws.ConnectToWSHandler(wsHub, db, true))
+	router.GET("/ws/direct/:id", ws.ConnectToWSHandler(wsHub, db, false))
 	
 	router.NoRoute(http_helper.NoRouteHandler)
 

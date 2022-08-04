@@ -29,9 +29,15 @@ func GetTestingAllUsersHandler(db *sql.DB) func(*gin.Context) {
 
 func GetTestingUserHandler(db *sql.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		userID, _ := http_helper.GetIDParams(c)
-		userWithGroups, _ := model.GetUserWithGroups(db, userID)
-		c.HTML(http.StatusOK, "user.html", gin.H{ "userWithGroups": userWithGroups, "backendURL": config.BACKEND_ADDRESS })
+		userIDCookie, _ := http_helper.GetUserIDFromSessionCookie(db, c)
+		userIDParam, _ := http_helper.GetIDParams(c)
+		userWithGroups, _ := model.GetUserWithGroups(db, userIDParam)
+		c.HTML(http.StatusOK, "user.html", gin.H{ 
+			"userWithGroups": userWithGroups, 
+			"backendURL": config.BACKEND_ADDRESS, 
+			"wsURL": config.WS_ADDRESS,
+			"userIDCookie": userIDCookie,
+		})
 	}
 }
 

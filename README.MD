@@ -288,17 +288,23 @@ $ make migrateup
 >>
 >> The API takes in query params to indicate the limit and the latest message to load in. This is to enable dynamic loading of messages so that not all the chat history is loaded in at once. Refer to /template/chat/chat.html for reference on how to do this
 >>
->> Message = { user_id, group_id, time_added, msg }
+>> GroupMessage = { user_id, group_id, time_added, msg }
 >>
->> MessagePayload = { tag=0, sender_name, group_name, message: Message }
+>> GroupMessagePayload = { tag=0, label="GROUP", sender_name, group_name, message: GroupMessage }
 >>
->> MessagesChunk = { earliest_time, latest_time, message_payloads: message_payload[] }
+>> GroupMessagesChunk = { earliest_time, latest_time, payloads: GroupMessagePayload[] }
+>>
+>> DirectMessage = { sender_id, recipient_id, time_added, msg }
+>>
+>> DirectMessagePayload = { tag=0, label="DIRECT", sender_name, recipient_name, message: DirectMessage }
+>>
+>> DirectMessagesChunk = { earliest_time, latest_time, payloads: DirectMessagePayload[]}
 >
 > #### Message Routes
 >
->> ##### /message/:id - GET
+>> ##### /message/group/:id - GET
 >>
->>> Description : Gets messages chunk sent in the group of given id in ascending time sent.
+>>> Description : Gets group messages chunk sent in the group of given id in ascending time sent if user is authorised.
 >>>
 >>> Query Params:
 >>> - ?limit=(int) : Specify how many messages to load in. If unspecified or <= 0, will load all past messages
@@ -306,7 +312,19 @@ $ make migrateup
 >>>
 >>> Request Body : None
 >>>
->>> Response Body : MessagesChunk
+>>> Response Body : GroupMessagesChunk
+>>
+>> ##### /message/direct/:id - GET
+>>
+>>> Description : Gets direct messages chunk sent to or received by the user of given id if the user accessing endpoint is logged in.
+>>>
+>>> Query Params:
+>>> - ?limit=(int) : Specify how many messages to load in. If unspecified or <= 0, will load all past messages
+>>> - ?latest=(time) : Specify the latest time sent of the retrieved messages. If unspecified, will take current time as latest time. Note: Time specified must be in RFC3339Nano format. Example: "2006-01-02T15:04:05.999999999Z07:00"
+>>>
+>>> Request Body : None
+>>>
+>>> Response Body : DirectMessagesChunk
 
 ### Websocket for chats
 
@@ -314,41 +332,39 @@ $ make migrateup
 >
 >> Allows client to obtain a websocket connection to the server.
 >>
->> The following is an example from /template/chat/chat.html on how to connect to the websocket with vanilla javascript. Head over to /template/chat/chat.html to see the full code
-```
-conn = new WebSocket("ws://" + document.location.host + "/ws/" + groupID);
-conn.onclose = function (evt) {
-    var item = document.createElement("div");
-    item.innerHTML = "<b>Connection closed.</b>";
-    appendLog(item);
-};
-conn.onmessage = function (evt) {
-    var payload = JSON.parse(evt.data)
-    handlePayload(payload)
-};
-```
+>> Head over to /template/chat/chat.html to see the full code.
+>>
 >> Sending data to server:
 >>
->>> The data sent to the server through the **conn** instance has a format of **Message** = { user_id, group_id, time_added and msg }.
+>>> The data sent to the server through the websocket **conn** instance has a format of { tag, msg }.
 >>
 >> Receiving data from server:
 >>
 >>> The data received from the server through the **conn** instance is what we will call a **Payload**.
 >>>
->>> A Payload always comprise of a **tag** field to indicate what kind of data has been passed through.
+>>> A Payload always comprise of a **tag** and **label** field to indicate what kind of data has been passed through.
 >>>
->>> Tag Reference sheet:
+>>> Tag and Label Reference sheet:
 >>> - tag == 0 **MessagePayload**
->>>     - **MessagePayload** = { tag, sender_name, group_name, message: Message }
->>>         - If the **message.user_id == -1**, the message a Server Message and is not saved on database.
+>>>     - label == "GROUP"
+>>>         - **GroupMessagePayload** = { tag, label, sender_name, group_name, message: GroupMessage }
+>>>     - label == "DIRECT"
+>>>         - **DirectMessagePayload** = { tag, label, sender_name, recipient_name, message: DirectMessage }
+>>>     - label == "SERVER"
+>>>         - **ServerMessagePayload** = { tag, label, msg }
 >>> - tag == 1 **ChatStatusPayload**
->>>     - **ChatStatusPayload** = { tag, group_id, group_name, sorted_in_chat_members, sorted_online_members, sorted_offline_members }
->>>         - Members of a group are in only 1 of 3 states
->>>             - in chat : Member is connected through websocket and is on chat page of the given group
->>>             - online : Member is connected through websocket and is on chat page of some other group
->>>             - offline : Member is not connected through websocket
->>>         - Union of **sorted_in_chat_members**, **sorted_online_members**, and **sorted_offline_members** form all group members of given group
->>> 
+>>>     - label == "GROUP"
+>>>         - **GroupStatusPayload** = { tag, label, group_id, group_name, sorted_in_chat_members, sorted_online_members, sorted_offline_members }
+>>>             - Members of a group are in only 1 of 3 states
+>>>                 - in chat : Member is connected through websocket and is on chat page of the given group
+>>>                 - online : Member is connected through websocket and is on chat page of some other group
+>>>                 - offline : Member is not connected through websocket
+>>>             - Union of **sorted_in_chat_members**, **sorted_online_members**, and **sorted_offline_members** form all group members of given group
+>>>     - label == "USER"
+>>>         - **UserStatusPayload** = { tag, label, user, status }
+>>>         - **UserStatusPayload** field specifications
+>>>             - status = one of ('In Chat', 'Online', 'Offline')
+>>>     
 >>> These data sent from the server is sufficient to create the following chat features:
 >>> - Live messages from users
 >>> - Live messages from server
@@ -361,9 +377,17 @@ conn.onmessage = function (evt) {
 >
 > #### Websocket Routes
 >
->> ##### /ws/:group_id - GET
+>> ##### /ws/group/:group_id - GET
 >>
->>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/(group_id)" which will return a connection object. Incoming payloads and outgoing messages will come and go through this connection object.
+>>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/group/(group_id)" which will return a connection object. Server will recognise this websocket connection as a client and will take it as the user is currently in chat of group with given ID. Messages and relevant data will come through the instance.
+>>> 
+>>> Request Body : None
+>>>
+>>> Response Body : None
+>>
+>> ##### /ws/direct/:user_id - GET
+>>
+>>> Description : Create a websocket connection with the url of "ws://(domain_name)/ws/direct/(group_id)" which will return a connection object. Server will recognise this websocket connection as a client and will take it as the user is currently in direct message with user of given ID. Messages and relevant data will come through the instance.
 >>> 
 >>> Request Body : None
 >>>

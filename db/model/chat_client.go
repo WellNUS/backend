@@ -10,11 +10,12 @@ import (
 
 // Client is a middleman between the websocket connection and the Hub.
 type Client struct {
-	UserID		int64
-	GroupID		int64
-	Hub 		*Hub
-	Conn 		*websocket.Conn
-	Send 		chan interface{}
+	UserID				int64
+	TargetID			int64
+	TargetIsGroup		bool
+	Hub 				*Hub
+	Conn 				*websocket.Conn
+	Send 				chan interface{}
 }
 
 func (c *Client) ReadPump() {
@@ -69,8 +70,14 @@ func (c Client) UserName(db *sql.DB) (string, error) {
 	return user.FirstName, nil
 }
 
-func (c Client) GroupName(db *sql.DB) (string, error) {
-	group, err := GetGroup(db, c.GroupID)
-	if err != nil { return "", err }
-	return group.GroupName, nil
+func (c Client) TargetName(db *sql.DB) (string, error) {
+	if c.TargetIsGroup {
+		group, err := GetGroup(db, c.TargetID)
+		if err != nil { return "", err }
+		return group.GroupName, nil
+	} else {
+		user, err := GetUser(db, c.TargetID)
+		if err != nil { return "", err }
+		return user.FirstName, nil
+	}
 }
