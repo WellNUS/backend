@@ -1,14 +1,14 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 make: *** No rule to make target 'all'.  Stop.
 
-# GNU Make 4.1
+# GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
-# Copyright (C) 1988-2014 Free Software Foundation, Inc.
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Jul 23 16:23:32 2022
+# Make data base, printed on Sun May  7 23:32:26 2023
 
 # Variables
 
@@ -17,65 +17,84 @@ make: *** No rule to make target 'all'.  Stop.
 # automatic
 ?F = $(notdir $?)
 # environment
-WSLENV = ELECTRON_RUN_AS_NODE/w:WT_SESSION::WT_PROFILE_ID
+define WSLENV
+ELECTRON_RUN_AS_NODE/w:WT_SESSION::WT_PROFILE_ID
+
+endef
 # default
 .SHELLFLAGS := -c
+# makefile (from '.env', line 8)
+DB_PORT = 5432
+# makefile (from '.env', line 11)
+WS_ADDRESS = ws://localhost:8080
+# environment
+NVM_INC = /home/stanleyneoh/.nvm/versions/node/v18.16.0/include/node
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
+# makefile (from '.env', line 2)
+IGNORE = FALSE
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
 # automatic
 @F = $(notdir $@)
 # makefile
-CURDIR := /home/stanleyneoh/WellNUS/backend
+CURDIR := /home/stanleyneoh/projects/WellNUS/backend
 # environment
 RBENV_SHELL = bash
 # environment
-VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
+VSCODE_NLS_CONFIG = {"locale":"en","osLocale":"en","availableLanguages":{}}
 # environment
 _ = /mnt/c/Users/neohs/AppData/Local/Programs/Microsoft VS Code/bin/code
 # makefile (from '.env', line 1)
 MAKEFILE_LIST :=  Makefile .env
+# makefile (from '.env', line 13)
+COOKIE_ADDRESS = localhost
 # 'override' directive
 GNUMAKEFLAGS := 
 # environment
 XDG_DATA_DIRS = /usr/local/share:/usr/share:/var/lib/snapd/desktop
-# makefile (from '.env', line 11)
-POSTGRES_URL = postgresql://root:password@localhost:5432/wellnus?sslmode=disable
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 VSCODE_CWD = /mnt/c/Users/neohs/AppData/Local/Programs/Microsoft VS Code
-# makefile (from '.env', line 8)
-POSTGRES_PASSWORD = password
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
-PATH = /home/stanleyneoh/.vscode-server/bin/3b889b090b5ad5793f524b5d1d39fda662b96a2a/bin/remote-cli:/home/stanleyneoh/go/bin:/usr/local/go/bin:/home/stanleyneoh/.rbenv/plugins/ruby-build/bin:/home/stanleyneoh/.rbenv/shims:/home/stanleyneoh/.rbenv/bin:/home/stanleyneoh/.rbenv/plugins/ruby-build/bin:/home/stanleyneoh/.rbenv/shims:/home/stanleyneoh/.rbenv/bin:/home/stanleyneoh/.rbenv/plugins/ruby-build/bin:/home/stanleyneoh/.rbenv/shims:/home/stanleyneoh/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/d/jdk/jdk-17.0.1/bin:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/d/Calibre/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files (x86)/nodejs/:/mnt/c/mongodb/bin:/mnt/c/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin:/mnt/c/MinGW/bin:/mnt/d/MATLAB/R2021a/bin:/mnt/d/sqlite:/mnt/c/Program Files/Vim/vim82:/mnt/c/Program Files/Go/bin:/mnt/c/Users/neohs/AppData/Local/Microsoft/WindowsApps/PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0:/mnt/c/Program Files/PostgreSQL/14/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/d/Ruby30-x64/bin:/mnt/c/Users/neohs/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/neohs/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/neohs/.dotnet/tools:/mnt/c/Users/neohs/AppData/Roaming/npm:/mnt/c/Users/neohs/AppData/Local/GitHubDesktop/bin:/mnt/c/Users/neohs/AppData/Roaming/TinyTeX/bin/win32:/mnt/c/Users/neohs/go/bin:/snap/bin
+PATH = /home/stanleyneoh/.vscode-server/bin/252e5463d60e63238250799aef7375787f68b4ee/bin/remote-cli:/home/stanleyneoh/.local/bin:/home/stanleyneoh/.nvm/versions/node/v18.16.0/bin:/home/stanleyneoh/emsdk/upstream/emscripten:/home/stanleyneoh/go/bin:/usr/local/go/bin:/home/stanleyneoh/.rbenv/shims:/home/stanleyneoh/.rbenv/bin:/home/stanleyneoh/.rbenv/plugins/ruby-build/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/d/jdk/jdk-17.0.1/bin:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/d/Calibre/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files (x86)/nodejs/:/mnt/c/mongodb/bin:/mnt/c/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin:/mnt/c/MinGW/bin:/mnt/d/MATLAB/R2021a/bin:/mnt/d/sqlite:/mnt/c/Program Files/Vim/vim82:/mnt/c/Program Files/Go/bin:/mnt/c/Program Files/PostgreSQL/14/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/ProgramData/Anaconda3/condabin:/mnt/c/Program Files/GitHub CLI/:/mnt/d/Ruby30-x64/bin:/mnt/c/Users/neohs/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/neohs/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/neohs/.dotnet/tools:/mnt/c/Users/neohs/AppData/Roaming/npm:/mnt/c/Users/neohs/AppData/Local/GitHubDesktop/bin:/mnt/c/Users/neohs/AppData/Roaming/TinyTeX/bin/win32:/mnt/c/Users/neohs/go/bin:/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2022.3.3/bin:/snap/bin
+# environment
+XDG_RUNTIME_DIR = /mnt/wslg/runtime-dir
+# makefile (from '.env', line 12)
+SERVER_ADDRESS = :8080
 # environment
 GOPATH = /home/stanleyneoh/go
 # environment
+NVM_BIN = /home/stanleyneoh/.nvm/versions/node/v18.16.0/bin
+# environment
 ELECTRON_RUN_AS_NODE = 1
+# environment
+VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-20d91355-92ce-4235-8c77-5760b54ab848.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
-LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
-# makefile (from '.env', line 7)
-POSTGRES_USER = root
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+# makefile (from '.env', line 21)
+DOCKER_COMPOSE_DB_ADDRESS = postgresql://root:password@postgres:5432/wellnus?sslmode=disable
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = 172.17.208.1:0
-# makefile (from '.env', line 3)
-BACKEND_DOMAIN = localhost:8080
+DISPLAY = 172.27.80.1:0
 # environment
-PWD = /home/stanleyneoh/WellNUS/backend
+WSL2_GUI_APPS_ENABLED = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-2482fdd8-1cd5-4395-a749-50315931ef96.sock
+PWD = /home/stanleyneoh/projects/WellNUS/backend
+# default
+.LOADED := 
 # environment
-WSL_INTEROP = /run/WSL/23804_interop
+WSL_INTEROP = /run/WSL/8_interop
 # environment
-WT_SESSION = 358ee722-7d43-4002-9bba-2e3a79049935
+PULSE_SERVER = unix:/mnt/wslg/PulseServer
+# environment
+WT_SESSION = 25759b98-1b57-488a-bdf6-51828aaac3de
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -84,18 +103,20 @@ HOME = /home/stanleyneoh
 LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
 LOGNAME = stanleyneoh
+# makefile (from '.env', line 17)
+DB_ADDRESS = postgresql://root:password@localhost:5432/wellnus?sslmode=disable
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# environment
+NVM_CD_FLAGS = 
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
-# makefile (from '.env', line 2)
-FRONTEND_DOMAIN = localhost:3000
 # environment
 MAKELEVEL := 0
 # makefile (from '.env', line 10)
-POSTGRES_PORT = 5432
+BACKEND_ADDRESS = http://localhost:8080
 # default
 MAKE = $(MAKE_COMMAND)
 # default
@@ -103,11 +124,11 @@ MAKECMDGOALS := all
 # environment
 SHLVL = 1
 # default
-MAKE_VERSION := 4.1
+MAKE_VERSION := 4.2.1
 # environment
 USER = stanleyneoh
 # makefile
-.DEFAULT_GOAL := postgres
+.DEFAULT_GOAL := composeup
 # environment
 GOROOT = /usr/local/go
 # environment
@@ -115,29 +136,31 @@ NAME = Code
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # environment
-VSCODE_WSL_EXT_LOCATION = /mnt/c/Users/neohs/.vscode/extensions/ms-vscode-remote.remote-wsl-0.66.3
+VSCODE_WSL_EXT_LOCATION = /mnt/c/Users/neohs/.vscode/extensions/ms-vscode-remote.remote-wsl-0.78.4
 # default
 MAKE_COMMAND := make
 # default
 .VARIABLES := 
 # automatic
 *F = $(notdir $*)
-# makefile (from '.env', line 4)
-FRONTEND_URL = http://localhost:3000
+# makefile (from '.env', line 9)
+FRONTEND_ADDRESS = http://localhost:3000
+# makefile (from '.env', line 7)
+DB_PASSWORD = password
 # makefile
 MAKEFLAGS = pqrR
 # environment
 MFLAGS = -pqrR
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
+# environment
+NVM_DIR = /home/stanleyneoh/.nvm
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # makefile
 SHELL = /bin/sh
 # automatic
 +F = $(notdir $+)
-# makefile (from '.env', line 5)
-BACKEND_URL = http://localhost:8080
 # environment
 S_COLORS = auto
 # environment
@@ -148,14 +171,24 @@ WT_PROFILE_ID = {61c54bbd-c2c6-5271-96e7-009a87ff44bf}
 MAKEFILES := 
 # automatic
 <F = $(notdir $<)
+# makefile (from '.env', line 6)
+DB_USER = root
 # environment
 LC_ALL = C
 # environment
 HOSTTYPE = x86_64
+# makefile (from '.env', line 20)
+DOCKER_COMPOSE_NAME = wellnus-backend
 # automatic
 ^F = $(notdir $^)
+# makefile (from '.env', line 3)
+RUN_WITH_DOCKER_COMPOSE = FALSE
+# makefile (from '.env', line 16)
+DB_NAME = postgres14.3
 # default
 SUFFIXES := 
+# environment
+WAYLAND_DISPLAY = wayland-0
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
 # default
@@ -166,12 +199,8 @@ LANG = C
 TERM = xterm-256color
 # environment
 WSL_DISTRO_NAME = Ubuntu-18.04
-# makefile (from '.env', line 9)
-POSTGRES_NETLOC = localhost
-# makefile (from '.env', line 1)
-COOKIE_DOMAIN = localhost
 # variable set hash-table stats:
-# Load=79/1024=8%, Rehash=0, Collisions=6/106=6%
+# Load=92/1024=9%, Rehash=0, Collisions=7/119=6%
 
 # Pattern-specific Variable Values
 
@@ -179,23 +208,15 @@ COOKIE_DOMAIN = localhost
 
 # Directories
 
-# . (device 2064, inode 42588): 18 files, no impossibilities.
+# . (device 2128, inode 42588): 23 files, no impossibilities.
 
-# 18 files, no impossibilities in 1 directories.
+# 23 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 # No implicit rules.
 
 # Files
-
-postgres:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 4):
-	docker run --name postgres14.3 -p $(POSTGRES_PORT):$(POSTGRES_PORT) -e POSTGRES_USER=$(POSTGRES_USER) -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) -d postgres:14.3-alpine
 
 # Not a target:
 all:
@@ -204,7 +225,15 @@ all:
 #  File does not exist.
 #  File has not been updated.
 
-.PHONY: postgres startdb stopdb createdb dropdb migrateup migratedown unittest
+composedown:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 8):
+	docker compose -p $(DOCKER_COMPOSE_NAME) down
+
+.PHONY: composeup composedown initpg deinitpg startdb stopdb createdb dropdb migrateup migratedown unittest
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -214,13 +243,13 @@ stopdb:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 10):
-	docker stop postgres14.3
+#  recipe to execute (from 'Makefile', line 21):
+	docker stop $(DB_NAME)
 
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-23 09:53:25.111943974
+#  Last modified 2022-07-25 18:59:36.737954851
 #  File has been updated.
 #  Successfully updated.
 
@@ -229,23 +258,32 @@ createdb:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 13):
-	docker exec -it postgres14.3 createdb --username=$(POSTGRES_USER) --owner=$(POSTGRES_USER) wellnus
+#  recipe to execute (from 'Makefile', line 24):
+	docker exec -it $(DB_NAME) createdb --username=$(DB_USER) --owner=$(DB_USER) wellnus
 
 # Not a target:
 .env:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-23 09:46:47.944416721
+#  Last modified 2022-07-28 23:21:30.275288867
 #  File has been updated.
 #  Successfully updated.
 
+deinitpg:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 15):
+	docker rm $(DB_NAME)
+
+ 
 startdb:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 7):
-	docker start postgres14.3
+#  recipe to execute (from 'Makefile', line 18):
+	docker start $(DB_NAME)
 
 # Not a target:
 .DEFAULT:
@@ -258,48 +296,63 @@ dropdb:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 16):
-	docker exec -it postgres14.3 dropdb wellnus
+#  recipe to execute (from 'Makefile', line 27):
+	docker exec -it $(DB_NAME) dropdb wellnus
 
 migrateup:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 19):
-	migrate -path db/migration -database "$(POSTGRES_URL)" -verbose up
+#  recipe to execute (from 'Makefile', line 30):
+	migrate -path db/migration -database "$(DB_ADDRESS)" -verbose up
 
 unittest:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
- 
-#  recipe to execute (from 'Makefile', line 25):
+#  recipe to execute (from 'Makefile', line 36):
 	go test $(shell go list ./unit_test/...| grep -v test_helper) -p 1
+
+initpg:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 12):
+	docker run --name $(DB_NAME) -p $(DB_PORT):$(DB_PORT) -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d postgres:14.3-alpine
+
+composeup:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 5):
+	docker compose -p $(DOCKER_COMPOSE_NAME) up --build
 
 migratedown:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 22):
-	migrate -path db/migration -database "$(POSTGRES_URL)" -verbose down
+#  recipe to execute (from 'Makefile', line 33):
+	migrate -path db/migration -database "$(DB_ADDRESS)" -verbose down
 
 # files hash-table stats:
-# Load=14/1024=1%, Rehash=0, Collisions=0/33=0%
+# Load=17/1024=2%, Rehash=0, Collisions=0/39=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 32 / storage = 262 B / avg = 8 B
-# current buf: size = 8162 B / used = 262 B / count = 32 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 40 / storage = 337 B / avg = 8 B
+# current buf: size = 8162 B / used = 337 B / count = 40 / avg = 8 B
 
-# strcache performance: lookups = 55 / hit rate = 41%
+# strcache performance: lookups = 69 / hit rate = 42%
 # hash-table stats:
-# Load=32/8192=0%, Rehash=0, Collisions=1/55=2%
-# Finished Make data base on Sat Jul 23 16:23:32 2022
+# Load=40/8192=0%, Rehash=0, Collisions=1/69=1%
+# Finished Make data base on Sun May  7 23:32:26 2023
 
  

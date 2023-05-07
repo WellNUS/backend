@@ -1,1 +1,1 @@
-{"buildTargets":["createdb","dropdb","migratedown","migrateup","postgres","startdb","stopdb","unittest"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
+{"buildTargets":["composedown","composeup","createdb","deinitpg","dropdb","initpg","migratedown","migrateup","startdb","stopdb","unittest"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
