@@ -8,55 +8,29 @@ You can access the testing GUI environment backend deployed on heroku [here](htt
 ## Installation and Setup
 **IMPORTANT**: Ensure the database port is available before following any of the instructions below
 
-### Running with docker compose
 1. Get docker desktop on your machine
 2. clone repository to you machine and cd into the folder
 3. run `cp example.env .env`
 4. go into .env file and update the configurations within the file
-    - Set `RUN_WITH_DOCKER_COMPOSE=TRUE`
-5. run `make composeup`
+5. run `make dev` to run in development and `make prod` to run in production
 
 After you are done with the webserver, you may want to clean up.
-1. run `make composedown` to clean up containers to make the database ports available again
-
-### Running without docker compose
-1. Get docker desktop on your machine
-2. Clone repository to you machine and cd into the folder
-3. Run `cp example.env .env`
-4. Go into .env file and update the configurations within the file
-    - Set `RUN_WITH_DOCKER_COMPOSE=FALSE`
-5. Run the following commands to setup database (Skip if database has been setuped)
-```
-$ make initpg
-$ make createdb
-$ make migrateup
-```
-6. Run `go run .` to start the web server
-
-After you are done with the webserver, you may want to clean up.
-1. run the following to clean up containers to make the database ports available again
-```
-$ make stopdb
-$ make deinitpg
-```
-
-### Deploying with Heroku
-1. Heroku sets environment variables on their end, hence, set `IGNORE=TRUE` in the .env file
-2. Heroku also does not use docker compose. Hence, set `RUN_WITH_DOCKER_COMPOSE=FALSE` in the .env file
-2. Follow instructions on Heroku with Deployment method as Container Registry
+1. run `make composedown` to clean up containers and images to make the database ports available again
 
 ### Running Unit Tests
-Unit tests are only available without docker compose.
-To run unit tests, run the following:
-1. set `RUN_WITH_DOCKER_COMPOSE=FALSE` in the .env file
-2. Run the following commands to setup database (Skp)
-```
-$ make initpg
-$ make createdb
-$ make migrateup
-```
-3. Run `make unittest` to run all unittest
+Run `make unittest` to run all unittest
     - Alternatively you may choose to cd to /unit_test/(feature) and run `go test` to run unit_test for a particular feature
+    - Ensure that the database is running prior to running the unit tests by running `make startdb`
+
+### Makefile Commands
+- `make dev` will run the webserver in development mode
+- `make prod` will run the webserver in production mode
+- `make migrateup` will setup the database appropriately
+- `make migratedown` will tear down the tables in the database
+- `make startdb` will start the database
+- `make composedown` will tear down the database and remove the database image
+- `make purgeDB` will purge the database and all its data
+- `make unittest` will run all unit tests
 
 ### Notes to connect frontend to backend
 
