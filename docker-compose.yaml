@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  postgres:
+  db:
     image: postgres:14.3-alpine
     ports:
       - "5432:5432"
@@ -8,15 +8,20 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=wellnus
+    volumes:
+      - ./.db_data:/var/lib/postgresql/data
   api:
     env_file:
       - .env
+    environment:
+      - ON_DOCKER=true
+      - DB_ADDRESS=postgresql://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/wellnus?sslmode=disable
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-    entrypoint: ["/app/wait-for.sh", "postgres:${DB_PORT}", "--", "/app/start.sh"]
+      - db
+    entrypoint: ["/app/wait-for.sh", "db:${DB_PORT}", "--", "/app/start.sh"]
     command: ["/app/main"]

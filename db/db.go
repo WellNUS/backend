@@ -12,11 +12,7 @@ import (
 
 func ConnectDB() *sql.DB {
 	address := config.DB_ADDRESS
-	if config.RUN_WITH_DOCKER_COMPOSE {
-		fmt.Println("Database starting with docker compose")
-		address = config.DOCKER_COMPOSE_DB_ADDRESS
-	}
-	
+	fmt.Println("Connecting to database: ", address)
 	db, err := sql.Open("postgres", address)
 	if err != nil {
 		log.Fatal(err)
