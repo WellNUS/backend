@@ -1,23 +1,23 @@
 package user
 
 import (
+	"wellnus/backend/db/model"
+	. "wellnus/backend/db/model"
 	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/http_helper/http_error"
 	"wellnus/backend/router/session"
-	"wellnus/backend/db/model"
-	
-	"github.com/gin-gonic/gin"
+
 	"database/sql"
+
+	"github.com/gin-gonic/gin"
 )
 
-type User = model.User
-
 const (
-	ROLE_MEMBER = 0
-	ROLE_VOLUNTEER = 1
+	ROLE_MEMBER     = 0
+	ROLE_VOLUNTEER  = 1
 	ROLE_COUNSELLOR = 2
-	ROLE_PROVIDER = 3
-	ROLE_ALL = 4
+	ROLE_PROVIDER   = 3
+	ROLE_ALL        = 4
 )
 
 func getRoleQuery(c *gin.Context) int {
@@ -52,9 +52,9 @@ func GetAllUsersHandler(db *sql.DB) func(*gin.Context) {
 		if role == ROLE_COUNSELLOR {
 			users, err = model.GetAllUsersConditional(db, "user_role = 'COUNSELLOR'")
 		}
-		
+
 		if role == ROLE_PROVIDER {
-			users, err = model.GetAllUsersConditional(db, "user_role = 'VOLUNTEER' OR user_role = 'COUNSELLOR'" )
+			users, err = model.GetAllUsersConditional(db, "user_role = 'VOLUNTEER' OR user_role = 'COUNSELLOR'")
 		}
 
 		if role == ROLE_ALL {
@@ -97,7 +97,7 @@ func AddUserHandler(db *sql.DB) func(*gin.Context) {
 			return
 		}
 		newUser, err = model.AddUser(db, newUser)
-		if err != nil { 
+		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
@@ -151,7 +151,7 @@ func UpdateUserHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		updatedUser, err = model.UpdateUser(db,updatedUser, userID)
+		updatedUser, err = model.UpdateUser(db, updatedUser, userID)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return

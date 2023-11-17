@@ -1,40 +1,35 @@
 package ws
 
 import (
-	"wellnus/backend/db/model"
 	"database/sql"
 	"fmt"
-	"time"
 	"sort"
+	"time"
+	. "wellnus/backend/db/model"
 )
-
-type User = model.User
-type Message = model.Message
-type MessagePayload = model.MessagePayload
-type ChatStatusPayload = model.ChatStatusPayload
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
 	// Connected DB.
-	DB			*sql.DB
+	DB *sql.DB
 
 	// Registered clients.
-	Clients 	map[*Client]bool
+	Clients map[*Client]bool
 
 	// Inbound messages from the clients.
-	Broadcast 	chan Message
+	Broadcast chan Message
 
 	// Register requests from the clients.
-	Register 	chan *Client
+	Register chan *Client
 
 	// Unregister requests from clients.
-	Unregister 	chan *Client
+	Unregister chan *Client
 }
 
 func NewHub(db *sql.DB) *Hub {
 	return &Hub{
-		DB:			db,
+		DB:         db,
 		Clients:    make(map[*Client]bool),
 		Broadcast:  make(chan Message),
 		Register:   make(chan *Client),
@@ -43,10 +38,14 @@ func NewHub(db *sql.DB) *Hub {
 }
 
 func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
-	group, err := model.GetGroup(h.DB, groupID)
-	if err != nil { return ChatStatusPayload{}, err }
-	usersInGroup, err := model.GetAllUsersOfGroup(h.DB, groupID)
-	if err != nil { return ChatStatusPayload{}, err }
+	group, err := GetGroup(h.DB, groupID)
+	if err != nil {
+		return ChatStatusPayload{}, err
+	}
+	usersInGroup, err := GetAllUsersOfGroup(h.DB, groupID)
+	if err != nil {
+		return ChatStatusPayload{}, err
+	}
 
 	usersInGroupMap := make(map[int64]User)
 	for _, user := range usersInGroup {
@@ -58,8 +57,8 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 			return users[i].ID < users[j].ID
 		}
 	}
-	inChatMembers := make([]User, 0) 
-	onlineMembers := make([]User, 0)	
+	inChatMembers := make([]User, 0)
+	onlineMembers := make([]User, 0)
 	offlineMembers := make([]User, 0)
 	fmt.Printf("Websocket Clients UserID: [")
 	for client := range h.Clients {
@@ -75,7 +74,7 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 		}
 	}
 	fmt.Println("]")
-	for _, user  := range usersInGroupMap {
+	for _, user := range usersInGroupMap {
 		offlineMembers = append(offlineMembers, user)
 	}
 	sort.Slice(inChatMembers, MakeLess(inChatMembers))
@@ -83,11 +82,11 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 	sort.Slice(offlineMembers, MakeLess(offlineMembers))
 
 	return ChatStatusPayload{
-		Tag: model.ChatStatusTag, 
-		GroupID: groupID,
-		GroupName: group.GroupName, 
-		SortedInChatMembers: inChatMembers,
-		SortedOnlineMembers: onlineMembers,
+		Tag:                  ChatStatusTag,
+		GroupID:              groupID,
+		GroupName:            group.GroupName,
+		SortedInChatMembers:  inChatMembers,
+		SortedOnlineMembers:  onlineMembers,
 		SortedOfflineMembers: offlineMembers,
 	}, nil
 }
@@ -100,21 +99,27 @@ func (h *Hub) ChatStatusPayload(groupID int64) (ChatStatusPayload, error) {
 // toOnline = true 		means to send to clients in chat or online
 // toOnline = false 	means to send to clients in chat
 func (h *Hub) SendOutToGroup(groupID int64, payload interface{}, toOnline bool) error {
-	recipients, err := model.GetAllUsersOfGroup(h.DB, groupID)
-	if err != nil { return err }
+	recipients, err := GetAllUsersOfGroup(h.DB, groupID)
+	if err != nil {
+		return err
+	}
 	recipientsMap := make(map[int64]bool)
 	for _, user := range recipients {
 		recipientsMap[user.ID] = true
 	}
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	for client := range h.Clients {
 		if recipientsMap[client.UserID] {
-			if !toOnline && client.GroupID != groupID { continue }
+			if !toOnline && client.GroupID != groupID {
+				continue
+			}
 			select {
-				case client.Send <- payload:
-				default:
-					close(client.Send)
-					delete(h.Clients, client)
+			case client.Send <- payload:
+			default:
+				close(client.Send)
+				delete(h.Clients, client)
 			}
 		}
 	}
@@ -123,13 +128,19 @@ func (h *Hub) SendOutToGroup(groupID int64, payload interface{}, toOnline bool) 
 
 func (h *Hub) SendOutChatStatus(userID int64) error {
 	// userID is of user that induce the change in chat status
-	groups, err := model.GetAllGroupsOfUser(h.DB, userID)
-	if err != nil { return err }
+	groups, err := GetAllGroupsOfUser(h.DB, userID)
+	if err != nil {
+		return err
+	}
 	for _, group := range groups {
 		chatStatusPayload, err := h.ChatStatusPayload(group.ID)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		err = h.SendOutToGroup(group.ID, chatStatusPayload, false)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -139,7 +150,7 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			
+
 			err := h.SendOutChatStatus(client.UserID)
 			if err != nil {
 				fmt.Printf("An error occured during sending chat status payload. %v \n", err)
@@ -152,10 +163,10 @@ func (h *Hub) Run() {
 				continue
 			}
 			serverMessagePayload, err := Message{
-				UserID: model.ServerUserID, 
-				GroupID: client.GroupID,
+				UserID:    ServerUserID,
+				GroupID:   client.GroupID,
 				TimeAdded: time.Now(),
-				Msg: fmt.Sprintf("%s has joined the chat.", clientName),
+				Msg:       fmt.Sprintf("%s has joined the chat.", clientName),
 			}.Payload(h.DB)
 			if err != nil {
 				fmt.Printf("An error occured during creating server message payload. %v \n", err)
@@ -172,17 +183,17 @@ func (h *Hub) Run() {
 					fmt.Printf("An error occured during sending chat status payload. %v \n", err)
 					continue
 				}
-				
+
 				clientName, err := client.UserName(h.DB)
 				if err != nil {
 					fmt.Printf("An error occured during retrieving first name of client. %v \n", err)
 					continue
 				}
 				serverMessagePayload, err := Message{
-					UserID: model.ServerUserID, 
-					GroupID: client.GroupID,
+					UserID:    ServerUserID,
+					GroupID:   client.GroupID,
 					TimeAdded: time.Now(),
-					Msg: fmt.Sprintf("%s has left the chat.", clientName),
+					Msg:       fmt.Sprintf("%s has left the chat.", clientName),
 				}.Payload(h.DB)
 				if err != nil {
 					fmt.Printf("An error occured during creating server message payload. %v \n", err)
@@ -192,18 +203,18 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.Broadcast:
 			if !message.IsServerMessage() {
-				if err := model.AddMessage(h.DB, message); err != nil {
+				if err := AddMessage(h.DB, message); err != nil {
 					fmt.Printf("An error occured during adding to database. %v \n", err)
 					continue
 				}
 			}
-			
+
 			messagePayload, err := message.Payload(h.DB)
 			if err != nil {
 				fmt.Printf("An error occured during loading. %v \n", err)
 				continue
 			}
-			
+
 			err = h.SendOutToGroup(message.GroupID, messagePayload, true)
 			if err != nil {
 				fmt.Printf("An error occured while getting recipient set. %v \n", err)
