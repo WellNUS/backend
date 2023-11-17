@@ -5,7 +5,7 @@ COPY . .
 RUN go build -o main main.go
 
 # Run Stage
-FROM alpine:3.16
+FROM alpine:3.18
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/templates ./templates
