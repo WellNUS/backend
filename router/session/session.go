@@ -2,27 +2,28 @@ package session
 
 import (
 	"wellnus/backend/config"
+	"wellnus/backend/db/model"
+	. "wellnus/backend/db/model"
 	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/http_helper/http_error"
-	"wellnus/backend/db/model"
 
+	"database/sql"
 	"net/http"
+
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
-	"database/sql"
 )
 
 // JWT vs Cookie authentication
 // App currently uses cookie authentication. Sessions are stored in database
 // JWT uses one secret key across the whole app. When request sent with JWT, secret key is decripted to get userID. No session required in database
 
-type User = model.User
-type SessionResponse = model.SessionResponse
-
 // Helper function
 func CreateNewSessionCookie(db *sql.DB, c *gin.Context, userID int64) error {
 	newSessionKey, err := model.CreateNewSession(db, userID)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("session_key", newSessionKey, 1209600, "/", config.COOKIE_ADDRESS, true, true)
 	return nil
@@ -30,7 +31,9 @@ func CreateNewSessionCookie(db *sql.DB, c *gin.Context, userID int64) error {
 
 func RemoveSessionCookie(db *sql.DB, c *gin.Context) error {
 	sessionKey, _ := c.Cookie("session_key")
-	if err := model.DeleteSessionWithSessionKey(db, sessionKey); err != nil { return err }
+	if err := model.DeleteSessionWithSessionKey(db, sessionKey); err != nil {
+		return err
+	}
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("session_key", "", -1, "/", config.COOKIE_ADDRESS, true, true)
 	return nil
@@ -64,12 +67,12 @@ func LoginHandler(db *sql.DB) func(*gin.Context) {
 				c.JSON(http_error.GetStatusCode(err), err.Error())
 				return
 			}
-			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: true, User: storedUser })
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{LoggedIn: true, User: storedUser})
 		} else {
 			RemoveSessionCookie(db, c)
-			c.JSON(http_error.GetStatusCode(err), SessionResponse{ LoggedIn: false, User: User{}})
+			c.JSON(http_error.GetStatusCode(err), SessionResponse{LoggedIn: false, User: User{}})
 		}
-	} 
+	}
 }
 
 func LogoutHandler(db *sql.DB) func(*gin.Context) {
@@ -81,6 +84,6 @@ func LogoutHandler(db *sql.DB) func(*gin.Context) {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		c.JSON(http_error.GetStatusCode(nil), SessionResponse{ LoggedIn: false, User: User{}})
+		c.JSON(http_error.GetStatusCode(nil), SessionResponse{LoggedIn: false, User: User{}})
 	}
 }

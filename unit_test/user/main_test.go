@@ -3,29 +3,27 @@ package user
 import (
 	"wellnus/backend/config"
 	"wellnus/backend/db"
-	"wellnus/backend/db/model"
-	"wellnus/backend/router/user"
+	. "wellnus/backend/db/model"
 	"wellnus/backend/router/http_helper/http_error"
+	"wellnus/backend/router/user"
 	"wellnus/backend/unit_test/test_helper"
-	
-	"log"
+
 	"fmt"
-	"testing"
+	"log"
 	"os"
+	"testing"
 
 	"database/sql"
+
 	"github.com/gin-gonic/gin"
 )
 
-type User = model.User
-type UserWithGroups = model.UserWithGroups
-
 var (
-	DB *sql.DB 
-	Router *gin.Engine
-	addedUser User
-	NotFoundErrorMessage 		string = http_error.NotFoundError.Error()
-	UnauthorizedErrorMessage	string = http_error.UnauthorizedError.Error()
+	DB                       *sql.DB
+	Router                   *gin.Engine
+	addedUser                User
+	NotFoundErrorMessage     string = http_error.NotFoundError.Error()
+	UnauthorizedErrorMessage string = http_error.UnauthorizedError.Error()
 )
 
 var testUsers []User
@@ -54,7 +52,9 @@ func TestMain(m *testing.M) {
 	var err error
 
 	testUsers, err = test_helper.SetupUsers(DB, 3)
-	if err != nil { log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err)) }
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Something went wrong when creating Test user. %v", err))
+	}
 
 	os.Exit(m.Run())
 }

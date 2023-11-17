@@ -1,26 +1,15 @@
 package http_helper
 
 import (
-	"wellnus/backend/db/model"
-	"wellnus/backend/config"
-	"wellnus/backend/router/http_helper/http_error"
-	"strconv"
-	"log"
 	"database/sql"
+	"log"
+	"strconv"
+	"wellnus/backend/config"
+	. "wellnus/backend/db/model"
+	"wellnus/backend/router/http_helper/http_error"
+
 	"github.com/gin-gonic/gin"
 )
-
-type User = model.User
-type Group = model.Group
-type JoinRequest = model.JoinRequest
-type JoinRequestRespond = model.JoinRequestRespond
-type MatchSetting = model.MatchSetting
-type ProviderSetting = model.ProviderSetting
-type CounselRequest = model.CounselRequest
-type UserIDBody = model.UserIDBody
-type Event = model.Event
-type Booking = model.Booking
-type BookingRespond = model.BookingRespond
 
 func SetHeaders(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", config.FRONTEND_ADDRESS)
@@ -31,21 +20,24 @@ func SetHeaders(c *gin.Context) {
 
 func GetIDParams(c *gin.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
-	if err != nil { return 0, http_error.NotFoundError }
+	if err != nil {
+		return 0, http_error.NotFoundError
+	}
 	return id, nil
 }
 
 func GetUserIDFromSessionCookie(db *sql.DB, c *gin.Context) (int64, error) {
 	sessionKey, err := c.Cookie("session_key")
-	if err != nil { 
+	if err != nil {
 		log.Printf("Error while getting UserID from cookie: %v", err)
 		return 0, http_error.UnauthorizedError
 	}
-	userID, err := model.GetUserIDFromSessionKey(db, sessionKey)
-	if err != nil { return 0, err }
+	userID, err := GetUserIDFromSessionKey(db, sessionKey)
+	if err != nil {
+		return 0, err
+	}
 	return userID, nil
 }
-
 
 func GetUserFromContext(c *gin.Context) (User, error) {
 	var user User

@@ -3,13 +3,14 @@ package ws
 import (
 	"wellnus/backend/config"
 	"wellnus/backend/db/model"
+	. "wellnus/backend/db/model"
 
 	"bytes"
+	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
-	"encoding/json"
-	"database/sql"
 
 	"github.com/gorilla/websocket"
 )
@@ -34,11 +35,11 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the Hub.
 type Client struct {
-	UserID		int64
-	GroupID		int64
-	Hub 		*Hub
-	Conn 		*websocket.Conn
-	Send 		chan interface{}
+	UserID  int64
+	GroupID int64
+	Hub     *Hub
+	Conn    *websocket.Conn
+	Send    chan interface{}
 }
 
 func (c *Client) readPump() {
@@ -55,7 +56,7 @@ func (c *Client) readPump() {
 			break
 		}
 		msg = bytes.TrimSpace(bytes.Replace(msg, newline, space, -1))
-		message := Message{ UserID: c.UserID, GroupID: c.GroupID, TimeAdded: time.Now(), Msg: string(msg) }
+		message := Message{UserID: c.UserID, GroupID: c.GroupID, TimeAdded: time.Now(), Msg: string(msg)}
 		c.Hub.Broadcast <- message
 	}
 }
@@ -72,24 +73,34 @@ func (c *Client) writePump() {
 			return
 		}
 		w, err := c.Conn.NextWriter(websocket.TextMessage)
-		if err != nil { return }
+		if err != nil {
+			return
+		}
 		jpayload, err := json.Marshal(payload)
-		if err != nil { return }
+		if err != nil {
+			return
+		}
 		w.Write(jpayload)
 
-		if err := w.Close(); err != nil { return }
+		if err := w.Close(); err != nil {
+			return
+		}
 	}
 }
 
 func (c Client) UserName(db *sql.DB) (string, error) {
 	user, err := model.GetUser(db, c.UserID)
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 	return user.FirstName, nil
 }
 
 func (c Client) GroupName(db *sql.DB) (string, error) {
 	group, err := model.GetGroup(db, c.GroupID)
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 	return group.GroupName, nil
 }
 
@@ -99,7 +110,7 @@ func ServeWs(Hub *Hub, w http.ResponseWriter, r *http.Request, userID int64, gro
 		log.Println(err)
 		return
 	}
-	client := &Client{ UserID: userID, GroupID: groupID, Hub: Hub, Conn: Conn, Send: make(chan interface{}, loadedMessageBuffer)}
+	client := &Client{UserID: userID, GroupID: groupID, Hub: Hub, Conn: Conn, Send: make(chan interface{}, loadedMessageBuffer)}
 	client.Hub.Register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

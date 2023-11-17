@@ -5,14 +5,12 @@ import (
 	"wellnus/backend/router/http_helper"
 	"wellnus/backend/router/http_helper/http_error"
 
-	"time"
 	"database/sql"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-type MessagePayload = model.MessagePayload
 
 func getLatestQuery(c *gin.Context) (time.Time, error) {
 	// RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
@@ -51,11 +49,11 @@ func GetMessagesChunkOfGroupHandler(db *sql.DB) func(*gin.Context) {
 
 		limit, _ := getLimitQuery(c)
 		latestTime, err := getLatestQuery(c)
-		if err != nil { 
+		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())
 			return
 		}
-		
+
 		messagesChunk, err := model.GetMessagesChunkOfGroupCustomise(db, groupID, latestTime, limit)
 		if err != nil {
 			c.JSON(http_error.GetStatusCode(err), err.Error())

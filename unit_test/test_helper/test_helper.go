@@ -1,53 +1,30 @@
 package test_helper
 
 import (
-	"wellnus/backend/db/model"
+	. "wellnus/backend/db/model"
 
+	"bytes"
 	"database/sql"
-	"regexp"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"bytes"
-	"errors"
-	"encoding/json"
-	"io"
-	"fmt"
+	"regexp"
 	"time"
-	"math/rand"
 
 	"github.com/gin-gonic/gin"
 )
 
-type User = model.User
-type UserWithGroups = model.UserWithGroups
-type SessionResponse = model.SessionResponse
-type Group = model.Group
-type GroupWithUsers = model.GroupWithUsers
-type JoinRequest = model.JoinRequest
-type LoadedJoinRequest = model.LoadedJoinRequest
-type JoinRequestRespond = model.JoinRequestRespond
-type MatchSetting = model.MatchSetting
-type MatchRequest = model.MatchRequest
-type LoadedMatchRequest = model.LoadedMatchRequest
-type CounselRequest = model.CounselRequest
-type UserIDBody = model.UserIDBody
-type Event = model.Event
-type EventWithUsers = model.EventWithUsers
-type ProviderSetting = model.ProviderSetting
-type Provider = model.Provider
-type ProviderWithEvents = model.ProviderWithEvents
-type Booking = model.Booking
-type BookingUser = model.BookingUser
-type BookingProvider = model.BookingProvider
-type BookingRespond = model.BookingRespond
-
-var ref_user_role 	[]string = []string{"MEMBER", "VOLUNTEER", "COUNSELLOR"}
-var ref_category  	[]string = []string{"COUNSEL", "SUPPORT", "CUSTOM"}
-var ref_faculty 	[]string = []string{"MIX", "SAME", "NONE"}
-var ref_hobbies 	[]string = []string{"GAMING", "SINGING", "DANCING", "MUSIC", "SPORTS", "OUTDOOR", "BOOK", "ANIME", "MOVIES", "TV", "ART", "STUDY"}
-var ref_mbti 		[]string = []string{"ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"}
-var ref_topics 		[]string = []string{"Anxiety", "OffMyChest", "SelfHarm"}
-var ref_access 		[]string = []string{"PUBLIC", "PRIVATE"}
+var ref_user_role []string = []string{"MEMBER", "VOLUNTEER", "COUNSELLOR"}
+var ref_category []string = []string{"COUNSEL", "SUPPORT", "CUSTOM"}
+var ref_faculty []string = []string{"MIX", "SAME", "NONE"}
+var ref_hobbies []string = []string{"GAMING", "SINGING", "DANCING", "MUSIC", "SPORTS", "OUTDOOR", "BOOK", "ANIME", "MOVIES", "TV", "ART", "STUDY"}
+var ref_mbti []string = []string{"ISTJ", "ISFJ", "INFJ", "INTJ", "ISTP", "ISFP", "INFP", "INTP", "ESTP", "ESFP", "ENFP", "ENTP", "ESTJ", "ESFJ", "ENFJ", "ENTJ"}
+var ref_topics []string = []string{"Anxiety", "OffMyChest", "SelfHarm"}
+var ref_access []string = []string{"PUBLIC", "PRIVATE"}
 
 func ResetDB(db *sql.DB) {
 	db.Exec("DELETE FROM wn_group")
@@ -80,7 +57,9 @@ func SimulateRequest(router *gin.Engine, req *http.Request) *httptest.ResponseRe
 func ReadInt(row *sql.Rows) (int, error) {
 	row.Next()
 	var c int
-	if err := row.Scan(&c); err != nil { return 0, err }
+	if err := row.Scan(&c); err != nil {
+		return 0, err
+	}
 	return c, nil
 }
 
@@ -560,7 +539,9 @@ func CheckBookingsInBookingUsers(bookingUsers []BookingUser, bookings []Booking)
 
 func GetIOReaderFromObject(obj interface{}) (io.Reader, error) {
 	j, err := json.Marshal(obj)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	return bytes.NewReader(j), nil
 }
 
@@ -577,26 +558,26 @@ func GenerateRandomString(l int) string {
 
 func GetTestUser(i int) User {
 	email := GenerateRandomString(20)
-	role := ref_user_role[i % len(ref_user_role)]
+	role := ref_user_role[i%len(ref_user_role)]
 
 	return User{
-		FirstName: fmt.Sprintf("TestUser%d", i),
-		LastName: fmt.Sprintf("TestLastName%d", i),
-		Gender: "M",
-		Faculty: "COMPUTING",
-		Email: fmt.Sprintf("%s@u.nus.edu", email),
-		UserRole: role,
-		Password: "123",
+		FirstName:    fmt.Sprintf("TestUser%d", i),
+		LastName:     fmt.Sprintf("TestLastName%d", i),
+		Gender:       "M",
+		Faculty:      "COMPUTING",
+		Email:        fmt.Sprintf("%s@u.nus.edu", email),
+		UserRole:     role,
+		Password:     "123",
 		PasswordHash: "",
 	}
 }
 
 func GetTestGroup(i int) Group {
-	category := ref_category[i % len(ref_category)]
+	category := ref_category[i%len(ref_category)]
 	return Group{
-		GroupName: fmt.Sprintf("NewGroupName%d", i),
+		GroupName:        fmt.Sprintf("NewGroupName%d", i),
 		GroupDescription: "NewGroupDescription",
-		Category: category,
+		Category:         category,
 	}
 }
 
@@ -606,13 +587,17 @@ func GetRandomTestMatchSetting() MatchSetting {
 	mbti := ref_mbti[Rand.Intn(len(ref_mbti))]
 	hobbies := make([]string, 0)
 	for _, hobby := range ref_hobbies {
-		if Rand.Intn(3) == 1 { hobbies = append(hobbies, hobby) }
-		if len(hobbies) >= 4 { break }
+		if Rand.Intn(3) == 1 {
+			hobbies = append(hobbies, hobby)
+		}
+		if len(hobbies) >= 4 {
+			break
+		}
 	}
 	matchSetting := MatchSetting{
 		FacultyPreference: facultyPreference,
-		Hobbies: hobbies,
-		MBTI: mbti,
+		Hobbies:           hobbies,
+		MBTI:              mbti,
 	}
 	return matchSetting
 }
@@ -620,11 +605,11 @@ func GetRandomTestMatchSetting() MatchSetting {
 func GetTestCounselRequest(i int) CounselRequest {
 	counselRequest := CounselRequest{
 		Nickname: "testRecipient",
-		Details: "I am stressed",
-		Topics: []string{ref_topics[0], ref_topics[1]}}
-	if i % 3 == 1 {
+		Details:  "I am stressed",
+		Topics:   []string{ref_topics[0], ref_topics[1]}}
+	if i%3 == 1 {
 		counselRequest.Topics = []string{ref_topics[1], ref_topics[2]}
-	} else if i % 3 == 2 {
+	} else if i%3 == 2 {
 		counselRequest.Topics = []string{ref_topics[0], ref_topics[2]}
 	}
 	return counselRequest
@@ -633,25 +618,25 @@ func GetTestCounselRequest(i int) CounselRequest {
 func GetTestEvent(i int) Event {
 	startTime, _ := time.Parse(time.RFC3339, "2050-01-01T08:00:00Z08:00")
 	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T08:00:00Z08:00")
-	access := ref_access[i % len(ref_access)]
-	category := ref_category[i % len(ref_category)]
+	access := ref_access[i%len(ref_access)]
+	category := ref_category[i%len(ref_category)]
 	return Event{
-		EventName: fmt.Sprintf("TestEvent%d", i),
+		EventName:        fmt.Sprintf("TestEvent%d", i),
 		EventDescription: "NewEventDescription",
-		StartTime: startTime,
-		EndTime: endTime,
-		Access: access,
-		Category: category,
+		StartTime:        startTime,
+		EndTime:          endTime,
+		Access:           access,
+		Category:         category,
 	}
 }
 
 func GetTestProviderSetting(i int) ProviderSetting {
 	providerSetting := ProviderSetting{
-		Intro: "I am a professional counsellor",
+		Intro:  "I am a professional counsellor",
 		Topics: []string{ref_topics[0], ref_topics[1]}}
-	if i % 3 == 1 {
+	if i%3 == 1 {
 		providerSetting.Topics = []string{ref_topics[1], ref_topics[2]}
-	} else if i % 3 == 2 {
+	} else if i%3 == 2 {
 		providerSetting.Topics = []string{ref_topics[0], ref_topics[2]}
 	}
 	return providerSetting
@@ -662,18 +647,20 @@ func GetTestBooking(i int, providerID int64) Booking {
 	endTime, _ := time.Parse(time.RFC3339, "2055-01-01T03:00:00+08:00")
 	return Booking{
 		ProviderID: providerID,
-		Nickname: fmt.Sprintf("TestNickName%d", i),
-		Details: "Looking to talk about my difficulties",
-		StartTime: startTime,
-		EndTime: endTime,
+		Nickname:   fmt.Sprintf("TestNickName%d", i),
+		Details:    "Looking to talk about my difficulties",
+		StartTime:  startTime,
+		EndTime:    endTime,
 	}
 }
 
 func SetupUsers(db *sql.DB, num int) ([]User, error) {
 	users := make([]User, num)
 	for i := 0; i < num; i++ {
-		user, err := model.AddUser(db, GetTestUser(i))
-		if err != nil { return nil, err }
+		user, err := AddUser(db, GetTestUser(i))
+		if err != nil {
+			return nil, err
+		}
 		users[i] = user
 	}
 	return users, nil
@@ -682,8 +669,10 @@ func SetupUsers(db *sql.DB, num int) ([]User, error) {
 func SetupGroupsForUsers(db *sql.DB, users []User) ([]Group, error) {
 	groups := make([]Group, len(users))
 	for i, user := range users {
-		groupWithUsers, err := model.AddGroupWithUserIDs(db, GetTestGroup(i), []int64{ user.ID })
-		if err != nil { return nil, err }
+		groupWithUsers, err := AddGroupWithUserIDs(db, GetTestGroup(i), []int64{user.ID})
+		if err != nil {
+			return nil, err
+		}
 		groups[i] = groupWithUsers.Group
 	}
 	return groups, nil
@@ -692,8 +681,10 @@ func SetupGroupsForUsers(db *sql.DB, users []User) ([]Group, error) {
 func SetupMatchSettingForUsers(db *sql.DB, users []User) ([]MatchSetting, error) {
 	matchSettings := make([]MatchSetting, len(users))
 	for i, user := range users {
-		matchSetting, err := model.AddUpdateMatchSettingOfUser(db, GetRandomTestMatchSetting(), user.ID)
-		if err != nil { return nil, err }
+		matchSetting, err := AddUpdateMatchSettingOfUser(db, GetRandomTestMatchSetting(), user.ID)
+		if err != nil {
+			return nil, err
+		}
 		matchSettings[i] = matchSetting
 	}
 	return matchSettings, nil
@@ -702,8 +693,10 @@ func SetupMatchSettingForUsers(db *sql.DB, users []User) ([]MatchSetting, error)
 func SetupSessionForUsers(db *sql.DB, users []User) ([]string, error) {
 	sessionKeys := make([]string, len(users))
 	for i, user := range users {
-		sessionKey, err := model.CreateNewSession(db, user.ID)
-		if err != nil { return nil, err }
+		sessionKey, err := CreateNewSession(db, user.ID)
+		if err != nil {
+			return nil, err
+		}
 		sessionKeys[i] = sessionKey
 	}
 	return sessionKeys, nil
@@ -712,8 +705,10 @@ func SetupSessionForUsers(db *sql.DB, users []User) ([]string, error) {
 func SetupMatchRequestForUsers(db *sql.DB, users []User) ([]MatchRequest, error) {
 	matchRequests := make([]MatchRequest, len(users))
 	for i, user := range users {
-		matchRequest, err := model.AddMatchRequest(db, user.ID)
-		if err != nil { return nil, err }
+		matchRequest, err := AddMatchRequest(db, user.ID)
+		if err != nil {
+			return nil, err
+		}
 		matchRequests[i] = matchRequest
 	}
 	return matchRequests, nil
@@ -722,8 +717,10 @@ func SetupMatchRequestForUsers(db *sql.DB, users []User) ([]MatchRequest, error)
 func SetupCounselRequestForUsers(db *sql.DB, users []User) ([]CounselRequest, error) {
 	counselRequests := make([]CounselRequest, len(users))
 	for i, user := range users {
-		counselRequest, err := model.AddUpdateCounselRequest(db, GetTestCounselRequest(i), user.ID)
-		if err != nil { return nil, err }
+		counselRequest, err := AddUpdateCounselRequest(db, GetTestCounselRequest(i), user.ID)
+		if err != nil {
+			return nil, err
+		}
 		counselRequests[i] = counselRequest
 	}
 	return counselRequests, nil
@@ -732,8 +729,10 @@ func SetupCounselRequestForUsers(db *sql.DB, users []User) ([]CounselRequest, er
 func SetupEventForUsers(db *sql.DB, users []User) ([]Event, error) {
 	events := make([]Event, len(users))
 	for i, user := range users {
-		eventWithUsers, err := model.AddEventWithUserIDs(db, GetTestEvent(i), []int64{user.ID})
-		if err != nil { return nil, err }
+		eventWithUsers, err := AddEventWithUserIDs(db, GetTestEvent(i), []int64{user.ID})
+		if err != nil {
+			return nil, err
+		}
 		events[i] = eventWithUsers.Event
 	}
 	return events, nil
@@ -742,8 +741,10 @@ func SetupEventForUsers(db *sql.DB, users []User) ([]Event, error) {
 func SetupProviderSettingForUsers(db *sql.DB, users []User) ([]ProviderSetting, error) {
 	providerSettings := make([]ProviderSetting, len(users))
 	for i, user := range users {
-		providerSetting, err := model.AddUpdateProviderSettingOfUser(db, GetTestProviderSetting(i), user.ID)
-		if err != nil { return nil, err }
+		providerSetting, err := AddUpdateProviderSettingOfUser(db, GetTestProviderSetting(i), user.ID)
+		if err != nil {
+			return nil, err
+		}
 		providerSettings[i] = providerSetting
 	}
 	return providerSettings, nil
@@ -752,8 +753,10 @@ func SetupProviderSettingForUsers(db *sql.DB, users []User) ([]ProviderSetting, 
 func SetupBookingToUserForUsers(db *sql.DB, users []User, pUser User) ([]Booking, error) {
 	bookings := make([]Booking, len(users))
 	for i, user := range users {
-		booking, err := model.AddBooking(db, GetTestBooking(i, pUser.ID), pUser.ID, user.ID)
-		if err != nil { return nil, err }
+		booking, err := AddBooking(db, GetTestBooking(i, pUser.ID), pUser.ID, user.ID)
+		if err != nil {
+			return nil, err
+		}
 		bookings[i] = booking
 	}
 	return bookings, nil
