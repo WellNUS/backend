@@ -1,5 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/stanleyneoh/WellNUS/backend'
-docker run --name postgres14.3 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:14.3-alpine
-make: Leaving directory '/home/stanleyneoh/WellNUS/backend'
- 
