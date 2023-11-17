@@ -2,11 +2,11 @@ include .env
 
 all: dev
 
-dev: startdb
+dev: composedown startdb
 	go run main.go
 
-prod: 
-	docker compose up
+prod: composedown
+	docker compose up -d
 
 migrateup: startdb
 	migrate -path db/migration -database "$(DB_ADDRESS)" -verbose up
@@ -17,10 +17,10 @@ migratedown: startdb
 startdb:
 	docker compose up -d db
 
-composeDown:
+composedown:
 	docker compose down --rmi local
 
-purgeDB:
+purgedb:
 	sudo chmod -R 0777 ./.db_data/ && rm -rf ./.db_data/ || echo "No .db_data/ to purge"
 
 unittest:
