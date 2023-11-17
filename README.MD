@@ -23,7 +23,7 @@ Run `make unittest` to run all unittest
     - Ensure that the database is running prior to running the unit tests by running `make startdb`
 
 ### Makefile Commands
-- `make dev` will run the webserver in development mode
+- `make dev` will run the webserver in development mode. Note that this will not perform database migration for you.
 - `make prod` will run the webserver in production mode
 - `make migrateup` will setup the database appropriately
 - `make migratedown` will tear down the tables in the database

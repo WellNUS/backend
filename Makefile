@@ -9,10 +9,10 @@ prod: composedown
 	docker compose up -d
 
 migrateup: startdb
-	migrate -path db/migration -database "$(DB_ADDRESS)" -verbose up
+	./migrate -path db/migration -database "$(DB_ADDRESS)" -verbose up
 
 migratedown: startdb
-	migrate -path db/migration -database "$(DB_ADDRESS)" -verbose down
+	./migrate -path db/migration -database "$(DB_ADDRESS)" -verbose down
 
 unittest: startdb
 	go test $(shell go list ./unit_test/...| grep -v test_helper) -p 1
